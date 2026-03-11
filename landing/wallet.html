@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#00ff41">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-name" content="0penw0rld">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <title>00 Wallet — 0penw0rld</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00ff41; --green-dim: #00c832; --green-dark: #003d0f;
+      --black: #020a03; --grey: #0a110a; --panel: #060e06;
+      --red: #ff4040; --gold: #f0a500;
+    }
+    html, body { width:100%; height:100%; background:var(--black); font-family:'Share Tech Mono',monospace; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    #rain { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.12; }
+    .scanlines { position:fixed; inset:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.12) 2px,rgba(0,0,0,.12) 4px); }
+    .vignette { position:fixed; inset:0; z-index:1; pointer-events:none; background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.9) 100%); }
+    #loading { position:fixed; inset:0; z-index:100; background:var(--black); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; }
+    .loader-logo { font-family:'Orbitron',monospace; font-size:52px; font-weight:900; color:var(--green); text-shadow:0 0 20px var(--green),0 0 50px var(--green),0 0 100px rgba(0,255,65,.3); animation:logoPulse 1s ease-in-out infinite; }
+    @keyframes logoPulse { 0%,100%{text-shadow:0 0 20px var(--green),0 0 50px var(--green)} 50%{text-shadow:0 0 30px var(--green),0 0 70px var(--green),0 0 140px rgba(0,255,65,.5)} }
+    .loader-bar-wrap { width:200px; height:2px; background:rgba(0,255,65,.1); border-radius:2px; overflow:hidden; }
+    .loader-bar { height:100%; background:var(--green); box-shadow:0 0 8px var(--green); animation:loadBar 2.5s ease-in-out forwards; }
+    @keyframes loadBar { from{width:0} to{width:100%} }
+    .loader-status { font-size:10px; color:rgba(0,255,65,.3); letter-spacing:2px; min-height:14px; }
+    .blink { animation:blink .8s step-end infinite; }
+    @keyframes blink { 50%{opacity:0} }
+
+    /* Phone */
+    .phone-wrap { position:relative; z-index:10; display:flex; align-items:center; justify-content:center; }
+    .phone { width:375px; height:780px; background:var(--panel); border-radius:42px; border:2px solid rgba(0,255,65,.2); box-shadow:0 0 0 1px rgba(0,255,65,.05),0 0 40px rgba(0,255,65,.08),0 0 80px rgba(0,255,65,.04),inset 0 0 30px rgba(0,0,0,.5); display:flex; flex-direction:column; overflow:hidden; position:relative; }
+    .notch { position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:28px; background:var(--black); border-radius:0 0 18px 18px; z-index:50; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .notch-cam { width:8px; height:8px; border-radius:50%; background:#111; border:1px solid #222; }
+    .notch-speaker { width:40px; height:4px; border-radius:2px; background:#111; }
+    .status-bar { padding:10px 20px 4px; display:flex; align-items:center; justify-content:space-between; font-size:10px; color:rgba(0,255,65,.5); flex-shrink:0; margin-top:14px; }
+    .app-header { padding:10px 20px 0; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .app-title { font-family:'Orbitron',monospace; font-size:18px; font-weight:700; color:var(--green); text-shadow:0 0 10px rgba(0,255,65,.4); }
+    .app-title span { font-size:11px; color:rgba(0,255,65,.4); display:block; letter-spacing:2px; }
+    .header-icon { font-size:18px; cursor:pointer; color:rgba(0,255,65,.6); transition:.15s; }
+    .header-icon:hover { color:var(--green); }
+
+    /* Fulcrum bar */
+    .fulcrum-bar { display:flex; align-items:center; gap:8px; padding:5px 20px; border-bottom:1px solid rgba(0,255,65,.08); flex-shrink:0; font-size:9px; color:rgba(0,255,65,.4); letter-spacing:1px; }
+    .fulcrum-dot { width:5px; height:5px; border-radius:50%; background:rgba(0,255,65,.2); flex-shrink:0; transition:.3s; }
+    .fulcrum-dot.on { background:var(--green); box-shadow:0 0 4px var(--green); }
+    .fulcrum-dot.err { background:var(--red); }
+
+    /* Tabs */
+    .tabs { display:flex; padding:0 16px; border-bottom:1px solid rgba(0,255,65,.1); flex-shrink:0; }
+    .tab { flex:1; padding:10px; text-align:center; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:rgba(0,255,65,.3); cursor:pointer; border-bottom:2px solid transparent; transition:.2s; }
+    .tab.active { color:var(--green); border-bottom-color:var(--green); }
+    .tab-pane { display:none; flex:1; overflow-y:auto; scrollbar-width:none; min-height:0; flex-direction:column; }
+    .tab-pane::-webkit-scrollbar { display:none; }
+    .tab-pane.active { display:flex; }
+
+    /* Balance tab */
+    .balance-hero { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px 20px 20px; border-bottom:1px solid rgba(0,255,65,.07); flex-shrink:0; }
+    .balance-amount { font-family:'Orbitron',monospace; font-size:30px; font-weight:900; color:var(--green); text-shadow:0 0 20px rgba(0,255,65,.4); letter-spacing:2px; }
+    .balance-unit { font-size:13px; color:rgba(0,255,65,.5); margin-left:6px; }
+    .balance-sats { font-size:11px; color:rgba(0,255,65,.35); margin-top:4px; letter-spacing:1px; }
+    .balance-unconf { font-size:9px; color:#f0a500; margin-top:3px; letter-spacing:1px; }
+    .balance-actions { display:flex; gap:12px; margin-top:18px; width:100%; }
+    .wallet-btn { flex:1; padding:12px; background:rgba(0,255,65,.08); border:1px solid rgba(0,255,65,.3); border-radius:10px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:2px; cursor:pointer; transition:.2s; text-align:center; }
+    .wallet-btn:hover { background:rgba(0,255,65,.15); border-color:var(--green); }
+    .wallet-btn.danger { border-color:rgba(255,64,64,.3); color:rgba(255,64,64,.7); }
+    .wallet-btn.danger:hover { background:rgba(255,64,64,.1); border-color:var(--red); color:var(--red); }
+    .utxo-info { display:flex; align-items:center; justify-content:space-between; padding:10px 20px; font-size:9px; color:rgba(0,255,65,.3); letter-spacing:1px; flex-shrink:0; }
+    .refresh-btn { font-size:9px; color:rgba(0,255,65,.4); cursor:pointer; padding:2px 8px; border:1px solid rgba(0,255,65,.2); border-radius:3px; transition:.15s; }
+    .refresh-btn:hover { color:var(--green); border-color:rgba(0,255,65,.5); }
+    .refresh-btn.spinning { animation:spin .7s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    /* UTXO list */
+    .utxo-item { padding:10px 20px; border-bottom:1px solid rgba(0,255,65,.05); font-size:10px; display:flex; align-items:center; justify-content:space-between; }
+    .utxo-txid { color:rgba(0,255,65,.4); font-size:9px; }
+    .utxo-val { color:var(--green); font-size:11px; }
+    .utxo-conf { font-size:9px; padding:1px 5px; border-radius:3px; }
+    .utxo-conf.unconf { color:#f0a500; border:1px solid rgba(240,165,0,.3); }
+    .utxo-conf.conf { color:rgba(0,255,65,.5); border:1px solid rgba(0,255,65,.2); }
+    .utxo-conf.stealth { color:#bf5af2; border:1px solid rgba(191,90,242,.35); }
+
+    /* Send tab */
+    .send-form { display:flex; flex-direction:column; gap:14px; padding:20px; flex:1; }
+    .form-lbl { font-size:9px; color:rgba(0,255,65,.4); letter-spacing:2px; margin-bottom:4px; }
+    .form-input { width:100%; background:rgba(0,255,65,.04); border:1px solid rgba(0,255,65,.2); border-radius:8px; padding:11px 14px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:11px; outline:none; transition:.2s; }
+    .form-input:focus { border-color:rgba(0,255,65,.5); box-shadow:0 0 8px rgba(0,255,65,.08); }
+    .form-input::placeholder { color:rgba(0,255,65,.2); }
+    .amount-wrap { display:flex; gap:8px; align-items:center; }
+    .amount-wrap .form-input { flex:1; }
+    .max-btn { background:rgba(0,255,65,.06); border:1px solid rgba(0,255,65,.25); border-radius:8px; padding:0 14px; color:rgba(0,255,65,.6); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; cursor:pointer; transition:.15s; white-space:nowrap; }
+    .max-btn:hover { color:var(--green); border-color:var(--green); }
+    .fee-row { display:flex; gap:6px; }
+    .fee-opt { flex:1; padding:7px; border:1px solid rgba(0,255,65,.2); border-radius:6px; color:rgba(0,255,65,.4); font-size:9px; letter-spacing:1px; text-align:center; cursor:pointer; transition:.15s; }
+    .fee-opt.active { border-color:var(--green); color:var(--green); background:rgba(0,255,65,.06); }
+    .fee-opt:hover { border-color:rgba(0,255,65,.4); color:rgba(0,255,65,.7); }
+    .send-summary { background:rgba(0,255,65,.03); border:1px solid rgba(0,255,65,.1); border-radius:8px; padding:12px 14px; font-size:10px; color:rgba(0,255,65,.6); line-height:2; }
+    .send-summary span { color:var(--green); }
+    .send-error { font-size:10px; color:var(--red); letter-spacing:1px; min-height:14px; }
+    .broadcast-btn { width:100%; padding:14px; background:rgba(0,255,65,.1); border:1px solid rgba(0,255,65,.4); border-radius:8px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:13px; letter-spacing:3px; cursor:pointer; transition:.2s; }
+    .broadcast-btn:hover { background:rgba(0,255,65,.18); box-shadow:0 0 16px rgba(0,255,65,.2); }
+    .broadcast-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+    /* Receive tab */
+    .receive-wrap { display:flex; flex-direction:column; align-items:center; padding:24px 20px; gap:16px; flex:1; }
+    .qr-canvas-wrap { background:#000; border:2px solid rgba(0,255,65,.3); border-radius:12px; padding:12px; box-shadow:0 0 20px rgba(0,255,65,.1); }
+    #qr-canvas { display:block; }
+    .addr-box { width:100%; background:rgba(0,255,65,.03); border:1px solid rgba(0,255,65,.1); border-radius:8px; padding:10px 14px; font-size:9px; color:rgba(0,255,65,.7); word-break:break-all; line-height:1.7; }
+    .copy-row { display:flex; gap:8px; width:100%; }
+    .copy-btn { flex:1; background:none; border:1px solid rgba(0,255,65,.25); color:rgba(0,255,65,.6); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; padding:8px; border-radius:6px; cursor:pointer; transition:.15s; }
+    .copy-btn:hover { border-color:rgba(0,255,65,.6); color:var(--green); }
+
+    /* History tab */
+    .tx-item { padding:11px 16px; border-bottom:1px solid rgba(0,255,65,.05); cursor:pointer; transition:.15s; }
+    .tx-item:hover { background:rgba(0,255,65,.03); }
+    .tx-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+    .tx-dir { font-size:10px; letter-spacing:1px; }
+    .tx-dir.in { color:var(--green); }
+    .tx-dir.out { color:rgba(0,255,65,.5); }
+    .tx-dir.unknown { color:rgba(0,255,65,.3); }
+    .tx-height { font-size:9px; color:rgba(0,255,65,.25); }
+    .tx-hash { font-size:9px; color:rgba(0,255,65,.3); font-family:monospace; }
+    .tx-amount { font-size:11px; color:var(--green); font-family:'Orbitron',monospace; }
+    .tx-unconf { font-size:9px; color:#f0a500; }
+    .empty-state { padding:40px 20px; text-align:center; font-size:11px; color:rgba(0,255,65,.25); letter-spacing:2px; line-height:2.5; }
+
+    /* Addresses tab */
+    .addr-item { padding:8px 16px; border-bottom:1px solid rgba(0,255,65,.05); display:flex; align-items:center; justify-content:space-between; }
+    .addr-hash { font-size:9px; color:rgba(0,255,65,.5); word-break:break-all; flex:1; min-width:0; }
+    .addr-balance { font-size:11px; color:var(--green); font-family:'Orbitron',monospace; margin-left:10px; white-space:nowrap; }
+    .addr-item.empty { opacity:.35; }
+    .addr-chain-hdr { padding:8px 16px; font-size:8px; color:rgba(0,255,65,.3); letter-spacing:2px; border-bottom:1px solid rgba(0,255,65,.06); background:rgba(0,255,65,.02); display:flex; justify-content:space-between; align-items:center; }
+    .show0-toggle { display:flex; align-items:center; gap:5px; cursor:pointer; font-size:8px; color:rgba(0,255,65,.3); letter-spacing:1px; user-select:none; }
+    .show0-toggle input { accent-color:var(--green); width:12px; height:12px; }
+
+    /* Auth */
+    #auth-import, #auth-unlock { display:none; flex:1; flex-direction:column; }
+    #auth-view { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px 24px; gap:16px; }
+    .auth-logo { font-family:'Orbitron',monospace; font-size:28px; font-weight:900; color:var(--green); text-shadow:0 0 20px rgba(0,255,65,.5); }
+    .auth-sub { font-size:10px; color:rgba(0,255,65,.35); letter-spacing:3px; margin-top:-8px; }
+    .auth-input { width:100%; background:rgba(0,255,65,.04); border:1px solid rgba(0,255,65,.2); border-radius:8px; padding:12px 14px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:12px; outline:none; transition:.2s; }
+    .auth-input:focus { border-color:rgba(0,255,65,.5); box-shadow:0 0 8px rgba(0,255,65,.1); }
+    .auth-input::placeholder { color:rgba(0,255,65,.2); }
+    .auth-btn { width:100%; padding:14px; background:rgba(0,255,65,.1); border:1px solid rgba(0,255,65,.4); border-radius:8px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:13px; letter-spacing:3px; cursor:pointer; transition:.2s; }
+    .auth-btn:hover { background:rgba(0,255,65,.18); box-shadow:0 0 16px rgba(0,255,65,.2); }
+    .auth-btn-secondary { background:transparent; border-color:rgba(0,255,65,.2); color:rgba(0,255,65,.5); font-size:11px; padding:10px; }
+    .auth-error { font-size:10px; color:#ff4040; letter-spacing:1px; min-height:14px; }
+    .auth-divider { width:100%; border-top:1px solid rgba(0,255,65,.1); }
+    .auth-lbl { font-size:9px; color:rgba(0,255,65,.35); letter-spacing:2px; align-self:flex-start; }
+
+    /* Coin Control */
+    .cc-header { display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
+    .cc-header:hover .form-lbl { color:rgba(0,255,65,.7); }
+    .cc-badge { font-size:8px; padding:1px 7px; border:1px solid rgba(0,255,65,.2); border-radius:3px; color:rgba(0,255,65,.38); letter-spacing:1px; }
+    .cc-badge.manual { border-color:rgba(0,212,255,.35); color:rgba(0,212,255,.7); }
+    .cc-panel { margin-top:8px; border:1px solid rgba(0,255,65,.1); border-radius:6px; overflow:hidden; display:none; }
+    .cc-utxo { display:flex; align-items:center; gap:10px; padding:9px 12px; border-bottom:1px solid rgba(0,255,65,.04); cursor:pointer; transition:.1s; }
+    .cc-utxo:last-child { border-bottom:none; }
+    .cc-utxo:hover { background:rgba(0,255,65,.03); }
+    .cc-utxo.sel { background:rgba(0,255,65,.05); }
+    .cc-cb { width:14px; height:14px; border:1px solid rgba(0,255,65,.25); border-radius:2px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:9px; color:transparent; transition:.1s; }
+    .cc-utxo.sel .cc-cb { background:rgba(0,255,65,.18); border-color:var(--green); color:var(--green); }
+    .cc-info { flex:1; min-width:0; }
+    .cc-txid { font-size:8px; color:rgba(0,255,65,.32); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cc-addr { font-size:8px; color:rgba(0,212,255,.35); margin-top:1px; }
+    .cc-val { font-size:11px; color:var(--green); text-align:right; }
+    .cc-conf { font-size:8px; text-align:right; }
+    .cc-footer { display:flex; align-items:center; justify-content:space-between; padding:7px 12px; background:rgba(0,255,65,.02); border-top:1px solid rgba(0,255,65,.06); }
+    .cc-total { font-size:10px; color:rgba(0,255,65,.5); }
+    .cc-total span { color:var(--green); }
+    .cc-acts { display:flex; gap:5px; }
+    .cc-btn { font-size:9px; padding:2px 8px; border:1px solid rgba(0,255,65,.18); color:rgba(0,255,65,.45); background:transparent; cursor:pointer; border-radius:3px; font-family:'Share Tech Mono',monospace; transition:.1s; }
+    .cc-btn:hover { border-color:rgba(0,255,65,.5); color:var(--green); }
+
+    /* Success overlay */
+    .success-overlay { position:absolute; inset:0; z-index:40; background:rgba(2,10,3,.97); border-radius:42px; display:none; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:28px 24px; }
+    .success-icon { font-size:48px; }
+    .success-title { font-family:'Orbitron',monospace; font-size:14px; color:var(--green); letter-spacing:3px; }
+    .success-txid { font-size:9px; color:rgba(0,255,65,.5); word-break:break-all; text-align:center; line-height:1.8; }
+    #main-view { min-height:0; }
+
+    /* Nostr bar */
+    .nostr-bar { display:flex; align-items:center; gap:8px; padding:5px 20px; border-bottom:1px solid rgba(0,255,65,.08); flex-shrink:0; font-size:9px; color:rgba(0,255,65,.4); letter-spacing:1px; }
+    .nostr-dot { width:5px; height:5px; border-radius:50%; background:rgba(0,255,65,.2); flex-shrink:0; transition:.3s; }
+    .nostr-dot.on { background:var(--green); box-shadow:0 0 4px var(--green); }
+
+    /* Stealth tab */
+    .stealth-section { padding:16px 20px; }
+    .stealth-section-title { font-size:9px; color:rgba(0,255,65,.4); letter-spacing:2px; margin-bottom:10px; }
+    .stealth-code-box { width:100%; background:rgba(0,255,65,.03); border:1px solid rgba(0,255,65,.15); border-radius:8px; padding:10px 12px; font-size:8px; color:rgba(0,255,65,.6); word-break:break-all; line-height:1.6; cursor:pointer; transition:.15s; }
+    .stealth-code-box:hover { border-color:rgba(0,255,65,.4); }
+    .stealth-code-box:active { background:rgba(0,255,65,.06); }
+    .stealth-rx-item { padding:10px 16px; border-bottom:1px solid rgba(0,255,65,.05); display:flex; align-items:center; justify-content:space-between; }
+    .stealth-rx-from { font-size:9px; color:rgba(0,255,65,.4); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .stealth-rx-val { font-size:11px; color:var(--green); font-family:'Orbitron',monospace; margin-left:10px; white-space:nowrap; }
+    .stealth-rx-status { font-size:8px; margin-left:8px; padding:1px 5px; border-radius:3px; }
+    .stealth-rx-status.unspent { color:var(--green); border:1px solid rgba(0,255,65,.2); }
+    .stealth-rx-status.spent { color:rgba(0,255,65,.25); border:1px solid rgba(0,255,65,.08); }
+    .stealth-scan-btn { width:100%; padding:10px; background:rgba(0,255,65,.06); border:1px solid rgba(0,255,65,.2); border-radius:8px; color:rgba(0,255,65,.5); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px; cursor:pointer; transition:.2s; margin-top:8px; }
+    .stealth-scan-btn:hover { background:rgba(0,255,65,.12); border-color:rgba(0,255,65,.4); color:var(--green); }
+  </style>
+</head>
+<body>
+<canvas id="rain"></canvas>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<div id="loading">
+  <div class="loader-logo">00 WALLET</div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+  <div class="loader-status" id="loader-status"></div>
+</div>
+
+<div class="phone-wrap">
+  <div class="phone">
+    <div class="notch"><div class="notch-cam"></div><div class="notch-speaker"></div><div class="notch-cam"></div></div>
+
+    <!-- AUTH IMPORT -->
+    <div id="auth-import" style="flex:1;flex-direction:column">
+      <div id="auth-view">
+        <div class="auth-logo">00 WALLET</div>
+        <div class="auth-sub">// BCH · PRIVACY · SELF-CUSTODY</div>
+        <div class="auth-lbl">SEED PHRASE OR HEX KEY</div>
+        <textarea class="auth-input" id="import-seed" rows="3" placeholder="12 words or 64-char hex..." style="resize:none;line-height:1.6"></textarea>
+        <div class="auth-lbl">PASSWORD</div>
+        <input class="auth-input" id="import-pass" type="password" placeholder="min 8 chars...">
+        <div class="auth-lbl">CONFIRM</div>
+        <input class="auth-input" id="import-pass2" type="password" placeholder="confirm...">
+        <div class="auth-error" id="import-error"></div>
+        <button class="auth-btn" onclick="walletImport()">UNLOCK WALLET →</button>
+        <div class="auth-divider"></div>
+        <button class="auth-btn auth-btn-secondary" onclick="walletGenKey()">⚡ GENERATE NEW KEY</button>
+        <div style="width:100%;text-align:center;color:rgba(0,255,65,.18);font-size:9px;letter-spacing:3px;margin:6px 0">── OR ──</div>
+        <button class="auth-btn" onclick="connectWalletConnect()" style="background:transparent;border-color:rgba(59,130,246,.35);color:#3b82f6">⛓ WALLETCONNECT</button>
+        <div class="auth-error" id="wc-error-import"></div>
+      </div>
+    </div>
+
+    <!-- AUTH UNLOCK -->
+    <div id="auth-unlock" style="flex:1;flex-direction:column;align-items:center;justify-content:center;padding:30px 24px;gap:16px">
+      <div class="auth-logo">00 WALLET</div>
+      <div style="font-size:10px;color:rgba(0,255,65,.35);letter-spacing:2px">// ENTER PASSWORD</div>
+      <input class="auth-input" id="unlock-pass" type="password" placeholder="password..." onkeydown="if(event.key==='Enter')walletUnlock()">
+      <div class="auth-error" id="unlock-error"></div>
+      <button class="auth-btn" onclick="walletUnlock()">UNLOCK →</button>
+      <button class="auth-btn auth-btn-secondary" onclick="showWalletImport()">← IMPORT NEW KEY</button>
+      <div style="width:100%;text-align:center;color:rgba(0,255,65,.18);font-size:9px;letter-spacing:3px;margin:2px 0">── OR ──</div>
+      <button class="auth-btn" id="ledger-wallet-btn" onclick="connectLedgerWallet()" style="background:transparent;border-color:rgba(0,212,255,.35);color:#00d4ff">🔑 CONNECT LEDGER</button>
+      <div class="auth-error" id="ledger-wallet-err"></div>
+      <button class="auth-btn" id="wc-btn" onclick="connectWalletConnect()" style="background:transparent;border-color:rgba(59,130,246,.35);color:#3b82f6">⛓ WALLETCONNECT</button>
+      <div class="auth-error" id="wc-error"></div>
+    </div>
+
+    <!-- MAIN VIEW -->
+    <div id="main-view" style="display:none;flex-direction:column;flex:1">
+      <div class="status-bar">
+        <span id="phone-clock">00:00</span>
+        <div style="font-size:9px;letter-spacing:1px;color:rgba(0,255,65,.4)" id="wallet-status-top">00 WALLET ●</div>
+      </div>
+      <div class="app-header">
+        <div class="app-title">00 WALLET<span>// BCH SELF-CUSTODY</span></div>
+        <div class="header-icon" onclick="refreshBalance()" title="Refresh" id="refresh-icon">↻</div>
+      </div>
+      <div class="fulcrum-bar">
+        <div class="fulcrum-dot" id="fulcrum-dot"></div>
+        <span id="fulcrum-label">CONNECTING FULCRUM...</span>
+        <span style="margin-left:auto;opacity:.5" id="fulcrum-server"></span>
+      </div>
+      <div class="nostr-bar" id="nostr-bar" style="display:none">
+        <div class="nostr-dot" id="nostr-dot"></div>
+        <span id="nostr-label">NOSTR: connecting...</span>
+      </div>
+      <div class="tabs">
+        <div class="tab active" id="tab-wallet" onclick="switchTab('wallet')">WALLET</div>
+        <div class="tab" id="tab-send" onclick="switchTab('send')">SEND</div>
+        <div class="tab" id="tab-receive" onclick="switchTab('receive')">RECEIVE</div>
+        <div class="tab" id="tab-txs" onclick="switchTab('txs')">TXS</div>
+        <div class="tab" id="tab-addrs" onclick="switchTab('addrs')">UTXO</div>
+        <div class="tab" id="tab-stealth" onclick="switchTab('stealth')">STEALTH</div>
+      </div>
+
+      <!-- WALLET TAB -->
+      <div class="tab-pane active" id="pane-wallet">
+        <div id="wc-banner" style="display:none;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);padding:12px;margin:0 0 12px;font-size:10px;color:rgba(59,130,246,.8);letter-spacing:1px;line-height:1.6;text-align:center">
+          ⛓ CONNECTED VIA WALLETCONNECT<br>
+          <span style="color:rgba(255,255,255,.35);font-size:9px">Balance managed by external wallet</span>
+        </div>
+        <div class="balance-hero" id="balance-hero">
+          <div style="display:flex;align-items:baseline">
+            <div class="balance-amount" id="bal-bch">0.00000000</div>
+            <div class="balance-unit">BCH</div>
+          </div>
+          <div class="balance-sats" id="bal-sats">0 sats</div>
+          <div class="balance-unconf" id="bal-unconf" style="display:none">⏳ UNCONFIRMED PENDING</div>
+          <div class="balance-actions">
+            <div class="wallet-btn" onclick="switchTab('send')">↑ SEND</div>
+            <div class="wallet-btn" onclick="switchTab('receive')">↓ RECEIVE</div>
+          </div>
+        </div>
+        <div class="utxo-info">
+          <span><span id="utxo-count" style="color:var(--green)">0</span> UTXOs</span>
+          <span class="refresh-btn" id="refresh-btn" onclick="refreshBalance()">↻ REFRESH</span>
+        </div>
+        <div id="utxo-list"></div>
+      </div>
+
+      <!-- SEND TAB -->
+      <div class="tab-pane" id="pane-send">
+        <div class="send-form">
+          <div>
+            <div class="form-lbl">RECIPIENT ADDRESS</div>
+            <input class="form-input" id="send-addr" placeholder="bitcoincash:q..." oninput="updateSendSummary()">
+          </div>
+          <div>
+            <div class="form-lbl">AMOUNT (BCH)</div>
+            <div class="amount-wrap">
+              <input class="form-input" id="send-amount" type="number" step="0.00000001" min="0" placeholder="0.00000000" oninput="updateSendSummary()">
+              <div class="max-btn" onclick="setMaxAmount()">MAX</div>
+            </div>
+          </div>
+          <div>
+            <div class="form-lbl">FEE RATE (SAT/BYTE)</div>
+            <div class="fee-row">
+              <div class="fee-opt active" id="fee-low" onclick="setFeeRate(1.0,'low')">LOW<br><span style="opacity:.6">1 sat/B</span></div>
+              <div class="fee-opt" id="fee-normal" onclick="setFeeRate(1.5,'normal')">NORMAL<br><span style="opacity:.6">1.5 sat/B</span></div>
+              <div class="fee-opt" id="fee-high" onclick="setFeeRate(2.0,'high')">HIGH<br><span style="opacity:.6">2 sat/B</span></div>
+            </div>
+          </div>
+          <!-- COIN CONTROL -->
+          <div>
+            <div class="cc-header" onclick="toggleCoinControl()">
+              <div class="form-lbl" style="margin:0">COIN CONTROL</div>
+              <span id="cc-icon" style="font-size:9px;color:rgba(0,255,65,.4)">▾</span>
+              <span class="cc-badge" id="cc-badge">AUTO</span>
+            </div>
+            <div class="cc-panel" id="cc-panel">
+              <div id="cc-list"></div>
+              <div class="cc-footer" id="cc-footer"></div>
+            </div>
+          </div>
+
+          <div class="send-summary" id="send-summary" style="display:none"></div>
+          <div class="send-error" id="send-error"></div>
+          <button class="broadcast-btn" id="broadcast-btn" onclick="sendBCH()">⚡ BROADCAST →</button>
+        </div>
+      </div>
+
+      <!-- RECEIVE TAB -->
+      <div class="tab-pane" id="pane-receive">
+        <div class="receive-wrap">
+          <div style="font-size:9px;color:rgba(0,255,65,.4);letter-spacing:2px">YOUR BCH ADDRESS</div>
+          <div class="qr-canvas-wrap">
+            <canvas id="qr-canvas" width="180" height="180"></canvas>
+          </div>
+          <div class="addr-box" id="receive-addr">—</div>
+          <div class="copy-row">
+            <button class="copy-btn" onclick="copyAddr(false)">COPY FULL</button>
+            <button class="copy-btn" onclick="copyAddr(true)">COPY SHORT</button>
+          </div>
+          <div style="font-size:9px;color:rgba(0,255,65,.25);letter-spacing:1px;text-align:center;line-height:1.8">
+            // SAME SEED AS 00 CHAT & 00 MESH<br>// m/44'/145'/0'/0/0
+          </div>
+        </div>
+      </div>
+
+      <!-- TXS TAB -->
+      <div class="tab-pane" id="pane-txs">
+        <div class="empty-state" id="txs-empty">// NO TRANSACTIONS YET<br>CONNECT TO FULCRUM...</div>
+        <div id="tx-list"></div>
+      </div>
+
+      <!-- UTXO / ADDRESSES TAB -->
+      <div class="tab-pane" id="pane-addrs">
+        <div id="addrs-list">
+          <div class="empty-state">// UNLOCK WALLET TO SCAN ADDRESSES</div>
+        </div>
+      </div>
+
+      <!-- STEALTH TAB -->
+      <div class="tab-pane" id="pane-stealth">
+        <div class="stealth-section">
+          <div class="stealth-section-title">MY STEALTH CODE</div>
+          <div class="stealth-code-box" id="stealth-code" onclick="copyStealthCode()" title="Click to copy">// UNLOCK WALLET...</div>
+          <div style="font-size:8px;color:rgba(0,255,65,.2);margin-top:6px;letter-spacing:1px">// CLICK TO COPY · SHARE TO RECEIVE STEALTH PAYMENTS</div>
+        </div>
+        <div class="stealth-section" style="border-top:1px solid rgba(0,255,65,.06)">
+          <div class="stealth-section-title">SEND STEALTH</div>
+          <div style="margin-bottom:8px">
+            <div class="form-lbl">RECIPIENT STEALTH CODE</div>
+            <input class="form-input" id="stealth-send-code" placeholder="stealth:02abc...">
+          </div>
+          <div style="margin-bottom:8px">
+            <div class="form-lbl">AMOUNT (BCH)</div>
+            <input class="form-input" id="stealth-send-amount" type="number" step="0.00000001" min="0" placeholder="0.00000000">
+          </div>
+          <div id="stealth-send-error" class="send-error"></div>
+          <button class="broadcast-btn" id="stealth-send-btn" onclick="sendStealth()">STEALTH SEND →</button>
+        </div>
+        <div class="stealth-section" style="border-top:1px solid rgba(0,255,65,.06)">
+          <div class="stealth-section-title">RECEIVED <span id="stealth-rx-count">0</span></div>
+          <div id="stealth-rx-list">
+            <div class="empty-state" style="padding:16px">// NO STEALTH PAYMENTS RECEIVED YET</div>
+          </div>
+          <button class="stealth-scan-btn" onclick="stealthScanChain()">SCAN CHAIN (FALLBACK)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS OVERLAY -->
+    <div class="success-overlay" id="success-overlay">
+      <div class="success-icon">✓</div>
+      <div class="success-title">// TX BROADCAST</div>
+      <div style="font-size:9px;color:rgba(0,255,65,.4);letter-spacing:1px">TRANSACTION ID</div>
+      <div class="success-txid" id="success-txid"></div>
+      <button class="auth-btn" onclick="closeSendSuccess()">← BACK TO WALLET</button>
+    </div>
+
+    <!-- WC QR OVERLAY -->
+    <div id="wc-overlay" style="display:none;position:absolute;inset:0;z-index:100;background:rgba(0,0,0,.95);flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px">
+      <div style="font-family:'Orbitron',monospace;font-size:14px;color:#3b82f6;letter-spacing:2px">⛓ WALLETCONNECT</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px">SCAN WITH YOUR BCH WALLET</div>
+      <canvas id="wc-qr" style="border-radius:8px"></canvas>
+      <div style="font-size:9px;color:rgba(255,255,255,.3)">Cashonize · Paytaca · Zapit</div>
+      <button class="auth-btn auth-btn-secondary" onclick="cancelWc()" style="margin-top:8px;max-width:200px">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<script src="ledger.js"></script>
+<script>
+(function() {
+  const statuses = ['BOOT 0penw0rld OS...','CONNECTING FULCRUM...','LOADING BCH KEYS...','WALLET READY'];
+  let si = 0;
+  const statusEl = document.getElementById('loader-status');
+  const iv = setInterval(() => {
+    if (si < statuses.length) { statusEl.innerHTML = statuses[si] + '<span class="blink">_</span>'; si++; }
+    else clearInterval(iv);
+  }, 480);
+  setTimeout(() => {
+    document.getElementById('loading').style.transition = 'opacity .5s';
+    document.getElementById('loading').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('loading').style.display = 'none';
+      if (typeof window._walletBoot === 'function') window._walletBoot();
+      else document.getElementById('auth-import').style.display = 'flex';
+    }, 500);
+  }, 2200);
+})();
+</script>
+
+<script type="module">
+import { secp256k1, schnorr } from 'https://esm.sh/@noble/curves@1.8.1/secp256k1';
+import { hmac }       from 'https://esm.sh/@noble/hashes@1.7.1/hmac';
+import { sha256 }     from 'https://esm.sh/@noble/hashes@1.7.1/sha256';
+import { sha512 }     from 'https://esm.sh/@noble/hashes@1.7.1/sha512';
+import { ripemd160 }  from 'https://esm.sh/@noble/hashes@1.7.1/ripemd160';
+import QRCode         from 'https://esm.sh/qrcode@1.5.4';
+
+// ── Utils ──────────────────────────────────────────
+const b2h = b => Array.from(b).map(x => x.toString(16).padStart(2,'0')).join('');
+const h2b = h => new Uint8Array(h.match(/.{2}/g).map(b => parseInt(b,16)));
+const concat = (...a) => { const t = new Uint8Array(a.reduce((s,x)=>s+x.length,0)); let o=0; for(const x of a){t.set(x,o);o+=x.length;} return t; };
+const utf8   = s => new TextEncoder().encode(s);
+const rand   = n => crypto.getRandomValues(new Uint8Array(n));
+const dsha256 = d => sha256(sha256(d));
+
+// ── WalletConnect v2 ──────────────────────────────
+let _wcClient = null, _wcSession = null, _wcMode = false;
+
+async function _initWC() {
+  if (_wcClient) return _wcClient;
+  const mod = await import('https://esm.sh/@walletconnect/sign-client@2.17.5');
+  const SignClient = mod.SignClient || mod.default;
+  _wcClient = await SignClient.init({
+    projectId: '082bda1ddb7c62dc3aee194b5e8dc8f9',
+    metadata: {
+      name: '0penw0rld',
+      description: 'BCH Self-Custody · Privacy · Freedom',
+      url: 'https://0penw0rld.com',
+      icons: ['https://0penw0rld.com/icons/icon-180.png']
+    }
+  });
+  return _wcClient;
+}
+
+async function connectWalletConnect() {
+  const errEl = document.getElementById('wc-error') || document.getElementById('wc-error-import');
+  errEl.textContent = '';
+  const btns = document.querySelectorAll('[onclick="connectWalletConnect()"]');
+  btns.forEach(b => { b.textContent = '⛓ LOADING SDK...'; b.disabled = true; });
+  try {
+    const client = await _initWC();
+    btns.forEach(b => { b.textContent = '⛓ PAIRING...'; });
+
+    const { uri, approval } = await client.connect({
+      requiredNamespaces: {
+        bch: {
+          chains: ['bch:bitcoincash'],
+          methods: ['bch_getAddresses', 'bch_signTransaction', 'bch_signMessage'],
+          events: ['addressesChanged']
+        }
+      }
+    });
+
+    if (uri) {
+      const overlay = document.getElementById('wc-overlay');
+      overlay.style.display = 'flex';
+      await QRCode.toCanvas(document.getElementById('wc-qr'), uri, {
+        width: 240, margin: 2,
+        color: { dark: '#000000', light: '#ffffff' },
+      });
+    }
+
+    _wcSession = await approval();
+    document.getElementById('wc-overlay').style.display = 'none';
+
+    const addresses = await client.request({
+      chainId: 'bch:bitcoincash',
+      topic: _wcSession.topic,
+      request: { method: 'bch_getAddresses', params: {} },
+    });
+    _bchAddr = addresses[0];
+    _bchHash160 = cashAddrToHash20(_bchAddr);
+    _myScript = b2h(p2pkhScript(_bchHash160));
+    _wcMode = true;
+    localStorage.setItem('00_wc_session', 'true');
+
+    _wcSubscribe(client);
+    await _wcBoot();
+  } catch(e) {
+    document.getElementById('wc-overlay').style.display = 'none';
+    errEl.textContent = '// ' + (e.message || 'connection rejected');
+    btns.forEach(b => { b.textContent = '⛓ WALLETCONNECT'; b.disabled = false; });
+  }
+}
+
+function _wcSubscribe(client) {
+  client.on('session_delete', () => {
+    _wcSession = null; _wcMode = false;
+    localStorage.removeItem('00_wc_session');
+    window.location.reload();
+  });
+  client.on('session_event', (args) => {
+    if (args.params?.event?.name === 'addressesChanged') {
+      _bchAddr = args.params.event.data[0];
+      _bchHash160 = cashAddrToHash20(_bchAddr);
+      _myScript = b2h(p2pkhScript(_bchHash160));
+      refreshBalance();
+    }
+  });
+}
+
+async function _wcBoot() {
+  document.getElementById('auth-import').style.display = 'none';
+  document.getElementById('auth-unlock').style.display = 'none';
+  document.getElementById('main-view').style.display = 'flex';
+  document.getElementById('wc-banner').style.display = 'block';
+  document.getElementById('balance-hero').style.display = 'none';
+  setInterval(updateClock, 1000); updateClock();
+  try {
+    await _fvConnect();
+    await refreshBalance();
+  } catch(e) { _fulcrumStatus('CONNECT FAILED', false); }
+}
+
+async function _restoreWcSession() {
+  try {
+    const client = await _initWC();
+    if (client.session.length) {
+      const lastKey = client.session.keys[client.session.keys.length - 1];
+      _wcSession = client.session.get(lastKey);
+      const addresses = await client.request({
+        chainId: 'bch:bitcoincash',
+        topic: _wcSession.topic,
+        request: { method: 'bch_getAddresses', params: {} },
+      });
+      _bchAddr = addresses[0];
+      _bchHash160 = cashAddrToHash20(_bchAddr);
+      _myScript = b2h(p2pkhScript(_bchHash160));
+      _wcMode = true;
+      _wcSubscribe(client);
+      await _wcBoot();
+      return true;
+    }
+  } catch(e) { console.error('[WC] restore failed:', e); }
+  localStorage.removeItem('00_wc_session');
+  return false;
+}
+
+async function wcDisconnect() {
+  if (_wcClient && _wcSession) {
+    try { await _wcClient.disconnect({ topic: _wcSession.topic, reason: { code: 6000, message: 'USER_DISCONNECTED' } }); } catch {}
+  }
+  _wcSession = null; _wcMode = false; _wcClient = null;
+  localStorage.removeItem('00_wc_session');
+}
+
+function cancelWc() {
+  document.getElementById('wc-overlay').style.display = 'none';
+  const btns = document.querySelectorAll('[onclick="connectWalletConnect()"]');
+  btns.forEach(b => { b.textContent = '⛓ WALLETCONNECT'; b.disabled = false; });
+}
+
+function u32LE(n) { const b = new Uint8Array(4); new DataView(b.buffer).setUint32(0,n,true); return b; }
+function u64LE(n) { const b = new Uint8Array(8); const v = new DataView(b.buffer); v.setUint32(0,n>>>0,true); v.setUint32(4,Math.floor(n/0x100000000)>>>0,true); return b; }
+function writeVarint(n) {
+  if (n < 0xfd) return new Uint8Array([n]);
+  if (n < 0x10000) return concat(new Uint8Array([0xfd]), new Uint8Array([n&0xff,(n>>8)&0xff]));
+  return concat(new Uint8Array([0xfe]), u32LE(n));
+}
+
+// ── BIP32 / BIP44 ──────────────────────────────────
+const N_SECP = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141n;
+function bip32Master(seed) {
+  const I = hmac(sha512, utf8('Bitcoin seed'), seed);
+  return { priv: I.slice(0,32), chain: I.slice(32) };
+}
+function _bip32Child(priv, chain, idx, hard) {
+  const ib = new Uint8Array([idx>>>24,(idx>>>16)&0xff,(idx>>>8)&0xff,idx&0xff]);
+  const data = hard ? concat(new Uint8Array([0]),priv,ib) : concat(secp256k1.getPublicKey(priv,true),ib);
+  const I = hmac(sha512, chain, data);
+  const child = ((BigInt('0x'+b2h(I.slice(0,32)))+BigInt('0x'+b2h(priv)))%N_SECP).toString(16).padStart(64,'0');
+  return { priv: h2b(child), chain: I.slice(32) };
+}
+function deriveAccountNode(seed64) {
+  // m/44'/145'/0' — account-level node (can derive all child addresses)
+  let n = bip32Master(seed64);
+  n = _bip32Child(n.priv, n.chain, 0x8000002c, true);  // 44'
+  n = _bip32Child(n.priv, n.chain, 0x80000091, true);  // 145' (BCH)
+  n = _bip32Child(n.priv, n.chain, 0x80000000, true);  // 0' (account)
+  return n;
+}
+function deriveBchPriv(seed64) {
+  // m/44'/145'/0'/0/0
+  const acct = deriveAccountNode(seed64);
+  let n = _bip32Child(acct.priv, acct.chain, 0, false);  // 0 (external)
+  n = _bip32Child(n.priv, n.chain, 0, false);             // 0 (address index)
+  return { priv: n.priv, acctPriv: acct.priv, acctChain: acct.chain };
+}
+
+// ── BIP39 mnemonic → seed ──────────────────────────
+async function mnemonicToSeed(words) {
+  const normalized = words.trim().toLowerCase().replace(/\s+/g,' ');
+  const key = await crypto.subtle.importKey('raw', utf8(normalized), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', hash:'SHA-512', salt:utf8('mnemonic'), iterations:2048 }, key, 512);
+  return new Uint8Array(bits);
+}
+
+// ── CashAddr ───────────────────────────────────────
+const _caCharset = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+function _caPolymod(v) {
+  const G = [0x98f2bc8e61n, 0x79b76d99e2n, 0xf33e5fb3c4n, 0xae2eabe2a8n, 0x1e4f43e470n];
+  let c = 1n;
+  for (const d of v) {
+    const c0 = c >> 35n;
+    c = ((c & 0x07ffffffffn) << 5n) ^ BigInt(d);
+    if (c0 & 1n) c ^= G[0]; if (c0 & 2n) c ^= G[1];
+    if (c0 & 4n) c ^= G[2]; if (c0 & 8n) c ^= G[3]; if (c0 & 16n) c ^= G[4];
+  }
+  return c ^ 1n;
+}
+function pubHashToCashAddr(hash20) {
+  const payload = new Uint8Array([0x00, ...hash20]);
+  const d5 = []; let acc = 0, bits = 0;
+  for (const b of payload) { acc = (acc<<8)|b; bits+=8; while(bits>=5){bits-=5;d5.push((acc>>bits)&31);} }
+  if (bits > 0) d5.push((acc<<(5-bits))&31);
+  const prefix = 'bitcoincash';
+  const pe = [...prefix.split('').map(c=>c.charCodeAt(0)&31), 0];
+  const mod = _caPolymod([...pe, ...d5, 0,0,0,0,0,0,0,0]);
+  const cs = []; for (let i=7;i>=0;i--) cs.push(Number((mod>>(BigInt(i)*5n))&31n));
+  return 'bitcoincash:' + [...d5,...cs].map(v=>_caCharset[v]).join('');
+}
+function cashAddrToHash20(addr) {
+  const raw = addr.toLowerCase().replace(/^bitcoincash:/,'');
+  const d5 = raw.split('').map(c => _caCharset.indexOf(c));
+  if (d5.includes(-1)) throw new Error('invalid cashaddr');
+  const payload5 = d5.slice(0, -8);
+  const bytes = []; let acc = 0, bits = 0;
+  for (const v of payload5) { acc=(acc<<5)|v; bits+=5; while(bits>=8){bits-=8;bytes.push((acc>>bits)&0xff);} }
+  return new Uint8Array(bytes.slice(1)); // skip version byte
+}
+function privToBchAddr(priv32) {
+  const pub = secp256k1.getPublicKey(priv32, true);
+  return pubHashToCashAddr(Array.from(ripemd160(sha256(pub))));
+}
+// BIP32 unhardened child derivation (for xpub scanning)
+function bip32Child(parentPub, parentChain, index) {
+  const idxB = new Uint8Array([index >>> 24, (index >>> 16) & 0xff, (index >>> 8) & 0xff, index & 0xff]);
+  const I = hmac(sha512, parentChain, concat(parentPub, idxB));
+  const childPub = secp256k1.ProjectivePoint.fromHex(parentPub)
+    .add(secp256k1.ProjectivePoint.BASE.multiply(BigInt('0x' + b2h(I.slice(0, 32)))))
+    .toRawBytes(true);
+  return { pubKey: childPub, chainCode: I.slice(32) };
+}
+function ledgerAddrPath(changeIdx, addrIdx) {
+  return [0x8000002c, 0x80000091, 0x80000000, changeIdx, addrIdx];
+}
+
+// ── Vault ──────────────────────────────────────────
+async function _pbkdf2Key(pass, salt) {
+  const km = await crypto.subtle.importKey('raw', utf8(pass), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name:'PBKDF2', hash:'SHA-256', salt, iterations:200000 }, km, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']);
+}
+async function encryptVault(data, pass) {
+  const salt = rand(16), iv = rand(12);
+  const key = await _pbkdf2Key(pass, salt);
+  const ct = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, utf8(JSON.stringify(data)));
+  return JSON.stringify({ v:1, salt:b2h(salt), iv:b2h(iv), data:b2h(new Uint8Array(ct)) });
+}
+async function decryptVault(enc, pass) {
+  const { salt, iv, data } = JSON.parse(enc);
+  const key = await _pbkdf2Key(pass, h2b(salt));
+  const pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv:h2b(iv) }, key, h2b(data));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+// ── Fulcrum / Electrum WS ──────────────────────────
+const _FV = JSON.parse(localStorage.getItem('00_ep_fulcrum') || 'null') || ['wss://bch.imaginary.cash:50004','wss://electroncash.de:50004','wss://bch.loping.net:50004'];
+let _fvWs = null, _fvId = 0, _fvIdx = 0;
+const _fvPending = new Map();
+
+function _fulcrumStatus(label, ok) {
+  const dot = document.getElementById('fulcrum-dot');
+  const lbl = document.getElementById('fulcrum-label');
+  const srv = document.getElementById('fulcrum-server');
+  if (dot) { dot.className = 'fulcrum-dot' + (ok === true ? ' on' : ok === false ? ' err' : ''); }
+  if (lbl) lbl.textContent = label;
+  if (srv && ok === true) srv.textContent = _FV[_fvIdx].replace('wss://','').split(':')[0];
+}
+
+async function _fvConnect() {
+  return new Promise((res, rej) => {
+    _fulcrumStatus('CONNECTING...', null);
+    const url = _FV[_fvIdx % _FV.length];
+    const ws = new WebSocket(url);
+    const t = setTimeout(() => { ws.close(); rej(new Error('timeout')); }, 8000);
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ id: ++_fvId, method:'server.version', params:['00wallet','1.4'] }));
+    };
+    ws.onmessage = e => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (!_fvPending.has(msg.id)) return;
+        const [resolve, reject] = _fvPending.get(msg.id);
+        _fvPending.delete(msg.id);
+        if (msg.error) reject(new Error(msg.error.message || JSON.stringify(msg.error)));
+        else resolve(msg.result);
+      } catch {}
+    };
+    ws.onopen = () => {
+      clearTimeout(t);
+      _fvWs = ws;
+      _fulcrumStatus('CONNECTED', true);
+      const id = ++_fvId;
+      _fvPending.set(id, [() => res(ws), rej]);
+      ws.send(JSON.stringify({ id, method:'server.version', params:['00wallet','1.4'] }));
+    };
+    ws.onclose = () => { clearTimeout(t); _fvWs = null; _fulcrumStatus('DISCONNECTED', false); };
+    ws.onerror = () => { clearTimeout(t); _fvWs = null; _fulcrumStatus('ERROR', false); rej(new Error('ws error')); };
+  });
+}
+async function _fvCall(method, params) {
+  if (!_fvWs || _fvWs.readyState !== WebSocket.OPEN) {
+    _fvIdx = (_fvIdx + 1) % _FV.length;
+    await _fvConnect();
+  }
+  return new Promise((res, rej) => {
+    const id = ++_fvId;
+    _fvPending.set(id, [res, rej]);
+    _fvWs.send(JSON.stringify({ id, method, params }));
+    setTimeout(() => { if (_fvPending.has(id)) { _fvPending.delete(id); rej(new Error('timeout')); } }, 15000);
+  });
+}
+function _addrSH(addr) {
+  const h = cashAddrToHash20(addr);
+  const script = new Uint8Array([0x76, 0xa9, 0x14, ...h, 0x88, 0xac]);
+  return b2h(sha256(script).reverse());
+}
+async function bcGetUTXOs(addr) {
+  const sh = _addrSH(addr);
+  const res = await _fvCall('blockchain.scripthash.listunspent', [sh]);
+  return (res || []).map(u => ({ txid: u.tx_hash, vout: u.tx_pos, value: u.value, height: u.height }));
+}
+async function bcGetHistory(addr) {
+  const sh = _addrSH(addr);
+  return await _fvCall('blockchain.scripthash.get_history', [sh]) || [];
+}
+async function bcGetTxHex(txid) {
+  try { return await _fvCall('blockchain.transaction.get', [txid]); } catch { return null; }
+}
+async function bcBroadcast(hexTx) {
+  return await _fvCall('blockchain.transaction.broadcast', [hexTx]);
+}
+
+// ── BCH Transaction Builder ────────────────────────
+function p2pkhScript(hash20) {
+  return concat(new Uint8Array([0x76, 0xa9, 0x14]), hash20, new Uint8Array([0x88, 0xac]));
+}
+function bchSighash(version, locktime, inputs, outputs, i, utxoScript, utxoValue) {
+  const prevouts = concat(...inputs.map(x => concat(x.txidLE, u32LE(x.vout))));
+  const seqs     = concat(...inputs.map(x => u32LE(x.sequence)));
+  const outsData = concat(...outputs.map(o => concat(u64LE(o.value), writeVarint(o.script.length), o.script)));
+  const inp = inputs[i];
+  const pre = concat(
+    u32LE(version), dsha256(prevouts), dsha256(seqs),
+    inp.txidLE, u32LE(inp.vout),
+    writeVarint(utxoScript.length), utxoScript,
+    u64LE(utxoValue), u32LE(inp.sequence),
+    dsha256(outsData), u32LE(locktime),
+    u32LE(0x41)
+  );
+  return dsha256(pre);
+}
+function serializeTx(version, locktime, inputs, outputs) {
+  return concat(
+    u32LE(version), writeVarint(inputs.length),
+    ...inputs.flatMap(inp => [inp.txidLE, u32LE(inp.vout), writeVarint(inp.scriptSig.length), inp.scriptSig, u32LE(inp.sequence)]),
+    writeVarint(outputs.length),
+    ...outputs.flatMap(o => [u64LE(o.value), writeVarint(o.script.length), o.script]),
+    u32LE(locktime)
+  );
+}
+function estimateTxSize(nIn, nOut) { return 10 + nIn * 148 + nOut * 34; }
+
+// ── Raw tx parser (for history direction) ──────────
+function parseTxHex(hex) {
+  try {
+    const b = h2b(hex); let p = 0;
+    const rB = n => { const s = b.slice(p, p+n); p+=n; return s; };
+    const rLE = n => { let r = 0; for(let i=0;i<n;i++) r |= b[p+i] << (i*8); p+=n; return r >>> 0; };
+    const rVI = () => { const f = b[p++]; if(f<0xfd)return f; if(f===0xfd)return rLE(2); if(f===0xfe)return rLE(4); return rLE(8); };
+    const rLE8 = () => { let lo = rLE(4), hi = rLE(4); return hi * 0x100000000 + lo; };
+    rLE(4); // version
+    const inCount = rVI();
+    for (let i=0;i<inCount;i++) { rB(32); rLE(4); rB(rVI()); rLE(4); }
+    const outCount = rVI();
+    const outputs = [];
+    for (let i=0;i<outCount;i++) {
+      const value = rLE8();
+      const script = b2h(rB(rVI()));
+      outputs.push({ value, script });
+    }
+    return outputs;
+  } catch { return null; }
+}
+
+// ── State ──────────────────────────────────────────
+let _profile = null;
+let _bchPriv32 = null, _bchPub33 = null, _bchHash160 = null, _bchAddr = '', _myScript = '';
+let _ledgerDevice = null, _ledgerAddresses = [], _ledgerChangePath = null, _ledgerChangeHash160 = null, _ledgerChangePub33 = null; // [{pubKey, addr, path5}]
+let _hdAddresses = []; // [{priv, pubKey, addr, path}] — scanned HD addresses for software wallets
+let _hdChangePriv = null, _hdChangeHash160 = null; // change address for HD software wallets
+let _utxos = [], _history = [], _balance = 0, _feeRate = 1.0;
+
+// ── Stealth State ─────────────────────────────────
+let _stealthScanPriv = null, _stealthScanPub = null;
+let _stealthSpendPriv = null, _stealthSpendPub = null;
+let _stealthNostrPub = null; // x-only 32-byte hex for Nostr DMs
+let _stealthUtxos = [];      // [{txid, vout, value, priv, pub, addr, from, ts}]
+
+// ── Nostr (stealth notifications) ─────────────────
+const _RELAYS = JSON.parse(localStorage.getItem('00_ep_relays') || 'null') ||
+  ['wss://relay.damus.io','wss://nos.lol','wss://relay.nostr.band'];
+let _nostrSockets = [], _nostrConnected = false;
+const _seenEvents = new Set();
+
+function nostrConnect() {
+  document.getElementById('nostr-bar').style.display = 'flex';
+  document.getElementById('nostr-label').textContent = 'NOSTR: connecting...';
+  _nostrSockets = [];
+  for (const url of _RELAYS) _connectRelay(url);
+}
+function _connectRelay(url) {
+  const entry = { url, ws: null, connected: false };
+  _nostrSockets.push(entry);
+  const ws = new WebSocket(url);
+  entry.ws = ws;
+  ws.onopen = () => {
+    entry.connected = true; _nostrConnected = true;
+    const names = _nostrSockets.filter(s => s.connected).map(s => new URL(s.url).hostname);
+    document.getElementById('nostr-dot').classList.add('on');
+    document.getElementById('nostr-label').textContent = 'NOSTR: ' + names.join(', ');
+    _subscribeStealthDMs(ws);
+  };
+  ws.onmessage = e => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg[0] === 'EVENT' && msg[2]) {
+        if (_seenEvents.has(msg[2].id)) return;
+        _seenEvents.add(msg[2].id);
+        if (_seenEvents.size > 5000) { const a = [..._seenEvents]; _seenEvents.clear(); a.slice(-2500).forEach(x => _seenEvents.add(x)); }
+        handleStealthEvent(msg[2]);
+      }
+    } catch {}
+  };
+  ws.onclose = () => {
+    entry.connected = false;
+    _nostrConnected = _nostrSockets.some(s => s.connected);
+    if (_nostrConnected) {
+      const names = _nostrSockets.filter(s => s.connected).map(s => new URL(s.url).hostname);
+      document.getElementById('nostr-label').textContent = 'NOSTR: ' + names.join(', ');
+    } else {
+      document.getElementById('nostr-dot').classList.remove('on');
+      document.getElementById('nostr-label').textContent = 'NOSTR: disconnected';
+    }
+    const idx = _nostrSockets.indexOf(entry);
+    if (idx !== -1) _nostrSockets.splice(idx, 1);
+    setTimeout(() => _connectRelay(url), 5000);
+  };
+  ws.onerror = () => ws.close();
+}
+function _subscribeStealthDMs(ws) {
+  if (!ws || ws.readyState !== 1 || !_stealthNostrPub) return;
+  const now = Math.floor(Date.now() / 1000);
+  ws.send(JSON.stringify(['REQ', 'stealth-dm', {
+    kinds: [4],
+    '#p': [_stealthNostrPub],
+    since: now - 86400, // last 24h
+  }]));
+}
+function nostrPublish(event) {
+  for (const s of _nostrSockets) {
+    if (s.ws && s.ws.readyState === 1) s.ws.send(JSON.stringify(['EVENT', event]));
+  }
+}
+
+// ── NIP-04 ────────────────────────────────────────
+async function nip04Encrypt(myPriv, theirPubHex, msg) {
+  const shared = secp256k1.getSharedSecret(myPriv, h2b('02' + theirPubHex)).slice(1, 33);
+  const iv = rand(16);
+  const key = await crypto.subtle.importKey('raw', shared, { name: 'AES-CBC' }, false, ['encrypt']);
+  const ct = await crypto.subtle.encrypt({ name: 'AES-CBC', iv }, key, utf8(msg));
+  return btoa(String.fromCharCode(...new Uint8Array(ct))) + '?iv=' + btoa(String.fromCharCode(...iv));
+}
+async function nip04Decrypt(myPriv, senderPubHex, encContent) {
+  try {
+    const [ctB64, ivB64] = encContent.split('?iv=');
+    const ct = Uint8Array.from(atob(ctB64), c => c.charCodeAt(0));
+    const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
+    const shared = secp256k1.getSharedSecret(myPriv, h2b('02' + senderPubHex)).slice(1, 33);
+    const key = await crypto.subtle.importKey('raw', shared, { name: 'AES-CBC' }, false, ['decrypt']);
+    const pt = await crypto.subtle.decrypt({ name: 'AES-CBC', iv }, key, ct);
+    return new TextDecoder().decode(pt);
+  } catch { return null; }
+}
+async function makeNostrEvent(privBytes, kind, content, tags = []) {
+  const pub = b2h(secp256k1.getPublicKey(privBytes, true).slice(1));
+  const created_at = Math.floor(Date.now() / 1000);
+  const idHash = sha256(utf8(JSON.stringify([0, pub, created_at, kind, tags, content])));
+  const sig = b2h(await schnorr.sign(idHash, privBytes));
+  return { id: b2h(idHash), pubkey: pub, created_at, kind, tags, content, sig };
+}
+
+// ── Stealth Crypto ────────────────────────────────
+function stealthDerive(senderPriv, senderPub, recipScanPub, recipSpendPub, outpointBytes) {
+  // ECDH: sender uses their privkey + recipient scan pub, or receiver uses scan priv + sender pub
+  const sharedPoint = senderPriv
+    ? secp256k1.getSharedSecret(senderPriv, recipScanPub)  // sender side
+    : secp256k1.getSharedSecret(_stealthScanPriv, senderPub); // receiver side
+  const sharedX = sharedPoint.slice(1, 33);
+  const c = sha256(concat(sha256(sharedX), outpointBytes));
+  const cBig = BigInt('0x' + b2h(c)) % N_SECP;
+  // P = B_spend + c*G
+  const spendPoint = secp256k1.ProjectivePoint.fromHex(recipSpendPub);
+  const tweakPoint = secp256k1.ProjectivePoint.BASE.multiply(cBig);
+  const stealthPoint = spendPoint.add(tweakPoint);
+  const stealthPub = stealthPoint.toRawBytes(true);
+  const stealthAddr = pubHashToCashAddr(Array.from(ripemd160(sha256(stealthPub))));
+  return { addr: stealthAddr, pub: stealthPub, cBig };
+}
+function stealthSpendingKey(spendPriv, cBig) {
+  const bBig = BigInt('0x' + b2h(spendPriv));
+  const pBig = (bBig + cBig) % N_SECP;
+  return h2b(pBig.toString(16).padStart(64, '0'));
+}
+
+// Parse raw TX to extract first input pubkey + outpoint
+function parseTxInputPubkey(hex) {
+  try {
+    const b = h2b(hex); let p = 0;
+    const rB = n => { const s = b.slice(p, p + n); p += n; return s; };
+    const rLE = () => { let r = 0; for (let i = 0; i < 4; i++) r |= b[p + i] << (i * 8); p += 4; return r >>> 0; };
+    const rVI = () => { const f = b[p++]; if (f < 0xfd) return f; if (f === 0xfd) { const v = b[p] | (b[p+1]<<8); p+=2; return v; } return 0; };
+    rLE(); // version
+    const inCount = rVI();
+    if (inCount < 1) return null;
+    // First input: txid (32 LE) + vout (4 LE)
+    const txidLE = rB(32);
+    const vout = rLE();
+    const outpoint = concat(txidLE, u32LE(vout));
+    // scriptSig
+    const ssLen = rVI();
+    const scriptSig = rB(ssLen);
+    // Extract pubkey from P2PKH scriptSig: <sigLen> <sig> <pubLen> <pub33>
+    // The pubkey is the last push (33 bytes for compressed)
+    let sp = 0;
+    const sigLen = scriptSig[sp++];
+    sp += sigLen; // skip sig
+    const pubLen = scriptSig[sp++];
+    if (pubLen !== 33 && pubLen !== 65) return null;
+    const pubkey = scriptSig.slice(sp, sp + pubLen);
+    return { pubkey, outpoint, txidLE, vout };
+  } catch { return null; }
+}
+
+// Handle incoming stealth Nostr DM
+async function handleStealthEvent(ev) {
+  if (ev.kind !== 4) return;
+  const pt = await nip04Decrypt(_stealthScanPriv, ev.pubkey, ev.content);
+  if (!pt) return;
+  try {
+    const data = JSON.parse(pt);
+    if (data.type !== 'stealth' || !data.txid) return;
+    // Check if already known
+    if (_stealthUtxos.some(u => u.txid === data.txid)) return;
+    // Fetch TX from Fulcrum
+    const rawHex = await bcGetTxHex(data.txid);
+    if (!rawHex) return;
+    const input = parseTxInputPubkey(rawHex);
+    if (!input) return;
+    // Derive stealth address
+    const { addr, pub, cBig } = stealthDerive(null, input.pubkey, _stealthScanPub, _stealthSpendPub, input.outpoint);
+    // Check outputs for match
+    const outputs = parseTxHex(rawHex);
+    if (!outputs) return;
+    const expectedScript = b2h(p2pkhScript(ripemd160(sha256(pub))));
+    const matchIdx = outputs.findIndex(o => o.script === expectedScript);
+    if (matchIdx === -1) return;
+    // Derive spending key
+    const priv = stealthSpendingKey(_stealthSpendPriv, cBig);
+    const stealthEntry = {
+      txid: data.txid, vout: matchIdx, value: outputs[matchIdx].value,
+      priv: b2h(priv), pub: b2h(pub), addr,
+      from: ev.pubkey.slice(0, 12) + '...', ts: ev.created_at,
+    };
+    _stealthUtxos.push(stealthEntry);
+    _saveStealthUtxos();
+    _registerStealthAddresses();
+    refreshBalance();
+    renderStealth();
+    console.log('[Stealth] received', (stealthEntry.value / 1e8).toFixed(8), 'BCH at', addr);
+  } catch (e) { console.error('[Stealth] event error:', e); }
+}
+
+// Persist stealth UTXOs
+function _saveStealthUtxos() {
+  localStorage.setItem('00stealth_utxos', JSON.stringify(_stealthUtxos));
+}
+function _loadStealthUtxos() {
+  try { _stealthUtxos = JSON.parse(localStorage.getItem('00stealth_utxos') || '[]'); } catch { _stealthUtxos = []; }
+}
+// Register stealth addresses into _hdAddresses so they're spendable via normal send
+function _registerStealthAddresses() {
+  for (const su of _stealthUtxos) {
+    if (_hdAddresses.some(a => a.addr === su.addr)) continue;
+    _hdAddresses.push({
+      priv: h2b(su.priv), pubKey: h2b(su.pub), addr: su.addr, path: 'stealth',
+    });
+  }
+}
+
+// ── Stealth Send ──────────────────────────────────
+async function sendStealth() {
+  if (_sendInProgress) return;
+  const codeRaw = document.getElementById('stealth-send-code').value.trim().replace(/^stealth:/i, '');
+  const amtBCH = parseFloat(document.getElementById('stealth-send-amount').value) || 0;
+  const amtSats = Math.round(amtBCH * 1e8);
+  const errEl = document.getElementById('stealth-send-error');
+  errEl.textContent = '';
+
+  // Parse stealth code: 66 bytes hex = scan_pub(33) + spend_pub(33)
+  if (codeRaw.length !== 132) { errEl.textContent = '// invalid stealth code (need 132 hex chars)'; return; }
+  let recipScanPub, recipSpendPub;
+  try {
+    recipScanPub = h2b(codeRaw.slice(0, 66));
+    recipSpendPub = h2b(codeRaw.slice(66));
+    // Validate they're valid points
+    secp256k1.ProjectivePoint.fromHex(recipScanPub);
+    secp256k1.ProjectivePoint.fromHex(recipSpendPub);
+  } catch { errEl.textContent = '// invalid stealth code (bad pubkeys)'; return; }
+
+  if (amtSats < 546) { errEl.textContent = '// minimum 546 sats'; return; }
+  if (!_utxos.length) { errEl.textContent = '// no UTXOs — refresh balance'; return; }
+
+  // Select UTXOs (greedy)
+  const sorted = [..._utxos].sort((a, b) => b.value - a.value);
+  let selected = [], total = 0;
+  for (const u of sorted) {
+    selected.push(u); total += u.value;
+    const fee = Math.ceil(estimateTxSize(selected.length, 2) * _feeRate);
+    if (total >= amtSats + fee) break;
+  }
+  const fee = Math.ceil(estimateTxSize(selected.length, 2) * _feeRate);
+  if (total < amtSats + fee) { errEl.textContent = '// insufficient balance'; return; }
+
+  const btn = document.getElementById('stealth-send-btn');
+  _sendInProgress = true;
+  btn.disabled = true; btn.textContent = '// DERIVING...';
+
+  try {
+    // Use first input's privkey for ECDH
+    const firstUtxo = selected[0];
+    const senderPriv = firstUtxo._priv || _bchPriv32;
+    const senderPub = firstUtxo._pubKey || _bchPub33;
+    // Outpoint = txid_LE + vout_LE
+    const outpoint = concat(h2b(firstUtxo.txid).reverse(), u32LE(firstUtxo.vout));
+
+    // Derive one-time stealth address
+    const { addr, pub } = stealthDerive(senderPriv, null, recipScanPub, recipSpendPub, outpoint);
+    const stealthHash = ripemd160(sha256(pub));
+    const stealthScript = p2pkhScript(stealthHash);
+
+    btn.textContent = '// SIGNING...';
+
+    // Build TX
+    const change = total - amtSats - fee;
+    const outputs = [{ value: amtSats, script: stealthScript }];
+    const changeHash = _hdChangeHash160 || _bchHash160;
+    if (change >= 546) outputs.push({ value: change, script: p2pkhScript(changeHash) });
+
+    const inputs = selected.map(u => ({
+      txidLE: h2b(u.txid).reverse(), vout: u.vout, value: u.value,
+      sequence: 0xffffffff, scriptSig: new Uint8Array(0),
+      _priv: u._priv, _pubKey: u._pubKey,
+    }));
+    const signedInputs = inputs.map((inp, i) => {
+      const priv = inp._priv || _bchPriv32;
+      const pub = inp._pubKey || _bchPub33;
+      const script = p2pkhScript(ripemd160(sha256(pub)));
+      const sighash = bchSighash(1, 0, inputs, outputs, i, script, inp.value);
+      const sig = secp256k1.sign(sighash, priv, { lowS: true });
+      const derSig = concat(sig.toDERRawBytes(), new Uint8Array([0x41]));
+      const scriptSig = concat(new Uint8Array([derSig.length]), derSig, new Uint8Array([pub.length]), pub);
+      return { ...inp, scriptSig };
+    });
+    const rawHex = b2h(serializeTx(1, 0, signedInputs, outputs));
+
+    btn.textContent = '// BROADCASTING...';
+    const txid = await bcBroadcast(rawHex);
+
+    // Send Nostr DM notification (ephemeral key for unlinkability)
+    btn.textContent = '// NOTIFYING...';
+    const ephPriv = rand(32);
+    const recipNostrPub = b2h(recipScanPub.slice(1)); // x-only
+    const payload = JSON.stringify({ type: 'stealth', txid });
+    const encrypted = await nip04Encrypt(ephPriv, recipNostrPub, payload);
+    const dmEvent = await makeNostrEvent(ephPriv, 4, encrypted, [['p', recipNostrPub]]);
+    nostrPublish(dmEvent);
+
+    // Success
+    document.getElementById('stealth-send-code').value = '';
+    document.getElementById('stealth-send-amount').value = '';
+    errEl.style.color = 'var(--green)';
+    errEl.textContent = '// SENT ' + amtBCH.toFixed(8) + ' BCH → ' + addr.slice(12, 24) + '...';
+    console.log('[Stealth] sent', amtBCH, 'BCH to', addr, 'txid:', txid);
+    setTimeout(() => { errEl.textContent = ''; errEl.style.color = ''; }, 8000);
+    setTimeout(refreshBalance, 3000);
+  } catch (e) {
+    errEl.textContent = '// stealth send failed: ' + e.message;
+  } finally {
+    _sendInProgress = false;
+    btn.disabled = false; btn.textContent = 'STEALTH SEND →';
+  }
+}
+
+// ── Stealth Chain Scan (fallback) ─────────────────
+async function stealthScanChain() {
+  const btn = document.querySelector('.stealth-scan-btn');
+  btn.textContent = '// SCANNING...'; btn.disabled = true;
+  try {
+    // Get all TXs from the main address history as scan candidates
+    const allAddrs = _hdAddresses.length > 0
+      ? _hdAddresses.map(a => a.addr)
+      : [_bchAddr];
+    const allHist = [];
+    for (const addr of allAddrs) {
+      const hist = await bcGetHistory(addr);
+      allHist.push(...hist.map(h => h.tx_hash));
+    }
+    // Also scan mempool TXs
+    const unique = [...new Set(allHist)];
+    let found = 0;
+    for (const txid of unique) {
+      if (_stealthUtxos.some(u => u.txid === txid)) continue;
+      const rawHex = await bcGetTxHex(txid);
+      if (!rawHex) continue;
+      const input = parseTxInputPubkey(rawHex);
+      if (!input) continue;
+      const { addr, pub, cBig } = stealthDerive(null, input.pubkey, _stealthScanPub, _stealthSpendPub, input.outpoint);
+      const outputs = parseTxHex(rawHex);
+      if (!outputs) continue;
+      const expectedScript = b2h(p2pkhScript(ripemd160(sha256(pub))));
+      const matchIdx = outputs.findIndex(o => o.script === expectedScript);
+      if (matchIdx === -1) continue;
+      const priv = stealthSpendingKey(_stealthSpendPriv, cBig);
+      _stealthUtxos.push({
+        txid, vout: matchIdx, value: outputs[matchIdx].value,
+        priv: b2h(priv), pub: b2h(pub), addr,
+        from: 'scan', ts: Math.floor(Date.now() / 1000),
+      });
+      found++;
+    }
+    if (found > 0) { _saveStealthUtxos(); renderStealth(); }
+    btn.textContent = found > 0 ? `// FOUND ${found} STEALTH TXS` : '// NO NEW STEALTH TXS FOUND';
+    setTimeout(() => { btn.textContent = 'SCAN CHAIN (FALLBACK)'; btn.disabled = false; }, 4000);
+  } catch (e) {
+    btn.textContent = '// SCAN ERROR: ' + e.message;
+    setTimeout(() => { btn.textContent = 'SCAN CHAIN (FALLBACK)'; btn.disabled = false; }, 4000);
+  }
+}
+
+// ── Stealth UI ────────────────────────────────────
+function renderStealth() {
+  // Stealth code
+  if (_stealthScanPub && _stealthSpendPub) {
+    document.getElementById('stealth-code').textContent = 'stealth:' + b2h(_stealthScanPub) + b2h(_stealthSpendPub);
+  }
+  // Received list
+  const list = document.getElementById('stealth-rx-list');
+  document.getElementById('stealth-rx-count').textContent = _stealthUtxos.length;
+  if (_stealthUtxos.length === 0) {
+    list.innerHTML = '<div class="empty-state" style="padding:16px">// NO STEALTH PAYMENTS RECEIVED YET</div>';
+    return;
+  }
+  list.innerHTML = _stealthUtxos.map(u => `
+    <div class="stealth-rx-item">
+      <span class="stealth-rx-from" title="${u.addr}">${u.txid.slice(0, 8)}...${u.txid.slice(-6)}</span>
+      <span class="stealth-rx-val">${(u.value / 1e8).toFixed(8)}</span>
+      <span class="stealth-rx-status unspent">UTXO</span>
+    </div>
+  `).join('');
+}
+function copyStealthCode() {
+  const code = document.getElementById('stealth-code').textContent;
+  if (code.startsWith('stealth:')) {
+    navigator.clipboard.writeText(code);
+    const el = document.getElementById('stealth-code');
+    const orig = el.textContent;
+    el.textContent = '// COPIED!';
+    setTimeout(() => el.textContent = orig, 1500);
+  }
+}
+
+// ── Refresh Balance ────────────────────────────────
+async function refreshBalance() {
+  const btn = document.getElementById('refresh-btn');
+  const icon = document.getElementById('refresh-icon');
+  if (btn) btn.classList.add('spinning');
+  if (icon) { icon.style.animation = 'spin .7s linear infinite'; }
+  try {
+    if (_ledgerAddresses.length > 0) {
+      // Aggregate UTXOs across all scanned Ledger addresses
+      _utxos = [];
+      for (const a of _ledgerAddresses) {
+        const us = await bcGetUTXOs(a.addr);
+        us.forEach(u => { u._path = a.path5; u._pubKey = a.pubKey; u._addr = a.addr; });
+        _utxos.push(...us);
+      }
+    } else if (_hdAddresses.length > 0) {
+      // Aggregate UTXOs across all scanned HD addresses
+      _utxos = [];
+      for (const a of _hdAddresses) {
+        const us = await bcGetUTXOs(a.addr);
+        us.forEach(u => { u._priv = a.priv; u._pubKey = a.pubKey; u._addr = a.addr; });
+        _utxos.push(...us);
+      }
+    } else {
+      _utxos = await bcGetUTXOs(_bchAddr);
+    }
+    _balance = _utxos.reduce((s, u) => s + u.value, 0);
+    const confirmed = _utxos.filter(u => u.height > 0).reduce((s,u) => s+u.value, 0);
+    const unconf = _balance - confirmed;
+    document.getElementById('bal-bch').textContent = (_balance / 1e8).toFixed(8);
+    document.getElementById('bal-sats').textContent = _balance.toLocaleString() + ' sats';
+    const unconfEl = document.getElementById('bal-unconf');
+    if (unconf > 0) { unconfEl.style.display='block'; unconfEl.textContent = '⏳ +' + (unconf/1e8).toFixed(8) + ' BCH UNCONFIRMED'; }
+    else unconfEl.style.display = 'none';
+    document.getElementById('utxo-count').textContent = _utxos.length;
+    renderUTXOs();
+    if (_ccActive) _renderCcList(); // keep coin control list in sync
+    await loadHistory();
+  } catch(e) {
+    _fulcrumStatus('ERROR: ' + e.message, false);
+  } finally {
+    if (btn) btn.classList.remove('spinning');
+    if (icon) icon.style.animation = '';
+  }
+}
+
+function renderUTXOs() {
+  const list = document.getElementById('utxo-list');
+  if (!_utxos.length) { list.innerHTML = ''; return; }
+  list.innerHTML = _utxos.map(u => {
+    const addrShort = u._addr ? u._addr.replace('bitcoincash:','').slice(0,8) + '…' : '';
+    const pathLabel = u._path ? `m/…/${u._path[3]?1:0}/${u._path[4]}` : '';
+    const addrInfo  = addrShort || pathLabel ? `<div style="font-size:8px;color:rgba(0,255,65,.35);margin-top:1px">${addrShort}${pathLabel}</div>` : '';
+    const isStealth = _stealthUtxos.some(s => s.txid === u.txid && s.vout === u.vout);
+    const confLabel = isStealth ? '<span class="utxo-conf stealth">STEALTH</span>' :
+      `<span class="utxo-conf ${u.height > 0 ? 'conf' : 'unconf'}">${u.height > 0 ? u.height : 'UNCONF'}</span>`;
+    return `<div class="utxo-item">
+      <div>
+        <div class="utxo-txid">${u.txid.slice(0,12)}...${u.txid.slice(-8)}:${u.vout}</div>
+        ${addrInfo}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="utxo-val">${(u.value/1e8).toFixed(8)}</div>
+        ${confLabel}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Addresses / UTXO tab ──────────────────────────
+let _showEmptyAddrs = false;
+
+function renderAddresses() {
+  const list = document.getElementById('addrs-list');
+  const addrs = _hdAddresses.length > 0 ? _hdAddresses : _ledgerAddresses.length > 0 ? _ledgerAddresses : [];
+  if (!addrs.length) {
+    if (_bchAddr) {
+      const bal = _utxos.reduce((s, u) => s + u.value, 0);
+      list.innerHTML = `<div class="addr-item">
+        <div class="addr-hash">${_bchAddr.replace('bitcoincash:','')}</div>
+        <span class="addr-balance">${(bal/1e8).toFixed(8)}</span>
+      </div>`;
+    } else {
+      list.innerHTML = '<div class="empty-state">// UNLOCK WALLET TO SCAN ADDRESSES</div>';
+    }
+    return;
+  }
+
+  // Group UTXOs by address
+  const utxosByAddr = {};
+  for (const u of _utxos) {
+    const addr = u._addr || _bchAddr;
+    if (!utxosByAddr[addr]) utxosByAddr[addr] = [];
+    utxosByAddr[addr].push(u);
+  }
+
+  const external = addrs.filter(a => !a.path.startsWith('1/'));
+  const internal = addrs.filter(a => a.path.startsWith('1/'));
+  const showZero = _showEmptyAddrs;
+
+  const toggleHtml = `<label class="show0-toggle"><input type="checkbox" ${showZero ? 'checked' : ''} onchange="_showEmptyAddrs=this.checked;renderAddresses()">SHOW 0</label>`;
+
+  let html = '';
+  for (const [label, chain] of [['EXTERNAL', external], ['INTERNAL', internal]]) {
+    const filtered = showZero ? chain : chain.filter(a => (utxosByAddr[a.addr] || []).length > 0);
+    if (!filtered.length && !showZero) continue;
+    html += `<div class="addr-chain-hdr"><span>${label}</span>${label === 'EXTERNAL' ? toggleHtml : ''}</div>`;
+    for (const a of (showZero ? chain : filtered)) {
+      const bal = (utxosByAddr[a.addr] || []).reduce((s, u) => s + u.value, 0);
+      const isEmpty = bal === 0;
+      html += `<div class="addr-item${isEmpty ? ' empty' : ''}">
+        <div class="addr-hash">${a.addr.replace('bitcoincash:','')}</div>
+        <span class="addr-balance">${(bal/1e8).toFixed(8)}</span>
+      </div>`;
+    }
+  }
+
+  list.innerHTML = html || '<div class="empty-state">// NO ADDRESSES SCANNED</div>';
+}
+
+// ── History ────────────────────────────────────────
+async function loadHistory() {
+  if (_hdAddresses.length > 0 || _ledgerAddresses.length > 0) {
+    // Merge history from all scanned addresses
+    const addrs = _hdAddresses.length > 0 ? _hdAddresses.map(a => a.addr) : _ledgerAddresses.map(a => a.addr);
+    const seen = new Set();
+    const merged = [];
+    for (const addr of addrs) {
+      const h = await bcGetHistory(addr);
+      for (const tx of h) {
+        if (!seen.has(tx.tx_hash)) { seen.add(tx.tx_hash); merged.push(tx); }
+      }
+    }
+    merged.sort((a,b) => (b.height || 9999999) - (a.height || 9999999));
+    _history = merged.slice(0, 20);
+  } else {
+    const hist = await bcGetHistory(_bchAddr);
+    _history = hist.slice(0, 20);
+  }
+  renderHistory();
+}
+
+async function renderHistory() {
+  const list = document.getElementById('tx-list');
+  const empty = document.getElementById('txs-empty');
+  if (!_history.length) { empty.style.display = 'block'; list.innerHTML = ''; return; }
+  empty.style.display = 'none';
+  // Load fusion history to tag CoinJoin txs
+  const fusionHist = JSON.parse(localStorage.getItem('00_fusion_history') || '[]');
+  const fusionTxids = new Set(fusionHist.filter(f => f.status === 'ok' && f.txid).map(f => f.txid));
+  // Render basic view first, then enrich with tx data
+  list.innerHTML = _history.map(h => {
+    const isFusion = fusionTxids.has(h.tx_hash);
+    const fusionTag = isFusion ? '<span style="font-size:8px;color:#a855f7;border:1px solid rgba(168,85,247,.35);border-radius:3px;padding:1px 5px;margin-left:6px">FUSION</span>' : '';
+    return `<div class="tx-item" onclick="openExplorer('${h.tx_hash}')">
+      <div class="tx-top">
+        <span class="tx-dir unknown" id="txdir-${h.tx_hash.slice(0,8)}">— TX</span>${fusionTag}
+        <span class="tx-height">${h.height > 0 ? '⬛ ' + h.height : '<span class="tx-unconf">UNCONFIRMED</span>'}</span>
+      </div>
+      <div class="tx-hash">${h.tx_hash.slice(0,16)}...${h.tx_hash.slice(-8)}</div>
+      <div class="tx-amount" id="txamt-${h.tx_hash.slice(0,8)}"></div>
+    </div>`;
+  }).join('');
+
+  // Async enrich with amounts
+  for (const h of _history.slice(0, 10)) {
+    const key = h.tx_hash.slice(0,8);
+    try {
+      const hex = await bcGetTxHex(h.tx_hash);
+      if (!hex) continue;
+      const outputs = parseTxHex(hex);
+      if (!outputs) continue;
+      // Build set of all our output scripts
+      const myScripts = new Set([_myScript]);
+      for (const a of _hdAddresses) myScripts.add(b2h(p2pkhScript(ripemd160(sha256(a.pubKey)))));
+      for (const a of _ledgerAddresses) myScripts.add(b2h(p2pkhScript(ripemd160(sha256(a.pubKey)))));
+      const myOut = outputs.filter(o => myScripts.has(o.script));
+      const myVal = myOut.reduce((s,o) => s + o.value, 0);
+      const dirEl = document.getElementById('txdir-' + key);
+      const amtEl = document.getElementById('txamt-' + key);
+      // Check if tx is fusion, received, or sent
+      const isMyOutput = myVal > 0;
+      const isFusionTx = fusionTxids.has(h.tx_hash);
+      if (isFusionTx) {
+        if (dirEl) { dirEl.textContent = '↓ MIXED'; dirEl.className = 'tx-dir fusion'; dirEl.style.color = '#a855f7'; }
+        if (amtEl) amtEl.textContent = myVal > 0 ? '+' + (myVal/1e8).toFixed(8) + ' BCH' : '';
+      } else if (isMyOutput) {
+        if (dirEl) { dirEl.textContent = '↓ RECEIVED'; dirEl.className = 'tx-dir in'; }
+        if (amtEl) amtEl.textContent = '+' + (myVal/1e8).toFixed(8) + ' BCH';
+      } else {
+        if (dirEl) { dirEl.textContent = '↑ SENT'; dirEl.className = 'tx-dir out'; }
+        if (amtEl) amtEl.textContent = '';
+      }
+    } catch {}
+  }
+}
+
+function openExplorer(txid) {
+  window.open('https://blockchair.com/bitcoin-cash/transaction/' + txid, '_blank');
+}
+
+// ── Coin Control ───────────────────────────────────
+let _ccActive = false;
+let _ccSel = new Set(); // 'txid:vout'
+
+function _ccId(u) { return u.txid + ':' + u.vout; }
+
+function toggleCoinControl() {
+  _ccActive = !_ccActive;
+  const panel = document.getElementById('cc-panel');
+  const badge = document.getElementById('cc-badge');
+  const icon  = document.getElementById('cc-icon');
+  if (_ccActive) {
+    panel.style.display = 'block';
+    icon.textContent = '▴';
+    badge.textContent = 'MANUAL';
+    badge.className = 'cc-badge manual';
+    if (_ccSel.size === 0) ccSelectAll(false);
+    _renderCcList();
+  } else {
+    panel.style.display = 'none';
+    icon.textContent = '▾';
+    badge.textContent = 'AUTO';
+    badge.className = 'cc-badge';
+    _ccSel.clear();
+  }
+  updateSendSummary();
+}
+
+function _renderCcList() {
+  const list = document.getElementById('cc-list');
+  if (!list) return;
+  if (!_utxos.length) { list.innerHTML = '<div style="padding:12px 14px;font-size:10px;color:rgba(0,255,65,.3)">// no UTXOs loaded — refresh first</div>'; return; }
+  list.innerHTML = _utxos.map(u => {
+    const id  = _ccId(u);
+    const sel = _ccSel.has(id);
+    const addrShort = u._addr ? u._addr.replace('bitcoincash:','').slice(0,8) + '…' + u._addr.slice(-6) : '';
+    const pathLabel = u._path ? `m/…/${u._path[3] ? 1 : 0}/${u._path[4]}` : '';
+    const isStealth = _stealthUtxos.some(s => s.txid === u.txid && s.vout === u.vout);
+    const ccConf = isStealth ? '<div class="cc-conf utxo-conf stealth">STEALTH</div>' :
+      `<div class="cc-conf ${u.height > 0 ? 'conf utxo-conf' : 'unconf utxo-conf'}">${u.height > 0 ? '✓ conf' : 'unconf'}</div>`;
+    return `<div class="cc-utxo${sel ? ' sel' : ''}" onclick="_ccToggle('${id}')">
+      <div class="cc-cb">✓</div>
+      <div class="cc-info">
+        <div class="cc-txid">${u.txid.slice(0,10)}…${u.txid.slice(-6)}:${u.vout}</div>
+        ${addrShort ? `<div class="cc-addr">${addrShort} ${pathLabel}</div>` : ''}
+      </div>
+      <div>
+        <div class="cc-val">${(u.value/1e8).toFixed(8)}</div>
+        ${ccConf}
+      </div>
+    </div>`;
+  }).join('');
+  _renderCcFooter();
+}
+
+function _renderCcFooter() {
+  const footer = document.getElementById('cc-footer');
+  if (!footer) return;
+  const total = _utxos.filter(u => _ccSel.has(_ccId(u))).reduce((s,u) => s+u.value, 0);
+  footer.innerHTML = `<div class="cc-total">${_ccSel.size}/${_utxos.length} · <span>${(total/1e8).toFixed(8)} BCH</span></div>
+    <div class="cc-acts">
+      <button class="cc-btn" onclick="ccSelectAll()">ALL</button>
+      <button class="cc-btn" onclick="ccClearAll()">CLEAR</button>
+    </div>`;
+}
+
+function _ccToggle(id) {
+  if (_ccSel.has(id)) _ccSel.delete(id); else _ccSel.add(id);
+  _renderCcList();
+  updateSendSummary();
+}
+
+function ccSelectAll(render = true) {
+  _utxos.forEach(u => _ccSel.add(_ccId(u)));
+  if (render) { _renderCcList(); updateSendSummary(); }
+}
+function ccClearAll() {
+  _ccSel.clear();
+  _renderCcList();
+  updateSendSummary();
+}
+
+// Returns selected UTXOs array, or null if auto mode
+function _ccGetUtxos() {
+  if (!_ccActive || _ccSel.size === 0) return null;
+  return _utxos.filter(u => _ccSel.has(_ccId(u)));
+}
+
+// ── Send BCH ───────────────────────────────────────
+let _sendInProgress = false;
+function updateSendSummary() {
+  const addr = document.getElementById('send-addr').value.trim();
+  const amtBCH = parseFloat(document.getElementById('send-amount').value) || 0;
+  const amtSats = Math.round(amtBCH * 1e8);
+  const summary = document.getElementById('send-summary');
+  const errEl = document.getElementById('send-error');
+  errEl.textContent = '';
+  if (!amtSats || !addr) { summary.style.display = 'none'; return; }
+  const ccUtxos = _ccGetUtxos();
+  const pool = ccUtxos || _utxos;
+  const poolBal = pool.reduce((s,u) => s+u.value, 0);
+  const nIn = ccUtxos ? ccUtxos.length : (pool.length > 0 ? Math.min(pool.length, Math.ceil(amtSats / ((poolBal || 1) / pool.length))) : 1);
+  const feeSats = Math.ceil(estimateTxSize(nIn, 2) * _feeRate);
+  const total = amtSats + feeSats;
+  const ccLabel = ccUtxos ? `<br>INPUTS&nbsp;&nbsp;&nbsp;&nbsp; <span>${ccUtxos.length} UTXO${ccUtxos.length > 1 ? 'S' : ''}</span>` : '';
+  summary.style.display = 'block';
+  summary.innerHTML = `AMOUNT&nbsp;&nbsp; <span>${(amtSats/1e8).toFixed(8)} BCH</span><br>FEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>${feeSats} sats</span><br>TOTAL&nbsp;&nbsp;&nbsp;&nbsp; <span>${(total/1e8).toFixed(8)} BCH</span>${ccLabel}`;
+}
+
+function setFeeRate(rate, key) {
+  _feeRate = rate;
+  ['low','normal','high'].forEach(k => document.getElementById('fee-'+k).classList.toggle('active', k===key));
+  updateSendSummary();
+}
+
+function setMaxAmount() {
+  const ccUtxos = _ccGetUtxos();
+  const pool = ccUtxos || _utxos;
+  if (!pool.length) return;
+  const poolBal = pool.reduce((s,u) => s+u.value, 0);
+  const feeSats = Math.ceil(estimateTxSize(pool.length, 1) * _feeRate);
+  const max = Math.max(0, poolBal - feeSats);
+  document.getElementById('send-amount').value = (max / 1e8).toFixed(8);
+  updateSendSummary();
+}
+
+async function sendBCH() {
+  if (_sendInProgress) return;
+  const addr = document.getElementById('send-addr').value.trim();
+  const amtBCH = parseFloat(document.getElementById('send-amount').value) || 0;
+  const amtSats = Math.round(amtBCH * 1e8);
+  const errEl = document.getElementById('send-error');
+  errEl.textContent = '';
+
+  if (!addr) { errEl.textContent = '// recipient address required'; return; }
+  try { cashAddrToHash20(addr); } catch { errEl.textContent = '// invalid BCH address'; return; }
+  if (amtSats < 546) { errEl.textContent = '// minimum 546 sats (dust limit)'; return; }
+  if (!_utxos.length) { errEl.textContent = '// no UTXOs — refresh balance'; return; }
+
+  // Select UTXOs — coin control (manual) or greedy (auto)
+  let selected, total;
+  const ccUtxos = _ccGetUtxos();
+  if (ccUtxos) {
+    selected = ccUtxos;
+    total = selected.reduce((s,u) => s+u.value, 0);
+    const fee = Math.ceil(estimateTxSize(selected.length, 2) * _feeRate);
+    if (total < amtSats + fee) { errEl.textContent = `// selected UTXOs insufficient (${(total/1e8).toFixed(8)} BCH) — add more or reduce amount`; return; }
+  } else {
+    const sorted = [..._utxos].sort((a,b) => b.value - a.value);
+    selected = []; total = 0;
+    for (const u of sorted) {
+      selected.push(u); total += u.value;
+      const fee = Math.ceil(estimateTxSize(selected.length, 2) * _feeRate);
+      if (total >= amtSats + fee) break;
+    }
+  }
+  const fee = Math.ceil(estimateTxSize(selected.length, 2) * _feeRate);
+  if (total < amtSats + fee) { errEl.textContent = '// insufficient balance (need ' + ((amtSats+fee)/1e8).toFixed(8) + ' BCH)'; return; }
+
+  const btn = document.getElementById('broadcast-btn');
+  _sendInProgress = true;
+  btn.disabled = true; btn.textContent = '// BROADCASTING...';
+
+  try {
+    const toHash160 = cashAddrToHash20(addr);
+    const toScript  = p2pkhScript(toHash160);
+    const change    = total - amtSats - fee;
+    const DUST      = 546;
+
+    const outputs = [{ value: amtSats, script: toScript }];
+    const changeHash = (_ledgerDevice && _ledgerChangeHash160) ? _ledgerChangeHash160
+                     : (_hdChangeHash160 || _bchHash160);
+    if (change >= DUST) outputs.push({ value: change, script: p2pkhScript(changeHash) });
+
+    let rawHex;
+    if (_ledgerDevice) {
+      btn.textContent = '// CONFIRM ON LEDGER...';
+      const lUtxos  = selected.map(u => ({ txid: u.txid, vout: u.vout, value: u.value }));
+      const scripts = selected.map(u => p2pkhScript(ripemd160(sha256(u._pubKey || _bchPub33))));
+      const paths   = selected.map(u => u._path || Ledger.BCH_PATH);
+      const pubKeys = selected.map(u => u._pubKey || _bchPub33);
+      const sigs = await Ledger.signLedgerTx(_ledgerDevice, lUtxos, outputs, scripts, paths, _ledgerChangePath);
+      rawHex = Ledger.buildLedgerTx(lUtxos, sigs, pubKeys, outputs);
+    } else if (_wcMode && _wcClient && _wcSession) {
+      btn.textContent = '// CONFIRM IN WALLET...';
+      const inputs = selected.map(u => ({
+        txidLE: h2b(u.txid).reverse(), vout: u.vout, value: u.value,
+        sequence: 0xffffffff, scriptSig: new Uint8Array(0),
+      }));
+      const unsignedHex = b2h(serializeTx(1, 0, inputs, outputs));
+      const sourceOutputs = selected.map(u => ({
+        outpointIndex: u.vout,
+        outpointTransactionHash: '<Uint8Array: 0x' + b2h(h2b(u.txid).reverse()) + '>',
+        sequenceNumber: 4294967295,
+        unlockingBytecode: '<Uint8Array: 0x>',
+        lockingBytecode: '<Uint8Array: 0x' + b2h(p2pkhScript(_bchHash160)) + '>',
+        valueSatoshis: '<bigint: ' + u.value + 'n>',
+      }));
+      const wcResult = await _wcClient.request({
+        chainId: 'bch:bitcoincash',
+        topic: _wcSession.topic,
+        request: {
+          method: 'bch_signTransaction',
+          params: { transaction: unsignedHex, sourceOutputs, broadcast: false, userPrompt: 'Send ' + amtBCH + ' BCH' },
+        },
+      });
+      if (!wcResult || !wcResult.signedTransaction) throw new Error('signing rejected');
+      rawHex = wcResult.signedTransaction;
+    } else {
+      const inputs = selected.map(u => ({
+        txidLE: h2b(u.txid).reverse(),
+        vout: u.vout,
+        value: u.value,
+        sequence: 0xffffffff,
+        scriptSig: new Uint8Array(0),
+        _priv: u._priv,
+        _pubKey: u._pubKey,
+      }));
+      const signedInputs = inputs.map((inp, i) => {
+        const priv = inp._priv || _bchPriv32;
+        const pub  = inp._pubKey || _bchPub33;
+        const script = p2pkhScript(ripemd160(sha256(pub)));
+        const sighash  = bchSighash(1, 0, inputs, outputs, i, script, inp.value);
+        const sig      = secp256k1.sign(sighash, priv, { lowS: true });
+        const derSig   = concat(sig.toDERRawBytes(), new Uint8Array([0x41]));
+        const scriptSig = concat(new Uint8Array([derSig.length]), derSig, new Uint8Array([pub.length]), pub);
+        return { ...inp, scriptSig };
+      });
+      rawHex = b2h(serializeTx(1, 0, signedInputs, outputs));
+    }
+    const txid = await bcBroadcast(rawHex);
+
+    // Success
+    document.getElementById('success-txid').textContent = txid;
+    document.getElementById('success-overlay').style.display = 'flex';
+    document.getElementById('send-addr').value = '';
+    document.getElementById('send-amount').value = '';
+    document.getElementById('send-summary').style.display = 'none';
+    setTimeout(refreshBalance, 3000);
+  } catch(e) {
+    errEl.textContent = '// broadcast failed: ' + e.message;
+  } finally {
+    _sendInProgress = false;
+    btn.disabled = false; btn.textContent = '⚡ BROADCAST →';
+  }
+}
+
+function closeSendSuccess() {
+  document.getElementById('success-overlay').style.display = 'none';
+  switchTab('wallet');
+}
+
+// ── Receive ────────────────────────────────────────
+async function renderReceive() {
+  document.getElementById('receive-addr').textContent = _bchAddr;
+  try {
+    const canvas = document.getElementById('qr-canvas');
+    await QRCode.toCanvas(canvas, _bchAddr, {
+      width: 180, margin: 1,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#00ff41', light: '#000000' },
+    });
+  } catch {}
+}
+
+function copyAddr(short) {
+  const addr = short ? _bchAddr.replace('bitcoincash:','') : _bchAddr;
+  navigator.clipboard.writeText(addr).then(() => {
+    const btns = document.querySelectorAll('.copy-btn');
+    btns.forEach(b => { b.textContent = 'COPIED ✓'; setTimeout(()=>b.textContent=b.dataset.orig||b.textContent,1500); if(!b.dataset.orig)b.dataset.orig=b.textContent; });
+  });
+}
+
+// ── Tabs ───────────────────────────────────────────
+function switchTab(tab) {
+  ['wallet','send','receive','txs','addrs','stealth'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('pane-'+t).classList.toggle('active', t===tab);
+  });
+  if (tab === 'receive') renderReceive();
+  if (tab === 'addrs') renderAddresses();
+  if (tab === 'stealth') renderStealth();
+}
+
+// ── Auth ───────────────────────────────────────────
+async function walletImport() {
+  const seed = document.getElementById('import-seed').value.trim();
+  const pass = document.getElementById('import-pass').value;
+  const pass2 = document.getElementById('import-pass2').value;
+  const err = document.getElementById('import-error');
+  if (!seed) { err.textContent = '// seed required'; return; }
+  if (pass.length < 8) { err.textContent = '// password min 8 chars'; return; }
+  if (pass !== pass2) { err.textContent = '// passwords don\'t match'; return; }
+  err.textContent = '// DERIVING KEYS...';
+  try {
+    let seed64;
+    if (/^[0-9a-f]{128}$/i.test(seed)) seed64 = h2b(seed);
+    else seed64 = await mnemonicToSeed(seed);
+    const derived = deriveBchPriv(seed64);
+    const profile = {
+      bchPrivHex: b2h(derived.priv),
+      acctPrivHex: b2h(derived.acctPriv),
+      acctChainHex: b2h(derived.acctChain),
+    };
+    localStorage.setItem('00wallet_vault', await encryptVault(profile, pass));
+    await bootApp(profile, pass);
+  } catch(e) { err.textContent = '// error: ' + e.message; }
+}
+
+async function walletUnlock() {
+  const pass = document.getElementById('unlock-pass').value;
+  const err = document.getElementById('unlock-error');
+  try {
+    const profile = await decryptVault(localStorage.getItem('00wallet_vault'), pass);
+    await bootApp(profile, pass);
+  } catch { err.textContent = '// wrong password'; }
+}
+
+function walletGenKey() {
+  const priv = rand(32);
+  document.getElementById('import-seed').value = b2h(priv);
+  document.getElementById('import-seed').style.fontSize = '9px';
+}
+
+function showWalletImport() {
+  document.getElementById('auth-unlock').style.display = 'none';
+  document.getElementById('auth-import').style.display = 'flex';
+}
+
+async function connectLedgerWallet() {
+  const errEl = document.getElementById('ledger-wallet-err');
+  const btn   = document.getElementById('ledger-wallet-btn');
+  errEl.textContent = '';
+  btn.textContent = '🔑 CONNECTING...'; btn.disabled = true;
+  try {
+    const device = await Ledger.connectLedger();
+    errEl.textContent = '// reading account xpub...';
+
+    // Get account-level xpub at m/44'/145'/0' (no on-device confirmation needed)
+    const { pubKey: rawAcct, chainCode: acctChain } = await Ledger.getLedgerPubKey(device, Ledger.ACCOUNT_PATH);
+    const acctPub = rawAcct.length === 65
+      ? concat(new Uint8Array([rawAcct[64] & 1 ? 0x03 : 0x02]), rawAcct.slice(1, 33))
+      : rawAcct;
+
+    _ledgerDevice = device;
+    _ledgerAddresses = [];
+
+    // Show main view and connect Fulcrum before scanning
+    document.getElementById('auth-import').style.display = 'none';
+    document.getElementById('auth-unlock').style.display = 'none';
+    document.getElementById('main-view').style.display   = 'flex';
+    setInterval(updateClock, 1000); updateClock();
+    await _fvConnect();
+
+    // Derive change=0 and change=1 levels, scan 50 indices each (gap limit 5)
+    _fulcrumStatus('SCANNING ADDRESSES...', null);
+    for (const changeIdx of [0, 1]) {
+      const changeKey = bip32Child(acctPub, acctChain, changeIdx);
+      let gap = 0;
+      for (let i = 0; i < 50 && gap < 20; i++) {
+        const { pubKey: addrPub, chainCode: addrChain } = bip32Child(changeKey.pubKey, changeKey.chainCode, i);
+        const h160 = ripemd160(sha256(addrPub));
+        const addr = pubHashToCashAddr(Array.from(h160));
+        const utxos = await bcGetUTXOs(addr);
+        const hist  = (await _fvCall('blockchain.scripthash.get_history', [_addrSH(addr)])) || [];
+        if (hist.length > 0 || utxos.length > 0) {
+          _ledgerAddresses.push({ pubKey: addrPub, addr, path5: ledgerAddrPath(changeIdx, i) });
+          gap = 0;
+        } else {
+          gap++;
+        }
+      }
+    }
+
+    // Primary address = the one with most UTXOs value (for receive / display)
+    const best = _ledgerAddresses.reduce((b, a) => {
+      const av = _utxos.filter(u => u._path && JSON.stringify(u._path) === JSON.stringify(a.path5)).reduce((s, u) => s + u.value, 0);
+      const bv = _utxos.filter(u => u._path && JSON.stringify(u._path) === JSON.stringify(b.path5)).reduce((s, u) => s + u.value, 0);
+      return av > bv ? a : b;
+    }, _ledgerAddresses[0] || { pubKey: acctPub, addr: 'bitcoincash:' + (await Ledger.getLedgerPubKey(device)).addrRaw, path5: Ledger.BCH_PATH });
+
+    // Change address: always BIP44 internal chain (change=1) to avoid Ledger "unusual change path"
+    const usedChg1   = _ledgerAddresses.filter(a => a.path5[3] === 1);
+    const nextChgIdx = usedChg1.length > 0 ? Math.max(...usedChg1.map(a => a.path5[4])) + 1 : 0;
+    const chgLvl     = bip32Child(acctPub, acctChain, 1);
+    const { pubKey: chgPub } = bip32Child(chgLvl.pubKey, chgLvl.chainCode, nextChgIdx);
+    const chgH160    = ripemd160(sha256(chgPub));
+    const chgPath    = ledgerAddrPath(1, nextChgIdx);
+    if (!_ledgerAddresses.some(a => JSON.stringify(a.path5) === JSON.stringify(chgPath))) {
+      _ledgerAddresses.push({ pubKey: chgPub, addr: pubHashToCashAddr(Array.from(chgH160)), path5: chgPath });
+    }
+    _ledgerChangeHash160 = chgH160;
+    _ledgerChangePub33   = chgPub;
+    _ledgerChangePath    = chgPath;
+
+    _bchPriv32  = null;
+    _bchPub33   = best.pubKey;
+    _bchHash160 = ripemd160(sha256(best.pubKey));
+    _bchAddr    = best.addr;
+    _myScript   = b2h(p2pkhScript(_bchHash160));
+
+    console.log('[Ledger] scanned', _ledgerAddresses.length, 'addresses, primary:', _bchAddr);
+    await refreshBalance();
+  } catch(e) {
+    console.error('[Ledger] error:', e);
+    errEl.textContent = '// ' + e.message;
+    btn.textContent = '🔑 CONNECT LEDGER'; btn.disabled = false;
+  }
+}
+
+async function bootApp(profile, pass) {
+  _profile = profile;
+  _bchPriv32  = h2b(profile.bchPrivHex);
+  _bchPub33   = secp256k1.getPublicKey(_bchPriv32, true);
+  _bchHash160 = ripemd160(sha256(_bchPub33));
+  _bchAddr    = pubHashToCashAddr(Array.from(_bchHash160));
+  _myScript   = b2h(p2pkhScript(_bchHash160));
+
+  // Derive stealth keys: m/44'/145'/0'/2/0 (scan) + m/44'/145'/0'/2/1 (spend)
+  if (profile.acctPrivHex && profile.acctChainHex) {
+    const stChain = _bip32Child(h2b(profile.acctPrivHex), h2b(profile.acctChainHex), 2, false);
+    const scanChild = _bip32Child(stChain.priv, stChain.chain, 0, false);
+    const spendChild = _bip32Child(stChain.priv, stChain.chain, 1, false);
+    _stealthScanPriv = scanChild.priv;
+    _stealthScanPub = secp256k1.getPublicKey(scanChild.priv, true);
+    _stealthSpendPriv = spendChild.priv;
+    _stealthSpendPub = secp256k1.getPublicKey(spendChild.priv, true);
+    _stealthNostrPub = b2h(_stealthScanPub.slice(1)); // x-only for Nostr
+    _loadStealthUtxos();
+  }
+
+  document.getElementById('auth-import').style.display = 'none';
+  document.getElementById('auth-unlock').style.display = 'none';
+  const main = document.getElementById('main-view');
+  main.style.display = 'flex';
+
+  setInterval(updateClock, 1000); updateClock();
+  try {
+    await _fvConnect();
+    // Scan HD-derived addresses if account node available
+    if (profile.acctPrivHex && profile.acctChainHex) {
+      await scanHdAddresses(h2b(profile.acctPrivHex), h2b(profile.acctChainHex));
+    }
+    _registerStealthAddresses();
+    await refreshBalance();
+  } catch(e) {
+    _fulcrumStatus('CONNECT FAILED', false);
+  }
+  // Connect Nostr for stealth notifications
+  if (_stealthNostrPub) nostrConnect();
+}
+
+// ── HD Gap-Limit Address Scanning ──────────────────
+async function scanHdAddresses(acctPriv, acctChain) {
+  _hdAddresses = [];
+  _fulcrumStatus('SCANNING ADDRESSES...', null);
+  // Always include main address (m/44'/145'/0'/0/0)
+  _hdAddresses.push({ priv: _bchPriv32, pubKey: _bchPub33, addr: _bchAddr, path: '0/0' });
+
+  // Pre-derive all addresses, then batch-query in parallel for speed
+  for (const changeIdx of [0, 1]) {
+    const chainNode = _bip32Child(acctPriv, acctChain, changeIdx, false);
+    // Derive up to 50 addresses
+    const derived = [];
+    for (let i = 0; i < 50; i++) {
+      if (changeIdx === 0 && i === 0) { derived.push(null); continue; } // skip main
+      const child = _bip32Child(chainNode.priv, chainNode.chain, i, false);
+      const pub   = secp256k1.getPublicKey(child.priv, true);
+      const h160  = ripemd160(sha256(pub));
+      const addr  = pubHashToCashAddr(Array.from(h160));
+      derived.push({ priv: child.priv, pub, addr, path: changeIdx + '/' + i });
+    }
+
+    // Batch query — 10 addresses at a time
+    let gap = 0;
+    for (let batch = 0; batch < 50 && gap < 20; batch += 10) {
+      const chunk = derived.slice(batch, batch + 10).filter(Boolean);
+      if (!chunk.length) continue;
+      const results = await Promise.all(chunk.map(async d => {
+        const sh = _addrSH(d.addr);
+        const hist = (await _fvCall('blockchain.scripthash.get_history', [sh])) || [];
+        return { ...d, hasActivity: hist.length > 0 };
+      }));
+      for (const r of results) {
+        if (r.hasActivity) {
+          _hdAddresses.push({ priv: r.priv, pubKey: r.pub, addr: r.addr, path: r.path });
+          gap = 0;
+        } else {
+          gap++;
+        }
+      }
+    }
+  }
+
+  // Set up change address: next unused internal chain address (change=1)
+  const chgChain = _bip32Child(acctPriv, acctChain, 1, false);
+  const usedChg  = _hdAddresses.filter(a => a.path.startsWith('1/'));
+  const nextIdx  = usedChg.length > 0 ? Math.max(...usedChg.map(a => parseInt(a.path.split('/')[1]))) + 1 : 0;
+  const chgChild = _bip32Child(chgChain.priv, chgChain.chain, nextIdx, false);
+  const chgPub   = secp256k1.getPublicKey(chgChild.priv, true);
+  _hdChangeHash160 = ripemd160(sha256(chgPub));
+  _hdChangePriv    = chgChild.priv;
+  // Add change address to scanned list so its UTXOs are found on next refresh
+  const chgAddr = pubHashToCashAddr(Array.from(_hdChangeHash160));
+  if (!_hdAddresses.some(a => a.addr === chgAddr)) {
+    _hdAddresses.push({ priv: chgChild.priv, pubKey: chgPub, addr: chgAddr, path: '1/' + nextIdx });
+  }
+
+  console.log('[HD] scanned', _hdAddresses.length, 'addresses');
+  _fulcrumStatus('CONNECTED', true);
+}
+
+// ── Clock ──────────────────────────────────────────
+function updateClock() {
+  const el = document.getElementById('phone-clock');
+  if (el) el.textContent = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ── Boot ───────────────────────────────────────────
+window._walletBoot = async function() {
+  if (localStorage.getItem('00_wc_session')) {
+    const ok = await _restoreWcSession();
+    if (ok) return;
+  }
+  if (localStorage.getItem('00wallet_vault')) {
+    document.getElementById('auth-unlock').style.display = 'flex';
+  } else {
+    document.getElementById('auth-import').style.display = 'flex';
+  }
+};
+
+// ── Expose ─────────────────────────────────────────
+Object.assign(window, {
+  walletImport, walletUnlock, walletGenKey, showWalletImport, connectLedgerWallet,
+  connectWalletConnect, cancelWc, wcDisconnect,
+  switchTab, refreshBalance, sendBCH, setFeeRate, setMaxAmount,
+  toggleCoinControl, ccSelectAll, ccClearAll, _ccToggle, _renderCcList,
+  updateSendSummary, copyAddr, closeSendSuccess, openExplorer,
+  sendStealth, copyStealthCode, stealthScanChain,
+});
+
+// ── Matrix Rain ────────────────────────────────────
+const canvas = document.getElementById('rain');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resize(); window.addEventListener('resize', resize);
+const drops = [];
+for (let i=0;i<120;i++) drops.push({ x:Math.random()*1440, y:Math.random()*900, len:Math.random()*18+6, speed:Math.random()*7+5, op:Math.random()*.4+.1, w:Math.random()*.8+.2 });
+function drawRain() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drops.forEach(d => {
+    ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x-1,d.y+d.len);
+    ctx.strokeStyle=`rgba(0,255,65,${d.op})`; ctx.lineWidth=d.w; ctx.stroke();
+    d.y+=d.speed; if(d.y>canvas.height){d.y=-d.len;d.x=Math.random()*canvas.width;}
+  });
+  requestAnimationFrame(drawRain);
+}
+drawRain();
+</script>
+<script src="/shell.js"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}</script>
+</body>
+</html>

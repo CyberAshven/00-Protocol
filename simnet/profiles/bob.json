@@ -1,0 +1,14 @@
+{
+  "username": "bob",
+  "priv_hex": "1819b20c3681ea1155a881b00ddc2e225060d0b24da5e767a73a5aeff59a4c7f",
+  "pub_hex": "97d8a111ee880524dcadcb918644ec1de345169b0a95964ec209677555db6f01",
+  "contacts": [
+    {
+      "name": "alice",
+      "bch_address": "",
+      "chat_pub_hex": "c4306b94329384de0075e06c41dcc2425f4c46fe357a2c69767aa9737a9f1333",
+      "inbox_id": "alice"
+    }
+  ],
+  "bch_address": "bitcoincash:qrpyuqxm2w2lwkmt5z7sp0gc3rllw8glcckhqmvfgd"
+}

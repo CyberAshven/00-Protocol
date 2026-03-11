@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#00ff41">
+  <title>0penw0rld // DOCS</title>
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --green: #00ff41; --green-dim: #00c832; --black: #020a03; --grey: #0d1a0e; }
+
+    html, body {
+      width: 100%; min-height: 100%;
+      background: var(--black); color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    /* ── Scanlines ── */
+    .scanlines {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.12) 2px, rgba(0,0,0,.12) 4px);
+    }
+
+    /* ── Top bar ── */
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+      height: 44px; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(0,255,65,.12);
+      background: rgba(2,10,3,.9); backdrop-filter: blur(6px);
+      font-size: 11px; color: rgba(0,255,65,.5);
+    }
+    .top-bar a { color: rgba(0,255,65,.5); text-decoration: none; transition: .15s; }
+    .top-bar a:hover { color: var(--green); }
+    .top-bar .blink { animation: blink .8s step-end infinite; }
+    @keyframes blink { 50% { opacity:0; } }
+
+    /* ── Layout ── */
+    .layout {
+      display: flex; min-height: 100vh;
+      padding-top: 44px; padding-bottom: 40px;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px; flex-shrink: 0;
+      position: fixed; top: 44px; left: 0; bottom: 0;
+      overflow-y: auto; padding: 28px 0;
+      border-right: 1px solid rgba(0,255,65,.1);
+      background: rgba(2,10,3,.7);
+      scrollbar-width: thin; scrollbar-color: rgba(0,255,65,.2) transparent;
+    }
+    .sidebar::-webkit-scrollbar { width: 3px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(0,255,65,.2); }
+
+    .nav-section-label {
+      font-size: 9px; letter-spacing: 3px; color: rgba(0,255,65,.3);
+      text-transform: uppercase; padding: 0 20px 8px;
+    }
+    .nav-link {
+      display: block; padding: 7px 20px;
+      font-size: 11px; color: rgba(0,255,65,.5);
+      text-decoration: none; letter-spacing: 1px;
+      border-left: 2px solid transparent;
+      transition: .15s;
+    }
+    .nav-link:hover, .nav-link.active {
+      color: var(--green); border-left-color: var(--green);
+      background: rgba(0,255,65,.04);
+    }
+    .nav-sep { height: 1px; background: rgba(0,255,65,.08); margin: 12px 20px; }
+
+    /* ── Content ── */
+    .content {
+      margin-left: 220px; flex: 1;
+      padding: 40px 60px 80px;
+      max-width: 860px;
+    }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .content { margin-left: 0; padding: 24px 20px 60px; }
+    }
+
+    /* ── Section ── */
+    .doc-section { margin-bottom: 64px; scroll-margin-top: 64px; }
+
+    .section-tag {
+      font-size: 9px; letter-spacing: 4px; color: rgba(0,255,65,.35);
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .section-title {
+      font-family: 'Orbitron', monospace; font-size: 18px; font-weight: 700;
+      color: var(--green); letter-spacing: 2px; margin-bottom: 4px;
+      text-shadow: 0 0 20px rgba(0,255,65,.3);
+    }
+    .section-divider {
+      height: 1px; background: linear-gradient(90deg, rgba(0,255,65,.4), transparent);
+      margin-bottom: 24px;
+    }
+    p { font-size: 13px; color: rgba(0,255,65,.65); line-height: 1.9; margin-bottom: 14px; }
+    strong { color: var(--green); font-weight: normal; }
+
+    /* ── Code block ── */
+    .code-block {
+      background: rgba(0,20,5,.6); border: 1px solid rgba(0,255,65,.15);
+      border-left: 3px solid rgba(0,255,65,.5);
+      padding: 16px 20px; font-size: 12px;
+      color: rgba(0,255,65,.8); line-height: 1.7;
+      margin: 16px 0; overflow-x: auto;
+      white-space: pre;
+    }
+    .code-block .comment { color: rgba(0,255,65,.3); }
+    .code-block .key { color: rgba(0,212,255,.7); }
+    .code-block .val { color: rgba(255,220,0,.6); }
+
+    /* ── App grid ── */
+    .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin: 20px 0; }
+    .app-card {
+      border: 1px solid rgba(0,255,65,.18); padding: 18px 20px;
+      background: rgba(0,255,65,.02); text-decoration: none;
+      transition: .2s; display: block;
+    }
+    .app-card:hover { border-color: var(--green); background: rgba(0,255,65,.05); box-shadow: 0 0 16px rgba(0,255,65,.1); }
+    .app-card-name { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; color: var(--green); margin-bottom: 6px; letter-spacing: 2px; }
+    .app-card-desc { font-size: 10px; color: rgba(0,255,65,.4); line-height: 1.6; }
+
+    /* ── Badge inline ── */
+    .badge {
+      display: inline-block; font-size: 9px; letter-spacing: 2px;
+      padding: 2px 8px; border-radius: 2px;
+      border: 1px solid rgba(0,255,65,.2); color: rgba(0,255,65,.5);
+      margin: 0 3px; vertical-align: middle;
+    }
+    .badge.cyan { border-color: rgba(0,212,255,.3); color: rgba(0,212,255,.6); }
+
+    /* ── Protocol table ── */
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
+    th { text-align: left; padding: 8px 12px; font-size: 9px; letter-spacing: 2px; color: rgba(0,255,65,.4); border-bottom: 1px solid rgba(0,255,65,.12); }
+    td { padding: 9px 12px; border-bottom: 1px solid rgba(0,255,65,.06); color: rgba(0,255,65,.65); vertical-align: top; }
+    tr:hover td { background: rgba(0,255,65,.02); }
+    td:first-child { color: var(--green); }
+
+    /* ── Step ── */
+    .steps { list-style: none; margin: 16px 0; }
+    .steps li {
+      display: flex; gap: 16px; padding: 12px 0;
+      border-bottom: 1px solid rgba(0,255,65,.06); font-size: 12px;
+      color: rgba(0,255,65,.65); line-height: 1.7;
+    }
+    .step-num {
+      font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700;
+      color: var(--green); min-width: 28px;
+    }
+
+    /* ── Callout ── */
+    .callout {
+      border: 1px solid rgba(0,255,65,.2); border-left: 3px solid rgba(0,255,65,.6);
+      background: rgba(0,255,65,.03); padding: 14px 18px;
+      font-size: 12px; color: rgba(0,255,65,.6); margin: 16px 0; line-height: 1.7;
+    }
+    .callout.cyan {
+      border-color: rgba(0,212,255,.2); border-left-color: rgba(0,212,255,.6);
+      background: rgba(0,212,255,.02); color: rgba(0,212,255,.6);
+    }
+
+    /* ── Bottom bar ── */
+    .bottom-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+      padding: 7px 24px; border-top: 1px solid rgba(0,255,65,.1);
+      background: rgba(2,10,3,.9); font-size: 10px; color: rgba(0,255,65,.25);
+      overflow: hidden;
+    }
+    .scroll-text { white-space: nowrap; animation: scrollLeft 30s linear infinite; }
+    @keyframes scrollLeft { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  </style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <span>
+    <a href="index.html">← 0penw0rld</a>
+    <span style="color:rgba(0,255,65,.2);margin:0 10px">/</span>
+    <span>DOCUMENTATION</span>
+  </span>
+  <span style="display:flex;gap:24px">
+    <span id="doc-clock"></span>
+    <span class="blink">█</span>
+  </span>
+</div>
+
+<!-- Layout -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="nav-section-label" data-di18n="nav-s1">OVERVIEW</div>
+    <a class="nav-link active" href="#overview" onclick="setActive(this)" data-di18n="nav-intro">Introduction</a>
+    <a class="nav-link" href="#architecture" onclick="setActive(this)" data-di18n="nav-arch">Architecture</a>
+    <div class="nav-sep"></div>
+    <div class="nav-section-label" data-di18n="nav-s2">APPLICATIONS</div>
+    <a class="nav-link" href="#apps" onclick="setActive(this)" data-di18n="nav-apps">All apps</a>
+    <a class="nav-link" href="#chat" onclick="setActive(this)" data-di18n="nav-chat">00 Chat</a>
+    <a class="nav-link" href="#wallet" onclick="setActive(this)" data-di18n="nav-wallet">00 Wallet</a>
+    <a class="nav-link" href="#pay" onclick="setActive(this)" data-di18n="nav-pay">00 Pay</a>
+    <a class="nav-link" href="#dex" onclick="setActive(this)" data-di18n="nav-dex">00 DEX</a>
+    <div class="nav-sep"></div>
+    <div class="nav-section-label" data-di18n="nav-s3">HARDWARE</div>
+    <a class="nav-link" href="#ledger" onclick="setActive(this)" data-di18n="nav-ledger">Ledger Integration</a>
+    <a class="nav-link" href="#bip44" onclick="setActive(this)" data-di18n="nav-bip44">BIP44 Scanning</a>
+    <div class="nav-sep"></div>
+    <div class="nav-section-label" data-di18n="nav-s4">PROTOCOLS</div>
+    <a class="nav-link" href="#protocol" onclick="setActive(this)" data-di18n="nav-protocol">CCSH Protocol</a>
+    <a class="nav-link" href="#bch" onclick="setActive(this)" data-di18n="nav-bch">Bitcoin Cash</a>
+    <a class="nav-link" href="#privacy" onclick="setActive(this)" data-di18n="nav-privacy">Privacy</a>
+  </nav>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- Overview -->
+    <section class="doc-section" id="overview">
+      <div class="section-tag">// 00 //</div>
+      <div class="section-title">INTRODUCTION</div>
+      <div class="section-divider"></div>
+      <p data-di18n="p-overview-1">
+        <strong>0penw0rld</strong> is a decentralized ecosystem built on Bitcoin Cash. Zero central server, zero custody, zero borders. Every app runs directly in the browser, peer-to-peer.
+      </p>
+      <p data-di18n="p-overview-2">
+        All private keys stay in your browser or on your hardware wallet. No data is sent to third parties. BCH transactions are broadcast directly to the network via public relays.
+      </p>
+      <div class="callout" data-di18n="callout-overview">
+        No account. No server. No KYC. Your private key = your identity.
+      </div>
+    </section>
+
+    <!-- Architecture -->
+    <section class="doc-section" id="architecture">
+      <div class="section-tag">// 01 //</div>
+      <div class="section-title">ARCHITECTURE</div>
+      <div class="section-divider"></div>
+      <p data-di18n="p-arch-1">0penw0rld is a Progressive Web App (PWA) made of static HTML/JS files. No backend required — everything works offline once installed.</p>
+      <div class="code-block"><span class="comment">// Tech stack</span>
+<span class="key">Frontend</span>  : HTML5 + Vanilla JS (no framework)
+<span class="key">Crypto</span>    : @noble/curves 1.8.1 (secp256k1, X25519) + @noble/hashes 1.7.1
+<span class="key">Hardware</span>  : WebHID (Ledger APDU protocol)
+<span class="key">Chat</span>      : BCH OP_RETURN via Fulcrum/Electrum WebSocket
+<span class="key">Mesh</span>      : Nostr relays (NIP-04 encrypted DMs)
+<span class="key">DEX</span>       : Cauldron AMM (indexer.riften.net)
+<span class="key">Cache</span>     : Service Worker (cache-first, offline-ready)
+<span class="key">Storage</span>   : localStorage (AES-GCM vault, PBKDF2 200k iterations)</div>
+      <table>
+        <tr><th>Component</th><th>Role</th><th>Source</th></tr>
+        <tr><td>@noble/curves 1.8.1</td><td>secp256k1 ECDSA + X25519 ECDH</td><td>esm.sh</td></tr>
+        <tr><td>@noble/hashes 1.7.1</td><td>SHA256, SHA512, RIPEMD160, HMAC</td><td>esm.sh</td></tr>
+        <tr><td>Fulcrum</td><td>UTXO index, BCH history, TX broadcast</td><td>bch.imaginary.cash, electroncash.de</td></tr>
+        <tr><td>Nostr relays</td><td>00 Mesh real-time messaging (NIP-04)</td><td>relay.damus.io, nos.lol</td></tr>
+        <tr><td>Cauldron</td><td>BCH token exchange (AMM)</td><td>indexer.riften.net</td></tr>
+        <tr><td>THORChain</td><td>Cross-chain swaps (00 Pay)</td><td>midgard.ninerealms.com</td></tr>
+        <tr><td>Service Worker</td><td>Offline cache, PWA install</td><td>sw.js</td></tr>
+      </table>
+    </section>
+
+    <!-- Apps -->
+    <section class="doc-section" id="apps">
+      <div class="section-tag">// 02 //</div>
+      <div class="section-title">APPLICATIONS</div>
+      <div class="section-divider"></div>
+      <div class="app-grid">
+        <a class="app-card" href="chat.html">
+          <div class="app-card-name">00 CHAT</div>
+          <div class="app-card-desc" data-di18n="app-chat-desc">E2E encrypted messaging on BCH OP_RETURN. Ephemeral X25519 + AES-256-GCM. No account required.</div>
+        </a>
+        <a class="app-card" href="wallet.html">
+          <div class="app-card-name">00 WALLET</div>
+          <div class="app-card-desc" data-di18n="app-wallet-desc">Non-custodial BCH wallet. Ledger HW, imported key or generated. BIP44 scan.</div>
+        </a>
+        <a class="app-card" href="pay.html">
+          <div class="app-card-name">00 PAY</div>
+          <div class="app-card-desc" data-di18n="app-pay-desc">BCH payments + cross-chain THORChain. QR code, CashAddr, Ledger support.</div>
+        </a>
+        <a class="app-card" href="dex.html">
+          <div class="app-card-name">00 DEX</div>
+          <div class="app-card-desc" data-di18n="app-dex-desc">Decentralized exchange BCH ↔ CashTokens. Powered by Cauldron AMM.</div>
+        </a>
+        <a class="app-card" href="loan.html">
+          <div class="app-card-name">00 LOAN</div>
+          <div class="app-card-desc" data-di18n="app-loan-desc">Decentralized loans on BCH. Crypto collateral, zero KYC.</div>
+        </a>
+        <a class="app-card" href="id.html">
+          <div class="app-card-name">00 ID</div>
+          <div class="app-card-desc" data-di18n="app-id-desc">Self-sovereign identity. BCH key = universal identity.</div>
+        </a>
+        <a class="app-card" href="mesh.html">
+          <div class="app-card-name">00 MESH</div>
+          <div class="app-card-desc" data-di18n="app-mesh-desc">E2E encrypted messaging on Nostr relays. NIP-04 + secp256k1.</div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Chat -->
+    <section class="doc-section" id="chat">
+      <div class="section-tag">// 02.1 //</div>
+      <div class="section-title">00 CHAT</div>
+      <div class="section-divider"></div>
+      <p data-di18n="p-chat-1">Chat uses the <strong>CCSH (Cash Chat Secure Hub)</strong> protocol to exchange encrypted messages <strong>directly on the BCH blockchain</strong>. Each message is embedded in an <strong>OP_RETURN</strong> output (max 220 bytes) and sent as a BCH transaction to the recipient's address with a dust output (546 sats). Inbox scanning is done via <strong>Fulcrum/Electrum</strong> WebSocket every 10 seconds.</p>
+      <p data-di18n="p-chat-2">Each message generates a <strong>fresh ephemeral X25519 keypair</strong> for forward secrecy. The ephemeral private key and recipient's public key derive a shared secret via <strong>ECDH</strong>. The AES key is <strong>SHA-256(shared_secret)</strong>, then the plaintext is encrypted with <strong>AES-256-GCM</strong> (12-byte random IV, 128-bit auth tag).</p>
+      <div class="code-block"><span class="comment">// Per-message encryption (ephemeral key → forward secrecy)</span>
+<span class="key">eph_priv</span>     = random(32 bytes)
+<span class="key">eph_pub</span>      = X25519.getPublicKey(eph_priv)
+<span class="key">shared</span>       = X25519(eph_priv, recipient_pubkey)
+<span class="key">aes_key</span>      = SHA-256(shared)
+<span class="key">iv</span>           = random(12 bytes)
+<span class="key">ciphertext</span>   = AES-256-GCM(aes_key, iv, plaintext)
+
+<span class="comment">// CCSH v1 packet → BCH OP_RETURN transaction</span>
+<span class="key">chunk</span>        = eph_pub(32) || iv(12) || ciphertext+tag
+<span class="key">packet</span>       = CCSH_MAGIC(4) + ver(1) + type(1) + flags(1)
+               + msg_id(16) + sender_pub(32) + chunk_meta(6) + chunk
+<span class="key">tx</span>           = P2PKH(546 sats → recipient) + OP_RETURN(packet)</div>
+    </section>
+
+    <!-- Wallet -->
+    <section class="doc-section" id="wallet">
+      <div class="section-tag">// 02.2 //</div>
+      <div class="section-title">00 WALLET</div>
+      <div class="section-divider"></div>
+      <p data-di18n="p-wallet-1">Non-custodial BCH wallet with three access modes:</p>
+      <ul class="steps">
+        <li><span class="step-num">01</span><div data-di18n="wallet-step1"><strong>Hardware (Ledger)</strong> — WebHID connection. Full BIP44 address scan (gap limit 5). Private key never leaves the device.</div></li>
+        <li><span class="step-num">02</span><div data-di18n="wallet-step2"><strong>Imported seed</strong> — BIP39 mnemonic (12+ words) or 64-char hex seed. Derived via BIP44 m/44'/145'/0'/0/0.</div></li>
+        <li><span class="step-num">03</span><div data-di18n="wallet-step3"><strong>New key</strong> — Generated via WebCrypto (CSPRNG). Displayed once for backup.</div></li>
+      </ul>
+      <p data-di18n="p-wallet-2">UTXOs are retrieved via <strong>Fulcrum/Electrum</strong> over WebSocket. Transaction construction and broadcasting are done entirely client-side.</p>
+    </section>
+
+    <!-- Pay -->
+    <section class="doc-section" id="pay">
+      <div class="section-tag">// 02.3 //</div>
+      <div class="section-title">00 PAY</div>
+      <div class="section-divider"></div>
+      <p data-di18n="p-pay-1">Fast payment interface. Supports <strong>CashAddr</strong> (<code>bitcoincash:q…</code>), <strong>QR codes</strong>, and <strong>THORChain cross-chain sends</strong> (BCH → BTC, ETH, USDT…). Ledger compatible.</p>
+      <div class="callout cyan" data-di18n="callout-pay">
+        <span class="badge cyan">LEDGER</span> On 00 Pay, the public key is read directly from the device. Signing is done on-device — the private key never transits. Note: Ledger's BCH app rejects OP_RETURN outputs, so cross-chain THORChain swaps require a software wallet.
+      </div>
+      <div class="callout cyan" data-di18n="callout-pay-thor">
+        <span class="badge cyan">THORCHAIN</span> The SEND tab lets you swap BCH to any THORChain-supported asset (BTC, ETH, USDT…) via memo-based routing to the THORChain vault. Rates from Midgard API (midgard.ninerealms.com). Software wallet only.
+      </div>
+    </section>
+
+    <!-- DEX -->
+    <section class="doc-section" id="dex">
+      <div class="section-tag">// 02.4 //</div>
+      <div class="section-title">00 DEX</div>
+      <div class="section-divider"></div>
+      <p data-di18n="p-dex-1">Decentralized exchange powered by <strong>Cauldron AMM</strong> for native BCH ↔ CashTokens swaps. Pool data, TVL and prices are fetched from the Cauldron indexer. Swap execution redirects to the Cauldron app. Cross-chain swaps (BCH ↔ BTC, ETH…) are handled separately in <strong>00 Pay</strong> via THORChain.</p>
+      <table>
+        <tr><th>Source</th><th>Pairs</th><th>Endpoint</th></tr>
+        <tr><td>Cauldron AMM</td><td>BCH ↔ CashTokens</td><td>indexer.riften.net</td></tr>
+      </table>
+    </section>
+
+    <!-- Ledger -->
+    <section class="doc-section" id="ledger">
+      <div class="section-tag">// 03 //</div>
+      <div class="section-title">LEDGER INTEGRATION</div>
+      <div class="section-divider"></div>
+      <p data-di18n="p-ledger-1">0penw0rld natively supports Ledger Nano S, Nano X, Nano S+, Stax, Flex and Apex P via <strong>WebHID</strong> (Chrome/Edge only).</p>
+      <div class="callout cyan" data-di18n="callout-ledger">
+        <span class="badge cyan">PREREQUISITE</span> Open the <strong>Bitcoin Cash</strong> app on the Ledger before connecting.
+      </div>
+      <p data-di18n="p-ledger-2">Communication uses the Ledger <strong>APDU</strong> protocol encapsulated in 64-byte HID packets:</p>
+      <div class="code-block"><span class="comment">// APDU instructions used (INS)</span>
+<span class="key">0x40</span>  GET_WALLET_PUBLIC_KEY   <span class="comment">→ pubKey + CashAddr + chainCode</span>
+<span class="key">0x44</span>  HASH_TX_INPUT_START     <span class="comment">→ stream inputs (BIP143 mode)</span>
+<span class="key">0x4a</span>  HASH_TX_INPUT_FINALIZE  <span class="comment">→ stream outputs</span>
+<span class="key">0x48</span>  HASH_SIGN               <span class="comment">→ sign + return DER signature</span></div>
+      <p data-di18n="p-ledger-3">The <strong>ledger.js</strong> file exposes a public API:</p>
+      <div class="code-block">Ledger.connectLedger()              <span class="comment">→ device WebHID</span>
+Ledger.getLedgerPubKey(dev, path)   <span class="comment">→ { pubKey, addrRaw, chainCode }</span>
+Ledger.signLedgerTx(dev, utxos, outputs, scripts, paths)  <span class="comment">→ [DER+0x41]</span>
+Ledger.buildLedgerTx(utxos, sigs, pubKeys, outputs)       <span class="comment">→ hex tx</span></div>
+    </section>
+
+    <!-- BIP44 -->
+    <section class="doc-section" id="bip44">
+      <div class="section-tag">// 03.1 //</div>
+      <div class="section-title">BIP44 ADDRESS SCANNING</div>
+      <div class="section-divider"></div>
+      <p data-di18n="p-bip44-1">A Ledger BCH wallet can have funds spread across dozens of addresses (path <code>m/44'/145'/0'/0/k</code>). 0penw0rld automatically scans all used addresses.</p>
+      <div class="code-block"><span class="comment">// Scan algorithm</span>
+<span class="val">1.</span> Retrieve xpub at m/44'/145'/0' (account level)
+<span class="val">2.</span> Derive child keys locally via BIP32 (no Ledger contact needed)
+   child_k = BIP32_normal_child(xpub, chainCode, k)
+<span class="val">3.</span> Scan external (change=0) k=0..49  +  change (change=1) k=0..49
+<span class="val">4.</span> Gap limit = 5 (stop after 5 consecutive empty addresses)
+<span class="val">5.</span> Aggregate all UTXOs from found addresses</div>
+      <p data-di18n="p-bip44-2">Each UTXO is tagged with its derivation path and public key. During a transaction, each input is signed with the correct Ledger path.</p>
+      <div class="callout" data-di18n="callout-bip44">
+        In practice, a wallet with 42+ used addresses (real case: ~87 BCH) is fully supported — the scan takes a few seconds.
+      </div>
+    </section>
+
+    <!-- Protocol -->
+    <section class="doc-section" id="protocol">
+      <div class="section-tag">// 04 //</div>
+      <div class="section-title">CCSH PROTOCOL</div>
+      <div class="section-divider"></div>
+      <p data-di18n="p-protocol-1"><strong>CCSH (Cash Chat Secure Hub)</strong> is the 0penw0rld messaging protocol. Messages are encrypted end-to-end and embedded in <strong>BCH OP_RETURN</strong> transactions (max 220 bytes), sent directly to the recipient's BCH address. Inbox scanning uses <strong>Fulcrum/Electrum</strong> WebSocket indexers. 00 Mesh uses <strong>Nostr relays</strong> as a separate real-time transport.</p>
+      <table>
+        <tr><th>Layer</th><th>Technology</th><th>Role</th></tr>
+        <tr><td>Transport</td><td>BCH OP_RETURN (220 bytes max)</td><td>On-chain encrypted messages to recipient BCH address</td></tr>
+        <tr><td>Indexing</td><td>Fulcrum/Electrum (WebSocket)</td><td>UTXO queries + TX scanning every 10s</td></tr>
+        <tr><td>Keys</td><td>secp256k1 (BCH) + X25519 (messaging)</td><td>BCH signing + E2E encryption</td></tr>
+        <tr><td>ECDH</td><td>X25519 (ephemeral per message)</td><td>Shared secret derivation with forward secrecy</td></tr>
+        <tr><td>Encryption</td><td>AES-256-GCM (12-byte IV, 128-bit tag)</td><td>Message confidentiality + integrity</td></tr>
+        <tr><td>KDF</td><td>SHA-256(shared_secret)</td><td>AES key from ECDH shared secret</td></tr>
+        <tr><td>Chunking</td><td>CCSH v1 packets</td><td>Split large messages across multiple OP_RETURN TXs</td></tr>
+      </table>
+      <div class="code-block"><span class="comment">// CCSH v1 packet format (61-byte header + payload)</span>
+<span class="key">MAGIC</span>       : 0x43435348 ("CCSH")
+<span class="key">VERSION</span>     : 0x01
+<span class="key">MSG_TYPE</span>    : 0x01 = DM | 0x02 = ADDR_CHANGE (identity rotation)
+<span class="key">FLAGS</span>       : 1 byte (reserved)
+<span class="key">MSG_ID</span>      : 16 bytes random (links chunks together)
+<span class="key">SENDER_PUB</span>  : 32 bytes (X25519 public key)
+<span class="key">CHUNK_IDX</span>   : 2 bytes — current chunk index
+<span class="key">CHUNK_TOTAL</span> : 2 bytes — total chunks for this message
+<span class="key">CHUNK_LEN</span>   : 2 bytes — payload length
+<span class="key">PAYLOAD</span>     : eph_pub(32) + iv(12) + ciphertext + tag(16)</div>
+    </section>
+
+    <!-- BCH -->
+    <section class="doc-section" id="bch">
+      <div class="section-tag">// 05 //</div>
+      <div class="section-title">BITCOIN CASH</div>
+      <div class="section-divider"></div>
+      <p data-di18n="p-bch-1">0penw0rld uses <strong>Bitcoin Cash (BCH)</strong> as the native currency for payments, fees, and on-chain identity.</p>
+      <div class="code-block"><span class="comment">// BCH parameters</span>
+<span class="key">Network</span>       : mainnet
+<span class="key">Coin type</span>     : 145  (BIP44: m/44'/145'/0'/0/k)
+<span class="key">Addresses</span>     : CashAddr (bitcoincash:q…)
+<span class="key">Sighash</span>       : SIGHASH_ALL | FORKID  (0x41)
+<span class="key">Script</span>        : P2PKH standard
+<span class="key">UTXO provider</span> : Fulcrum (Electrum protocol over WebSocket)</div>
+      <p data-di18n="p-bch-2">Transaction fees are estimated at <strong>2 sat/byte</strong> (minimum 300 sats). Size estimation: 148 bytes/input + 34 bytes/output + 10 bytes overhead. Transaction construction follows the <strong>BIP143</strong> format (segwit-like sighash for BCH REPLAY protection).</p>
+    </section>
+
+    <!-- Privacy -->
+    <section class="doc-section" id="privacy">
+      <div class="section-tag">// 06 //</div>
+      <div class="section-title" data-di18n="t-privacy">PRIVACY</div>
+      <div class="section-divider"></div>
+      <p data-di18n="p-privacy-1">0penw0rld is designed to minimize metadata and maximize privacy:</p>
+      <ul class="steps">
+        <li><span class="step-num">✓</span><div data-di18n="priv-step1"><strong>No account</strong> — no email, no password, no server-side stored profile.</div></li>
+        <li><span class="step-num">✓</span><div data-di18n="priv-step2"><strong>No tracker</strong> — no analytics, no third-party cookies, no proprietary CDN (except Google Fonts).</div></li>
+        <li><span class="step-num">✓</span><div data-di18n="priv-step3"><strong>Local keys</strong> — private keys never leave the browser (or the Ledger).</div></li>
+        <li><span class="step-num">✓</span><div data-di18n="priv-step4"><strong>Open source</strong> — all code is directly auditable from DevTools.</div></li>
+        <li><span class="step-num">✓</span><div data-di18n="priv-step5"><strong>Offline-first</strong> — installable as a PWA, functional without connection for local operations.</div></li>
+      </ul>
+      <div class="callout" data-di18n="callout-privacy">
+        For maximum privacy on BCH transactions, use <strong>CashFusion</strong> before sending funds via 00 Wallet.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Bottom bar -->
+<div class="bottom-bar">
+  <div class="scroll-text">
+    CCSH_PROTOCOL_V1 &nbsp;·&nbsp; X25519_ECDH &nbsp;·&nbsp; AES256_GCM &nbsp;·&nbsp; OP_RETURN &nbsp;·&nbsp; BCH_MAINNET &nbsp;·&nbsp; LORA_MESH &nbsp;·&nbsp; ZERO_SERVERS &nbsp;·&nbsp; ZERO_TRUST &nbsp;·&nbsp; CASHFUSION_READY &nbsp;·&nbsp; END_TO_END &nbsp;·&nbsp; LEDGER_HW_READY &nbsp;·&nbsp; WEBHID_TRANSPORT &nbsp;·&nbsp; BIP44_SCAN &nbsp;·&nbsp; CCSH_PROTOCOL_V1 &nbsp;·&nbsp; X25519_ECDH &nbsp;·&nbsp; AES256_GCM &nbsp;·&nbsp; OP_RETURN &nbsp;·&nbsp; BCH_MAINNET &nbsp;·&nbsp; LORA_MESH &nbsp;·&nbsp; ZERO_SERVERS &nbsp;·&nbsp; ZERO_TRUST &nbsp;·&nbsp; CASHFUSION_READY &nbsp;·&nbsp; END_TO_END &nbsp;·&nbsp; LEDGER_HW_READY &nbsp;·&nbsp; WEBHID_TRANSPORT &nbsp;·&nbsp; BIP44_SCAN &nbsp;·&nbsp;
+  </div>
+</div>
+
+<script>
+// Clock
+function updateClock() {
+  const el = document.getElementById('doc-clock');
+  if (el) el.textContent = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000); updateClock();
+
+// Active nav on scroll
+function setActive(el) {
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  el.classList.add('active');
+}
+
+const sections = document.querySelectorAll('.doc-section');
+const navLinks = document.querySelectorAll('.nav-link');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) current = s.id; });
+  navLinks.forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+  });
+}, { passive: true });
+</script>
+<script src="/shell.js"></script>
+<script>
+// ── Docs i18n ─────────────────────────────────────────────────────────────────
+const DOC_T = {
+  EN: {
+    'nav-s1':'OVERVIEW','nav-s2':'APPLICATIONS','nav-s3':'HARDWARE','nav-s4':'PROTOCOLS',
+    'nav-intro':'Introduction','nav-arch':'Architecture','nav-apps':'All apps',
+    'nav-chat':'00 Chat','nav-wallet':'00 Wallet','nav-pay':'00 Pay','nav-dex':'00 DEX',
+    'nav-ledger':'Ledger Integration','nav-bip44':'BIP44 Scanning',
+    'nav-protocol':'CCSH Protocol','nav-bch':'Bitcoin Cash','nav-privacy':'Privacy',
+    't-privacy':'PRIVACY',
+    'p-overview-1':'<strong>0penw0rld</strong> is a decentralized ecosystem built on Bitcoin Cash. Zero central server, zero custody, zero borders. Every app runs directly in the browser, peer-to-peer.',
+    'p-overview-2':'All private keys stay in your browser or on your hardware wallet. No data is sent to third parties. BCH transactions are broadcast directly to the network via public relays.',
+    'callout-overview':'No account. No server. No KYC. Your private key = your identity.',
+    'p-arch-1':'0penw0rld is a Progressive Web App (PWA) made of static HTML/JS files. No backend required — everything works offline once installed.',
+    'app-chat-desc':'E2E encrypted messaging on BCH OP_RETURN. Ephemeral X25519 + AES-256-GCM. No account required.',
+    'app-wallet-desc':'Non-custodial BCH wallet. Ledger HW, imported key or generated. BIP44 scan.',
+    'app-pay-desc':'BCH payments + cross-chain THORChain. QR code, CashAddr, Ledger support.',
+    'app-dex-desc':'Decentralized exchange BCH ↔ CashTokens. Powered by Cauldron AMM.',
+    'app-loan-desc':'Decentralized loans on BCH. Crypto collateral, zero KYC.',
+    'app-id-desc':'Self-sovereign identity. BCH key = universal identity.',
+    'app-mesh-desc':'E2E encrypted messaging on Nostr relays. NIP-04 + secp256k1.',
+    'p-chat-1':'Chat uses the <strong>CCSH (Cash Chat Secure Hub)</strong> protocol to exchange encrypted messages <strong>directly on the BCH blockchain</strong>. Each message is embedded in an <strong>OP_RETURN</strong> output (max 220 bytes) and sent as a BCH transaction to the recipient\'s address with a dust output (546 sats). Inbox scanning uses <strong>Fulcrum/Electrum</strong> WebSocket every 10 seconds.',
+    'p-chat-2':'Each message generates a <strong>fresh ephemeral X25519 keypair</strong> for forward secrecy. The ephemeral private key and recipient\'s public key derive a shared secret via <strong>ECDH</strong>. The AES key is <strong>SHA-256(shared_secret)</strong>, then the plaintext is encrypted with <strong>AES-256-GCM</strong> (12-byte random IV, 128-bit auth tag).',
+    'p-wallet-1':'Non-custodial BCH wallet with three access modes:',
+    'wallet-step1':'<strong>Hardware (Ledger)</strong> — WebHID connection. Full BIP44 address scan (gap limit 5). Private key never leaves the device.',
+    'wallet-step2':'<strong>Imported seed</strong> — BIP39 mnemonic (12+ words) or 64-char hex seed. Derived via BIP44 m/44\\''/145\\''/0\\''/0/0.',
+    'wallet-step3':'<strong>New key</strong> — Generated via WebCrypto (CSPRNG). Displayed once for backup.',
+    'p-wallet-2':'UTXOs are retrieved via <strong>Fulcrum/Electrum</strong> over WebSocket. Transaction construction and broadcasting are done entirely client-side.',
+    'p-pay-1':'Fast payment interface. Supports <strong>CashAddr</strong> (<code>bitcoincash:q…</code>), <strong>QR codes</strong>, and <strong>THORChain cross-chain sends</strong> (BCH → BTC, ETH, USDT…). Ledger compatible.',
+    'callout-pay':'<span class=\"badge cyan\">LEDGER</span> On 00 Pay, the public key is read directly from the device. Signing is done on-device — the private key never transits. Note: Ledger\\'s BCH app rejects OP_RETURN outputs, so cross-chain THORChain swaps require a software wallet.',
+    'callout-pay-thor':'<span class=\"badge cyan\">THORCHAIN</span> The SEND tab lets you swap BCH to any THORChain-supported asset (BTC, ETH, USDT…) via memo-based routing to the THORChain vault. Rates from Midgard API. Software wallet only.',
+    'p-dex-1':'Decentralized exchange powered by <strong>Cauldron AMM</strong> for native BCH ↔ CashTokens swaps. Cross-chain swaps (BCH ↔ BTC, ETH…) are handled separately in <strong>00 Pay</strong> via THORChain.',
+    'p-ledger-1':'0penw0rld natively supports Ledger Nano S, Nano X, Nano S+, Stax, Flex and Apex P via <strong>WebHID</strong> (Chrome/Edge only).',
+    'callout-ledger':'<span class="badge cyan">PREREQUISITE</span> Open the <strong>Bitcoin Cash</strong> app on the Ledger before connecting.',
+    'p-ledger-2':'Communication uses the Ledger <strong>APDU</strong> protocol encapsulated in 64-byte HID packets:',
+    'p-ledger-3':'The <strong>ledger.js</strong> file exposes a public API:',
+    'p-bip44-1':"A Ledger BCH wallet can have funds spread across dozens of addresses (path <code>m/44'/145'/0'/0/k</code>). 0penw0rld automatically scans all used addresses.",
+    'p-bip44-2':'Each UTXO is tagged with its derivation path and public key. During a transaction, each input is signed with the correct Ledger path.',
+    'callout-bip44':'In practice, a wallet with 42+ used addresses (real case: ~87 BCH) is fully supported — the scan takes a few seconds.',
+    'p-protocol-1':'<strong>CCSH (Cash Chat Secure Hub)</strong> is the 0penw0rld messaging protocol. Messages are encrypted end-to-end and embedded in <strong>BCH OP_RETURN</strong> transactions (max 220 bytes), sent directly to the recipient\'s BCH address. Inbox scanning uses <strong>Fulcrum/Electrum</strong> WebSocket indexers. 00 Mesh uses <strong>Nostr relays</strong> as a separate real-time transport.',
+    'p-bch-1':'0penw0rld uses <strong>Bitcoin Cash (BCH)</strong> as the native currency for payments, fees, and on-chain identity.',
+    'p-bch-2':'Transaction fees are estimated at <strong>2 sat/byte</strong> (minimum 300 sats). Size estimation: 148 bytes/input + 34 bytes/output + 10 bytes overhead. Transaction construction follows the <strong>BIP143</strong> format (segwit-like sighash for BCH REPLAY protection).',
+    'p-privacy-1':'0penw0rld is designed to minimize metadata and maximize privacy:',
+    'priv-step1':'<strong>No account</strong> — no email, no password, no server-side stored profile.',
+    'priv-step2':'<strong>No tracker</strong> — no analytics, no third-party cookies, no proprietary CDN (except Google Fonts).',
+    'priv-step3':'<strong>Local keys</strong> — private keys never leave the browser (or the Ledger).',
+    'priv-step4':'<strong>Open source</strong> — all code is directly auditable from DevTools.',
+    'priv-step5':'<strong>Offline-first</strong> — installable as a PWA, functional without connection for local operations.',
+    'callout-privacy':'For maximum privacy on BCH transactions, use <strong>CashFusion</strong> before sending funds via 00 Wallet.',
+  },
+  FR: {
+    'nav-s1':"VUE D'ENSEMBLE",'nav-s2':'APPLICATIONS','nav-s3':'MATÉRIEL','nav-s4':'PROTOCOLES',
+    'nav-intro':'Introduction','nav-arch':'Architecture','nav-apps':'Toutes les apps',
+    'nav-chat':'00 Chat','nav-wallet':'00 Wallet','nav-pay':'00 Pay','nav-dex':'00 DEX',
+    'nav-ledger':'Ledger Integration','nav-bip44':'BIP44 Scanning',
+    'nav-protocol':'CCSH Protocol','nav-bch':'Bitcoin Cash','nav-privacy':'Vie privée',
+    't-privacy':'VIE PRIVÉE',
+    'p-overview-1':"<strong>0penw0rld</strong> est un écosystème décentralisé construit sur Bitcoin Cash. Zéro serveur central, zéro custody, zéro frontières. Chaque application fonctionne directement dans le navigateur, en peer-to-peer.",
+    'p-overview-2':"Toutes les clés privées restent dans votre navigateur ou sur votre hardware wallet. Aucune donnée n'est envoyée à un tiers. Les transactions BCH sont diffusées directement sur le réseau via des relais publics.",
+    'callout-overview':'Aucun compte. Aucun serveur. Aucun KYC. Votre clé privée = votre identité.',
+    'p-arch-1':"0penw0rld est une Progressive Web App (PWA) composée de fichiers HTML/JS statiques. Aucun backend requis — tout fonctionne hors ligne une fois installé.",
+    'app-chat-desc':'Messagerie chiffrée E2E sur BCH OP_RETURN. X25519 éphémère + AES-256-GCM. Sans compte.',
+    'app-wallet-desc':'Wallet BCH non-custodial. Ledger HW, clé importée, ou générée. BIP44 scan.',
+    'app-pay-desc':'Paiements BCH + cross-chain THORChain. QR code, CashAddr, support Ledger.',
+    'app-dex-desc':'Échange décentralisé BCH ↔ CashTokens. Propulsé par Cauldron AMM.',
+    'app-loan-desc':'Prêts décentralisés sur BCH. Collatéral crypto, zéro KYC.',
+    'app-id-desc':'Identité auto-souveraine. Clé BCH = identité universelle.',
+    'app-mesh-desc':'Messagerie chiffrée E2E sur relais Nostr. NIP-04 + secp256k1.',
+    'p-chat-1':"Chat utilise le protocole <strong>CCSH (Cash Chat Secure Hub)</strong> pour échanger des messages chiffrés <strong>directement sur la blockchain BCH</strong>. Chaque message est embarqué dans un output <strong>OP_RETURN</strong> (max 220 bytes) et envoyé comme transaction BCH à l'adresse du destinataire avec un output dust (546 sats). Le scan de la boîte de réception utilise <strong>Fulcrum/Electrum</strong> en WebSocket toutes les 10 secondes.",
+    'p-chat-2':"Chaque message génère une <strong>paire de clés X25519 éphémère</strong> pour la confidentialité persistante. La clé privée éphémère et la clé publique du destinataire dérivent un secret partagé via <strong>ECDH</strong>. La clé AES est <strong>SHA-256(shared_secret)</strong>, puis le texte est chiffré avec <strong>AES-256-GCM</strong> (IV aléatoire de 12 bytes, tag d'authentification de 128 bits).",
+    'p-wallet-1':"Wallet BCH non-custodial avec trois modes d'accès :",
+    'wallet-step1':"<strong>Hardware (Ledger)</strong> — Connexion via WebHID. Scan de toutes les adresses BIP44 (gap limit 5). La clé privée ne quitte jamais le device.",
+    'wallet-step2':"<strong>Seed importé</strong> — Mnémonique BIP39 (12+ mots) ou seed hex 64 caractères. Dérivation BIP44 m/44'/145'/0'/0/0.",
+    'wallet-step3':"<strong>Nouvelle clé</strong> — Génération via WebCrypto (CSPRNG). Affichée une fois pour sauvegarde.",
+    'p-wallet-2':"Les UTXOs sont récupérés via <strong>Fulcrum/Electrum</strong> en WebSocket. La construction et la diffusion des transactions se font entièrement côté client.",
+    'p-pay-1':"Interface de paiement rapide. Supporte les adresses <strong>CashAddr</strong> (<code>bitcoincash:q…</code>), les <strong>QR codes</strong> et les envois <strong>cross-chain via THORChain</strong> (BCH → BTC, ETH, USDT…). Compatible Ledger.",
+    'callout-pay':"<span class=\"badge cyan\">LEDGER</span> Sur 00 Pay, la clé publique est lue directement depuis le device. La signature se fait on-device. Note : l'app BCH du Ledger rejette les outputs OP_RETURN, les swaps THORChain cross-chain nécessitent un wallet logiciel.",
+    'callout-pay-thor':"<span class=\"badge cyan\">THORCHAIN</span> L'onglet SEND permet d'échanger des BCH vers n'importe quel asset THORChain (BTC, ETH, USDT…) via routage memo vers le vault THORChain. Taux via API Midgard. Wallet logiciel uniquement.",
+    'p-dex-1':"Échange décentralisé propulsé par <strong>Cauldron AMM</strong> pour les swaps natifs BCH ↔ CashTokens. Les swaps cross-chain (BCH ↔ BTC, ETH…) sont gérés séparément dans <strong>00 Pay</strong> via THORChain.",
+    'p-ledger-1':"0penw0rld supporte nativement les Ledger Nano S, Nano X, Nano S+, Stax, Flex et Apex P via <strong>WebHID</strong> (Chrome/Edge uniquement).",
+    'callout-ledger':"<span class=\"badge cyan\">PRÉREQUIS</span> Ouvrir l'application <strong>Bitcoin Cash</strong> sur le Ledger avant de connecter.",
+    'p-ledger-2':"La communication utilise le protocole <strong>APDU</strong> de Ledger encapsulé dans des paquets HID de 64 bytes :",
+    'p-ledger-3':"Le fichier <strong>ledger.js</strong> expose une API publique :",
+    'p-bip44-1':"Un wallet Ledger BCH peut avoir des fonds répartis sur des dizaines d'adresses (chemin <code>m/44'/145'/0'/0/k</code>). 0penw0rld scanne automatiquement toutes les adresses utilisées.",
+    'p-bip44-2':"Chaque UTXO est taggé avec son chemin de dérivation et sa clé publique. Lors d'une transaction, chaque input est signé avec le bon chemin Ledger.",
+    'callout-bip44':"En pratique, un wallet avec 42+ adresses utilisées (cas réel : ~87 BCH) est entièrement supporté — le scan prend quelques secondes.",
+    'p-protocol-1':"<strong>CCSH (Cash Chat Secure Hub)</strong> est le protocole de messagerie de 0penw0rld. Les messages sont chiffrés de bout en bout et embarqués dans des transactions <strong>BCH OP_RETURN</strong> (max 220 bytes), envoyés directement à l'adresse BCH du destinataire. Le scan utilise les indexeurs <strong>Fulcrum/Electrum</strong> en WebSocket. 00 Mesh utilise les <strong>relais Nostr</strong> comme transport temps réel séparé.",
+    'p-bch-1':"0penw0rld utilise <strong>Bitcoin Cash (BCH)</strong> comme monnaie native pour les paiements, les frais, et l'identité on-chain.",
+    'p-bch-2':"Les frais sont estimés à <strong>2 sat/byte</strong> (minimum 300 sats). Estimation : 148 bytes/input + 34 bytes/output + 10 bytes overhead. La construction des transactions respecte le format <strong>BIP143</strong> (segwit-like sighash pour BCH REPLAY protection).",
+    'p-privacy-1':"0penw0rld est conçu pour minimiser les métadonnées et maximiser la vie privée :",
+    'priv-step1':"<strong>Aucun compte</strong> — pas d'email, pas de mot de passe, pas de profil stocké côté serveur.",
+    'priv-step2':"<strong>Aucun tracker</strong> — pas d'analytics, pas de cookies tiers, pas de CDN propriétaire (sauf Google Fonts).",
+    'priv-step3':"<strong>Clés locales</strong> — les clés privées ne quittent jamais le navigateur (ou le Ledger).",
+    'priv-step4':"<strong>Open source</strong> — tout le code est auditable directement depuis les DevTools.",
+    'priv-step5':"<strong>Offline-first</strong> — installable comme PWA, fonctionnel sans connexion pour les opérations locales.",
+    'callout-privacy':"Pour une vie privée maximale sur les transactions BCH, utilisez <strong>CashFusion</strong> avant d'envoyer des fonds via 00 Wallet.",
+  },
+  ES: {
+    'nav-s1':'RESUMEN','nav-s2':'APLICACIONES','nav-s3':'HARDWARE','nav-s4':'PROTOCOLOS',
+    'nav-intro':'Introducción','nav-arch':'Arquitectura','nav-apps':'Todas las apps',
+    'nav-chat':'00 Chat','nav-wallet':'00 Wallet','nav-pay':'00 Pay','nav-dex':'00 DEX',
+    'nav-ledger':'Integración Ledger','nav-bip44':'BIP44 Escaneo',
+    'nav-protocol':'Protocolo CCSH','nav-bch':'Bitcoin Cash','nav-privacy':'Privacidad',
+    't-privacy':'PRIVACIDAD',
+    'p-overview-1':'<strong>0penw0rld</strong> es un ecosistema descentralizado construido sobre Bitcoin Cash. Cero servidor central, cero custodia, cero fronteras. Cada aplicación funciona directamente en el navegador, de forma peer-to-peer.',
+    'p-overview-2':'Todas las claves privadas permanecen en tu navegador o en tu hardware wallet. Ningún dato se envía a terceros. Las transacciones BCH se transmiten directamente a la red a través de relés públicos.',
+    'callout-overview':'Sin cuenta. Sin servidor. Sin KYC. Tu clave privada = tu identidad.',
+    'p-arch-1':'0penw0rld es una Progressive Web App (PWA) compuesta de archivos HTML/JS estáticos. Sin backend — todo funciona sin conexión una vez instalado.',
+    'app-chat-desc':'Mensajería cifrada E2E en BCH OP_RETURN. X25519 efímero + AES-256-GCM. Sin cuenta.',
+    'app-wallet-desc':'Cartera BCH no custodial. Ledger HW, clave importada o generada. BIP44 scan.',
+    'app-pay-desc':'Pagos BCH + cross-chain THORChain. QR code, CashAddr, soporte Ledger.',
+    'app-dex-desc':'Intercambio descentralizado BCH ↔ CashTokens. Impulsado por Cauldron AMM.',
+    'app-loan-desc':'Préstamos descentralizados en BCH. Colateral cripto, cero KYC.',
+    'app-id-desc':'Identidad auto-soberana. Clave BCH = identidad universal.',
+    'app-mesh-desc':'Mensajería cifrada E2E en relés Nostr. NIP-04 + secp256k1.',
+    'p-chat-1':'Chat usa el protocolo <strong>CCSH (Cash Chat Secure Hub)</strong> para intercambiar mensajes cifrados <strong>directamente en la blockchain BCH</strong>. Cada mensaje se embebe en un output <strong>OP_RETURN</strong> (máx 220 bytes) y se envía como transacción BCH a la dirección del destinatario con un output dust (546 sats). El escaneo de la bandeja usa <strong>Fulcrum/Electrum</strong> WebSocket cada 10 segundos.',
+    'p-chat-2':'Cada mensaje genera un <strong>par de claves X25519 efímeras</strong> para confidencialidad persistente. La clave privada efímera y la clave pública del destinatario derivan un secreto compartido vía <strong>ECDH</strong>. La clave AES es <strong>SHA-256(shared_secret)</strong>, luego el texto se cifra con <strong>AES-256-GCM</strong> (IV aleatorio de 12 bytes, tag de autenticación de 128 bits).',
+    'p-wallet-1':'Cartera BCH no custodial con tres modos de acceso:',
+    'wallet-step1':'<strong>Hardware (Ledger)</strong> — Conexión WebHID. Escaneo completo BIP44 (gap limit 5). La clave privada nunca sale del dispositivo.',
+    'wallet-step2':'<strong>Seed importado</strong> — Mnemónico BIP39 (12+ palabras) o seed hex 64 caracteres. Derivación BIP44 m/44\\'/145\\'/0\\'/0/0.',
+    'wallet-step3':'<strong>Nueva clave</strong> — Generada via WebCrypto (CSPRNG). Mostrada una vez para respaldo.',
+    'p-wallet-2':'Los UTXOs se recuperan via <strong>Fulcrum/Electrum</strong> por WebSocket. La construcción y difusión de transacciones se realiza completamente del lado del cliente.',
+    'p-pay-1':'Interfaz de pago rápido. Soporta <strong>CashAddr</strong> (<code>bitcoincash:q…</code>), <strong>QR codes</strong> y envíos <strong>cross-chain vía THORChain</strong> (BCH → BTC, ETH, USDT…). Compatible con Ledger.',
+    'callout-pay':'<span class=\"badge cyan\">LEDGER</span> En 00 Pay, la clave pública se lee directamente del dispositivo. La firma es on-device. Nota: la app BCH del Ledger rechaza outputs OP_RETURN, los swaps THORChain cross-chain requieren wallet software.',
+    'callout-pay-thor':'<span class=\"badge cyan\">THORCHAIN</span> La pestaña SEND permite intercambiar BCH por cualquier activo THORChain (BTC, ETH, USDT…) vía enrutamiento memo al vault THORChain. Tasas vía API Midgard. Solo wallet software.',
+    'p-dex-1':'Intercambio descentralizado impulsado por <strong>Cauldron AMM</strong> para swaps nativos BCH ↔ CashTokens. Los swaps cross-chain (BCH ↔ BTC, ETH…) se gestionan en <strong>00 Pay</strong> vía THORChain.',
+    'p-ledger-1':'0penw0rld soporta nativamente Ledger Nano S, Nano X, Nano S+, Stax, Flex y Apex P vía <strong>WebHID</strong> (solo Chrome/Edge).',
+    'callout-ledger':'<span class="badge cyan">PREREQUISITO</span> Abrir la aplicación <strong>Bitcoin Cash</strong> en el Ledger antes de conectar.',
+    'p-ledger-2':'La comunicación usa el protocolo <strong>APDU</strong> de Ledger encapsulado en paquetes HID de 64 bytes:',
+    'p-ledger-3':'El archivo <strong>ledger.js</strong> expone una API pública:',
+    'p-bip44-1':"Una cartera Ledger BCH puede tener fondos repartidos en decenas de direcciones (ruta <code>m/44'/145'/0'/0/k</code>). 0penw0rld escanea automáticamente todas las usadas.",
+    'p-bip44-2':'Cada UTXO está etiquetado con su ruta de derivación y clave pública. Durante una transacción, cada input se firma con la ruta Ledger correcta.',
+    'callout-bip44':'En la práctica, una cartera con 42+ direcciones usadas (caso real: ~87 BCH) está totalmente soportada — el escaneo toma unos segundos.',
+    'p-protocol-1':'<strong>CCSH (Cash Chat Secure Hub)</strong> es el protocolo de mensajería de 0penw0rld. Los mensajes se cifran de extremo a extremo y se embeben en transacciones <strong>BCH OP_RETURN</strong> (máx 220 bytes), enviados directamente a la dirección BCH del destinatario. El escaneo usa indexadores <strong>Fulcrum/Electrum</strong> WebSocket. 00 Mesh usa <strong>relés Nostr</strong> como transporte separado en tiempo real.',
+    'p-bch-1':'0penw0rld usa <strong>Bitcoin Cash (BCH)</strong> como moneda nativa para pagos, comisiones e identidad on-chain.',
+    'p-bch-2':'Las comisiones se estiman a <strong>2 sat/byte</strong> (mínimo 300 sats). Estimación: 148 bytes/input + 34 bytes/output + 10 bytes overhead. La construcción de transacciones sigue el formato <strong>BIP143</strong> (sighash tipo segwit para protección BCH REPLAY).',
+    'p-privacy-1':'0penw0rld está diseñado para minimizar metadatos y maximizar la privacidad:',
+    'priv-step1':'<strong>Sin cuenta</strong> — sin email, sin contraseña, sin perfil en servidor.',
+    'priv-step2':'<strong>Sin rastreadores</strong> — sin analítica, sin cookies de terceros, sin CDN propietario (excepto Google Fonts).',
+    'priv-step3':'<strong>Claves locales</strong> — las claves privadas nunca salen del navegador (o del Ledger).',
+    'priv-step4':'<strong>Código abierto</strong> — todo el código es auditable directamente desde DevTools.',
+    'priv-step5':'<strong>Offline-first</strong> — instalable como PWA, funcional sin conexión para operaciones locales.',
+    'callout-privacy':'Para máxima privacidad en transacciones BCH, use <strong>CashFusion</strong> antes de enviar fondos via 00 Wallet.',
+  },
+  CN: {
+    'nav-s1':'概述','nav-s2':'应用','nav-s3':'硬件','nav-s4':'协议',
+    'nav-intro':'简介','nav-arch':'架构','nav-apps':'所有应用',
+    'nav-chat':'00 聊天','nav-wallet':'00 钱包','nav-pay':'00 支付','nav-dex':'00 DEX',
+    'nav-ledger':'Ledger 集成','nav-bip44':'BIP44 扫描',
+    'nav-protocol':'CCSH 协议','nav-bch':'比特币现金','nav-privacy':'隐私',
+    't-privacy':'隐私',
+    'p-overview-1':'<strong>0penw0rld</strong> 是基于比特币现金构建的去中心化生态系统。零中央服务器，零托管，零边界。每个应用直接在浏览器中运行，点对点。',
+    'p-overview-2':'所有私钥保留在您的浏览器或硬件钱包中。没有任何数据发送给第三方。BCH交易通过公共中继直接广播到网络。',
+    'callout-overview':'无账户。无服务器。无KYC。您的私钥=您的身份。',
+    'p-arch-1':'0penw0rld 是由静态 HTML/JS 文件组成的渐进式 Web 应用（PWA）。无需后端——一旦安装，一切都可以离线工作。',
+    'app-chat-desc':'BCH OP_RETURN 端对端加密消息。临时 X25519 + AES-256-GCM。无需账户。',
+    'app-wallet-desc':'非托管BCH钱包。Ledger硬件，导入密钥或生成。BIP44扫描。',
+    'app-pay-desc':'BCH支付 + THORChain跨链。二维码，CashAddr，支持Ledger。',
+    'app-dex-desc':'去中心化交易所 BCH ↔ CashTokens。由 Cauldron AMM 驱动。',
+    'app-loan-desc':'BCH 去中心化贷款。加密担保，零KYC。',
+    'app-id-desc':'自主主权身份。BCH密钥=通用身份。',
+    'app-mesh-desc':'Nostr 中继端对端加密消息。NIP-04 + secp256k1。',
+    'p-chat-1':'Chat 使用 <strong>CCSH（Cash Chat Secure Hub）</strong> 协议<strong>直接在 BCH 区块链上</strong>交换加密消息。每条消息嵌入 <strong>OP_RETURN</strong> 输出（最大 220 字节），作为 BCH 交易发送到收件人地址，附带 dust 输出（546 聪）。收件箱扫描通过 <strong>Fulcrum/Electrum</strong> WebSocket 每 10 秒执行。',
+    'p-chat-2':'每条消息生成一个<strong>全新的临时 X25519 密钥对</strong>以实现前向保密。临时私钥和收件人公钥通过 <strong>ECDH</strong> 派生共享密钥。AES 密钥为 <strong>SHA-256(shared_secret)</strong>，然后使用 <strong>AES-256-GCM</strong>（12 字节随机 IV、128 位认证标签）加密明文。',
+    'p-wallet-1':'非托管BCH钱包，有三种访问模式：',
+    'wallet-step1':'<strong>硬件（Ledger）</strong> — 通过 WebHID 连接。完整 BIP44 地址扫描（gap limit 5）。私钥永远不离开设备。',
+    'wallet-step2':'<strong>导入种子</strong> — BIP39 助记词（12+ 词）或 64 字符十六进制种子。BIP44 派生 m/44\\'/145\\'/0\\'/0/0。',
+    'wallet-step3':'<strong>新密钥</strong> — 通过 WebCrypto（CSPRNG）生成。显示一次用于备份。',
+    'p-wallet-2':'UTXO 通过 <strong>Fulcrum/Electrum</strong> WebSocket 获取。交易构建和广播完全在客户端完成。',
+    'p-pay-1':'快速支付界面。支持 <strong>CashAddr</strong>（<code>bitcoincash:q…</code>）、<strong>二维码</strong>和 <strong>THORChain 跨链发送</strong>（BCH → BTC、ETH、USDT…）。兼容 Ledger。',
+    'callout-pay':'<span class=\"badge cyan\">LEDGER</span> 在 00 Pay 上，公钥直接从设备读取。签名在设备上完成。注意：Ledger 的 BCH 应用拒绝 OP_RETURN 输出，THORChain 跨链兑换需要软件钱包。',
+    'callout-pay-thor':'<span class=\"badge cyan\">THORCHAIN</span> SEND 选项卡可将 BCH 兑换为任何 THORChain 支持的资产（BTC、ETH、USDT…），通过 memo 路由到 THORChain 保险库。汇率来自 Midgard API。仅限软件钱包。',
+    'p-dex-1':'由 <strong>Cauldron AMM</strong> 驱动的去中心化交易所，支持原生 BCH ↔ CashTokens 兑换。跨链兑换（BCH ↔ BTC、ETH…）在 <strong>00 Pay</strong> 中通过 THORChain 单独处理。',
+    'p-ledger-1':'0penw0rld 原生支持 Ledger Nano S、Nano X、Nano S+、Stax、Flex 和 Apex P，通过 <strong>WebHID</strong>（仅 Chrome/Edge）。',
+    'callout-ledger':'<span class="badge cyan">前提条件</span> 连接前请在 Ledger 上打开 <strong>Bitcoin Cash</strong> 应用。',
+    'p-ledger-2':'通信使用 Ledger 的 <strong>APDU</strong> 协议，封装在 64 字节 HID 数据包中：',
+    'p-ledger-3':'<strong>ledger.js</strong> 文件提供公共 API：',
+    'p-bip44-1':"Ledger BCH 钱包的资金可能分布在数十个地址上（路径 <code>m/44'/145'/0'/0/k</code>）。0penw0rld 自动扫描所有已使用的地址。",
+    'p-bip44-2':'每个 UTXO 都标记了其派生路径和公钥。在交易期间，每个输入都用正确的 Ledger 路径签名。',
+    'callout-bip44':'实际上，拥有42个以上已用地址的钱包（真实案例：约87 BCH）完全受支持——扫描只需几秒。',
+    'p-protocol-1':'<strong>CCSH（Cash Chat Secure Hub）</strong> 是 0penw0rld 的消息协议。消息经端对端加密后嵌入 <strong>BCH OP_RETURN</strong> 交易（最大 220 字节），直接发送到收件人的 BCH 地址。扫描使用 <strong>Fulcrum/Electrum</strong> WebSocket 索引器。00 Mesh 使用 <strong>Nostr 中继</strong>作为独立的实时传输。',
+    'p-bch-1':'0penw0rld 使用 <strong>Bitcoin Cash（BCH）</strong> 作为支付、手续费和链上身份的原生货币。',
+    'p-bch-2':'交易费用估算为 <strong>2 sat/byte</strong>（最低 300 sats）。大小估算：148 bytes/输入 + 34 bytes/输出 + 10 bytes 开销。交易构建遵循 <strong>BIP143</strong> 格式（BCH REPLAY 保护的类 segwit sighash）。',
+    'p-privacy-1':'0penw0rld 旨在最小化元数据并最大化隐私：',
+    'priv-step1':'<strong>无账户</strong> — 无电子邮件，无密码，无服务器端存储的个人资料。',
+    'priv-step2':'<strong>无追踪器</strong> — 无分析，无第三方cookie，无专有CDN（Google Fonts除外）。',
+    'priv-step3':'<strong>本地密钥</strong> — 私钥永远不离开浏览器（或 Ledger）。',
+    'priv-step4':'<strong>开源</strong> — 所有代码可直接通过 DevTools 审计。',
+    'priv-step5':'<strong>离线优先</strong> — 可安装为PWA，本地操作无需连接即可运行。',
+    'callout-privacy':'为了BCH交易的最大隐私，在通过 00 Wallet 发送资金之前使用 <strong>CashFusion</strong>。',
+  }
+};
+function _applyDocLang(lang) {
+  const d = DOC_T[lang] || DOC_T.EN;
+  document.querySelectorAll('[data-di18n]').forEach(el => {
+    const v = d[el.dataset.di18n];
+    if (v !== undefined) el.innerHTML = v;
+  });
+}
+window._onLangChange = _applyDocLang;
+_applyDocLang(localStorage.getItem('00_lang') || 'EN');
+</script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# venv
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Claude Code
+.claude/
+
+# Project-generated (simnet / logs)
+simnet/**/processed*
+*.log
+
+# Internal notes (ideas, roadmap, private docs)
+notes/

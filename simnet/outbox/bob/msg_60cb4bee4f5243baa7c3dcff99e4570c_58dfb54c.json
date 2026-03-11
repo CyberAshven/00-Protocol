@@ -1,0 +1,15 @@
+{
+  "transport": "file-inbox-v1",
+  "ts": 1766196117,
+  "meta": {
+    "msg_id": "60cb4bee4f5243baa7c3dcff99e4570c",
+    "from": "alice",
+    "from_pub": "c4306b94329384de0075e06c41dcc2425f4c46fe357a2c69767aa9737a9f1333",
+    "to": "bob",
+    "to_pub": "97d8a111ee880524dcadcb918644ec1de345169b0a95964ec209677555db6f01",
+    "type": "MSG"
+  },
+  "packets_hex": [
+    "4343534801010060cb4bee4f5243baa7c3dcff99e4570cc4306b94329384de0075e06c41dcc2425f4c46fe357a2c69767aa9737a9f133300000001003ea700b48be594194bf07a962f34ffa34bfc70c227a5c6eed608254b5995f0cb6d5dc16f8422931a791371e952454694aa5832d4baf53f01ad8e5e1e0bdacd"
+  ]
+}

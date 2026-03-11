@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#00ff41">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-name" content="0penw0rld">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <title>0penw0rld</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #00ff41;
+      --green-dim: #00c832;
+      --green-dark: #003d0f;
+      --black: #020a03;
+      --grey: #0d1a0e;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--black);
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    /* ── Rain canvas ── */
+    #rain {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none; opacity: .18;
+    }
+
+    /* ── Road scene ── */
+    .road-wrap {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 55vh; z-index: 1; pointer-events: none;
+      overflow: hidden;
+    }
+
+    .road {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; height: 100%;
+    }
+
+    /* SVG road via CSS perspective */
+    .road-svg {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      width: 100%; height: 100%;
+    }
+
+    /* Fog overlay on road */
+    .road-fog {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, var(--black) 0%, transparent 40%, transparent 70%, rgba(0,20,5,.7) 100%);
+    }
+
+    /* Wet road reflection */
+    .road-reflection {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; height: 40%;
+      background: linear-gradient(to top, rgba(0,255,65,.04) 0%, transparent 100%);
+    }
+
+    /* Green crash light on road */
+    .crash-light {
+      position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
+      width: 300px; height: 60px;
+      background: radial-gradient(ellipse, rgba(0,255,65,.25) 0%, transparent 70%);
+      animation: crashPulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes crashPulse {
+      0%,100% { opacity:1; transform:translateX(-50%) scaleX(1); }
+      50% { opacity:.3; transform:translateX(-50%) scaleX(.7); }
+    }
+
+    /* ── Scan lines ── */
+    .scanlines {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,.15) 2px,
+        rgba(0,0,0,.15) 4px
+      );
+    }
+
+    /* ── Vignette ── */
+    .vignette {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.85) 100%);
+    }
+
+    /* ── Main content ── */
+    .content {
+      position: relative; z-index: 10;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 20px;
+    }
+
+    /* ── Terminal header ── */
+    .terminal-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+      padding: 10px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(0,255,65,.1);
+      background: rgba(2,10,3,.8);
+      backdrop-filter: blur(4px);
+      font-size: 11px; color: rgba(0,255,65,.5);
+    }
+    .terminal-bar .blink { animation: blink .8s step-end infinite; }
+    @keyframes blink { 50% { opacity:0; } }
+
+    /* ── Logo ── */
+    .logo-wrap {
+      text-align: center; margin-bottom: 24px;
+      position: relative;
+    }
+
+    .logo {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(52px, 10vw, 110px);
+      font-weight: 900;
+      color: var(--green);
+      text-shadow:
+        0 0 10px var(--green),
+        0 0 30px var(--green),
+        0 0 60px var(--green),
+        0 0 120px rgba(0,255,65,.4);
+      letter-spacing: 4px;
+      position: relative;
+      animation: glitchMain 4s infinite;
+      user-select: none;
+    }
+
+    /* Glitch layers */
+    .logo::before, .logo::after {
+      content: '0penw0rld';
+      position: absolute; top: 0; left: 0; right: 0;
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+    }
+    .logo::before {
+      color: #ff003c;
+      text-shadow: 2px 0 #ff003c;
+      animation: glitchBefore 4s infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+    }
+    .logo::after {
+      color: #00ffff;
+      text-shadow: -2px 0 #00ffff;
+      animation: glitchAfter 4s infinite;
+      clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+    }
+
+    @keyframes glitchMain {
+      0%,90%,100% { transform: none; filter: none; }
+      91% { transform: skewX(-2deg); }
+      92% { transform: skewX(2deg) scaleX(1.02); filter: blur(1px); }
+      93% { transform: none; filter: none; }
+      96% { transform: skewX(1deg); opacity:.9; }
+      97% { transform: none; opacity:1; }
+    }
+
+    @keyframes glitchBefore {
+      0%,89%,100% { opacity:0; transform:none; }
+      90% { opacity:.8; transform:translate(-3px, 1px); }
+      91% { opacity:.6; transform:translate(3px,-1px); }
+      92% { opacity:0; }
+    }
+
+    @keyframes glitchAfter {
+      0%,92%,100% { opacity:0; transform:none; }
+      93% { opacity:.7; transform:translate(3px, 2px); }
+      94% { opacity:.5; transform:translate(-3px,-2px); }
+      95% { opacity:0; }
+    }
+
+    /* ── Tagline ── */
+    .tagline {
+      font-size: clamp(13px, 2vw, 17px);
+      color: rgba(0,255,65,.7);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      animation: flicker 6s infinite;
+    }
+
+    .tagline-sub {
+      font-size: clamp(11px, 1.5vw, 14px);
+      color: rgba(0,255,65,.35);
+      letter-spacing: 3px;
+      margin-bottom: 50px;
+    }
+
+    @keyframes flicker {
+      0%,19%,21%,23%,100% { opacity:1; }
+      20%,22% { opacity:.4; }
+      60%,62% { opacity:.8; }
+      61% { opacity:.3; }
+    }
+
+    /* ── Apps grid ── */
+    .apps-grid {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      justify-content: center; margin-bottom: 50px;
+      max-width: 600px;
+    }
+
+    .app-chip {
+      border: 1px solid rgba(0,255,65,.3);
+      padding: 8px 20px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px; color: rgba(0,255,65,.7);
+      border-radius: 2px;
+      background: rgba(0,255,65,.03);
+      cursor: pointer; transition: .2s;
+      position: relative; overflow: hidden;
+      text-decoration: none;
+    }
+    .app-chip::before {
+      content:''; position:absolute; inset:0;
+      background: linear-gradient(90deg, transparent, rgba(0,255,65,.08), transparent);
+      transform: translateX(-100%);
+      transition: .4s;
+    }
+    .app-chip:hover { border-color:var(--green); color:var(--green); box-shadow:0 0 12px rgba(0,255,65,.2); }
+    .app-chip:hover::before { transform:translateX(100%); }
+
+    /* ── CTA ── */
+    .cta-row { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:60px; }
+
+    .btn-primary {
+      font-family: 'Orbitron', monospace;
+      font-size: 13px; font-weight: 700; letter-spacing: 2px;
+      padding: 14px 32px;
+      background: var(--green);
+      color: var(--black);
+      border: none; cursor: pointer; border-radius: 2px;
+      text-transform: uppercase;
+      box-shadow: 0 0 20px rgba(0,255,65,.4), 0 0 40px rgba(0,255,65,.15);
+      transition: .2s;
+      animation: btnPulse 3s ease-in-out infinite;
+    }
+    .btn-primary:hover { box-shadow:0 0 30px rgba(0,255,65,.7), 0 0 60px rgba(0,255,65,.3); transform:scale(1.02); }
+    @keyframes btnPulse { 0%,100%{box-shadow:0 0 20px rgba(0,255,65,.4),0 0 40px rgba(0,255,65,.15)} 50%{box-shadow:0 0 25px rgba(0,255,65,.6),0 0 50px rgba(0,255,65,.25)} }
+
+    .btn-secondary {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px; letter-spacing: 2px;
+      padding: 14px 32px;
+      background: transparent;
+      color: var(--green);
+      border: 1px solid rgba(0,255,65,.4);
+      cursor: pointer; border-radius: 2px;
+      text-transform: uppercase; transition: .2s;
+    }
+    .btn-secondary:hover { border-color:var(--green); background:rgba(0,255,65,.05); }
+
+    /* ── Stats ── */
+    .stats { display:flex; gap:40px; flex-wrap:wrap; justify-content:center; }
+    .stat { text-align:center; }
+    .stat-val { font-family:'Orbitron',monospace; font-size:28px; font-weight:700; color:var(--green); text-shadow:0 0 10px var(--green); }
+    .stat-label { font-size:10px; color:rgba(0,255,65,.4); letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
+
+    /* ── Bottom terminal ── */
+    .terminal-bottom {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+      padding: 8px 24px;
+      border-top: 1px solid rgba(0,255,65,.1);
+      background: rgba(2,10,3,.85);
+      font-size: 10px; color: rgba(0,255,65,.3);
+      display: flex; gap: 20px; overflow: hidden;
+    }
+    .scroll-text {
+      white-space: nowrap;
+      animation: scrollLeft 30s linear infinite;
+    }
+    @keyframes scrollLeft { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* ── Hardware badge ── */
+    .hw-badge {
+      font-size: 10px; letter-spacing: 3px;
+      color: rgba(0,212,255,.55);
+      border: 1px solid rgba(0,212,255,.22);
+      padding: 5px 14px; border-radius: 2px;
+      background: rgba(0,212,255,.04);
+      white-space: nowrap;
+      animation: hwPulse 2.8s ease-in-out infinite;
+    }
+    @keyframes hwPulse {
+      0%,100% { border-color:rgba(0,212,255,.22); color:rgba(0,212,255,.55); box-shadow:none; }
+      50% { border-color:rgba(0,212,255,.45); color:rgba(0,212,255,.9); box-shadow:0 0 10px rgba(0,212,255,.15); }
+    }
+
+    /* ── Noise overlay ── */
+    .noise {
+      position: fixed; inset: 0; z-index: 3; pointer-events: none;
+      opacity: .025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      animation: noiseAnim .15s steps(1) infinite;
+    }
+    @keyframes noiseAnim { 0%{opacity:.025} 50%{opacity:.04} 100%{opacity:.025} }
+
+    /* ── Onboarding Modal ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(2,10,3,.93); backdrop-filter: blur(10px);
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      max-width: 500px; width: 92%;
+      border: 1px solid rgba(0,255,65,.28);
+      padding: 40px 36px;
+      background: rgba(1,8,2,.95);
+      position: relative;
+      box-shadow: 0 0 80px rgba(0,255,65,.06), inset 0 0 60px rgba(0,255,65,.02);
+    }
+    .modal-box::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 1px; background: linear-gradient(90deg, transparent, rgba(0,255,65,.7), transparent);
+    }
+    .modal-title {
+      font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700;
+      letter-spacing: 5px; color: var(--green); margin-bottom: 6px; text-align: center;
+    }
+    .modal-sub {
+      font-size: 10px; color: rgba(0,255,65,.38); letter-spacing: 3px;
+      text-align: center; margin-bottom: 32px; text-transform: uppercase;
+    }
+    .modal-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .modal-card {
+      display: flex; align-items: center; gap: 18px;
+      border: 1px solid rgba(0,255,65,.18); padding: 16px 20px;
+      background: rgba(0,255,65,.015); cursor: pointer;
+      text-decoration: none; transition: .2s; border-radius: 2px; position: relative; overflow: hidden;
+    }
+    .modal-card::after {
+      content: '→'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+      color: rgba(0,255,65,.25); font-size: 14px; transition: .2s;
+    }
+    .modal-card:hover { border-color: var(--green); background: rgba(0,255,65,.05); box-shadow: 0 0 18px rgba(0,255,65,.1); }
+    .modal-card:hover::after { color: var(--green); right: 14px; }
+    .modal-icon { font-size: 20px; flex-shrink: 0; width: 32px; text-align: center; }
+    .modal-card-title {
+      font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700;
+      letter-spacing: 2px; color: var(--green); margin-bottom: 3px;
+    }
+    .modal-card-desc { font-size: 10px; color: rgba(0,255,65,.38); letter-spacing: 1px; line-height: 1.4; }
+    .modal-close {
+      display: block; width: 100%; background: transparent;
+      border: 1px solid rgba(0,255,65,.12); color: rgba(0,255,65,.35);
+      font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 3px;
+      padding: 10px; cursor: pointer; transition: .2s; text-transform: uppercase;
+    }
+    .modal-close:hover { border-color: rgba(0,255,65,.35); color: rgba(0,255,65,.65); }
+  </style>
+</head>
+<body>
+
+<canvas id="rain"></canvas>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+<div class="noise"></div>
+
+<!-- Road scene -->
+<div class="road-wrap">
+  <svg class="road-svg" viewBox="0 0 1440 500" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="roadGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#010801"/>
+        <stop offset="100%" stop-color="#030f04"/>
+      </linearGradient>
+      <radialGradient id="glowCenter" cx="50%" cy="100%" r="60%">
+        <stop offset="0%" stop-color="rgba(0,255,65,0.12)"/>
+        <stop offset="100%" stop-color="transparent"/>
+      </radialGradient>
+      <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="rgba(0,255,65,0)"/>
+        <stop offset="50%" stop-color="rgba(0,255,65,0.6)"/>
+        <stop offset="100%" stop-color="rgba(0,255,65,0.1)"/>
+      </linearGradient>
+    </defs>
+    <!-- Road surface -->
+    <polygon points="0,500 1440,500 900,120 540,120" fill="url(#roadGrad)"/>
+    <!-- Wet reflection -->
+    <polygon points="0,500 1440,500 900,120 540,120" fill="url(#glowCenter)" opacity="0.6"/>
+    <!-- Center dashed line -->
+    <line x1="720" y1="500" x2="720" y2="120" stroke="url(#lineGrad)" stroke-width="3" stroke-dasharray="30,20"/>
+    <!-- Left lane line -->
+    <line x1="330" y1="500" x2="610" y2="120" stroke="rgba(0,255,65,0.15)" stroke-width="1.5" stroke-dasharray="20,15"/>
+    <!-- Right lane line -->
+    <line x1="1110" y1="500" x2="830" y2="120" stroke="rgba(0,255,65,0.15)" stroke-width="1.5" stroke-dasharray="20,15"/>
+    <!-- Horizon glow -->
+    <ellipse cx="720" cy="120" rx="200" ry="30" fill="rgba(0,255,65,0.08)"/>
+  </svg>
+  <div class="road-fog"></div>
+  <div class="road-reflection"></div>
+  <div class="crash-light"></div>
+</div>
+
+<!-- Terminal top bar -->
+<div class="terminal-bar">
+  <span>0penw0rld // SYSTEM ONLINE <span class="blink">█</span></span>
+  <span style="display:flex;gap:24px">
+    <span>BCH_NET: ACTIVE</span>
+    <span id="mesh-stat">MESH: SCANNING</span>
+    <span id="clock"></span>
+  </span>
+</div>
+
+<!-- Main content -->
+<div class="content">
+  <div style="height:60px"></div>
+
+  <div class="logo-wrap">
+    <div class="tagline">// decentralized ecosystem //</div>
+    <div class="logo">0penw0rld</div>
+    <div class="tagline-sub">no servers &nbsp;·&nbsp; no borders &nbsp;·&nbsp; no limits</div>
+  </div>
+
+  <div class="apps-grid">
+    <a class="app-chip" href="chat.html">00 Chat</a>
+    <a class="app-chip" href="pay.html">00 Pay</a>
+    <a class="app-chip" href="dex.html">00 DEX</a>
+    <a class="app-chip" href="loan.html">00 Loan</a>
+    <a class="app-chip" href="id.html">00 ID</a>
+    <a class="app-chip" href="mesh.html">00 Mesh</a>
+    <a class="app-chip" href="wallet.html">00 Wallet</a>
+  </div>
+
+  <div style="display:flex;gap:10px;justify-content:center;align-items:center;margin:16px 0 36px;flex-wrap:wrap">
+    <span class="hw-badge">🔑 LEDGER SUPPORTED</span>
+    <span class="hw-badge" style="color:rgba(0,255,65,.4);border-color:rgba(0,255,65,.18);animation-delay:.9s">⬡ WEBHID</span>
+    <span class="hw-badge" style="color:rgba(0,255,65,.4);border-color:rgba(0,255,65,.18);animation-delay:1.8s">◈ NON-CUSTODIAL</span>
+  </div>
+
+  <div class="cta-row">
+    <button class="btn-primary" onclick="openStartModal()">Get Started →</button>
+    <a class="btn-secondary" href="docs.html">Read the Docs</a>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val">0</div><div class="stat-label">Servers</div></div>
+    <div class="stat"><div class="stat-val">∞</div><div class="stat-label">Freedom</div></div>
+    <div class="stat"><div class="stat-val">BCH</div><div class="stat-label">Powered by</div></div>
+    <div class="stat"><div class="stat-val">E2E</div><div class="stat-label">Encrypted</div></div>
+  </div>
+
+  <div style="height:120px"></div>
+</div>
+
+<!-- Terminal bottom scroll -->
+<div class="terminal-bottom">
+  <div class="scroll-text">
+    CCSH_PROTOCOL_V1 &nbsp;·&nbsp; X25519_ECDH &nbsp;·&nbsp; AES256_GCM &nbsp;·&nbsp; OP_RETURN &nbsp;·&nbsp; BCH_MAINNET &nbsp;·&nbsp; LORA_MESH &nbsp;·&nbsp; ZERO_SERVERS &nbsp;·&nbsp; ZERO_TRUST &nbsp;·&nbsp; CASHFUSION_READY &nbsp;·&nbsp; END_TO_END &nbsp;·&nbsp; <span style="color:rgba(0,212,255,.6)">LEDGER_HW_READY</span> &nbsp;·&nbsp; WEBHID_TRANSPORT &nbsp;·&nbsp; BIP44_SCAN &nbsp;·&nbsp; CCSH_PROTOCOL_V1 &nbsp;·&nbsp; X25519_ECDH &nbsp;·&nbsp; AES256_GCM &nbsp;·&nbsp; OP_RETURN &nbsp;·&nbsp; BCH_MAINNET &nbsp;·&nbsp; LORA_MESH &nbsp;·&nbsp; ZERO_SERVERS &nbsp;·&nbsp; ZERO_TRUST &nbsp;·&nbsp; CASHFUSION_READY &nbsp;·&nbsp; END_TO_END &nbsp;·&nbsp; <span style="color:rgba(0,212,255,.6)">LEDGER_HW_READY</span> &nbsp;·&nbsp; WEBHID_TRANSPORT &nbsp;·&nbsp; BIP44_SCAN &nbsp;·&nbsp;
+  </div>
+</div>
+
+<script>
+// ── Clock ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ── Mesh status ──
+function updateMeshStat() {
+  const el = document.getElementById('mesh-stat');
+  if (!el) return;
+  try {
+    const raw = localStorage.getItem('00mesh_net');
+    if (!raw) { el.textContent = 'MESH: SCANNING'; return; }
+    const {peers, ts} = JSON.parse(raw);
+    const age = Date.now() - ts;
+    if (age > 60000) { el.textContent = 'MESH: OFFLINE'; return; }
+    el.textContent = peers > 0 ? `MESH: ${peers}/4 ACTIVE` : 'MESH: CONNECTING';
+    el.style.color = peers > 0 ? 'var(--green)' : '#ffaa00';
+  } catch(e) { el.textContent = 'MESH: SCANNING'; }
+}
+setInterval(updateMeshStat, 3000); updateMeshStat();
+
+// ── Rain ──
+const canvas = document.getElementById('rain');
+const ctx = canvas.getContext('2d');
+let drops = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+for (let i = 0; i < 180; i++) {
+  drops.push({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    len: Math.random() * 20 + 8,
+    speed: Math.random() * 8 + 6,
+    opacity: Math.random() * 0.5 + 0.1,
+    width: Math.random() * 1 + 0.3,
+  });
+}
+
+function drawRain() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drops.forEach(d => {
+    ctx.beginPath();
+    ctx.moveTo(d.x, d.y);
+    ctx.lineTo(d.x - 1, d.y + d.len);
+    ctx.strokeStyle = `rgba(0,255,65,${d.opacity})`;
+    ctx.lineWidth = d.width;
+    ctx.stroke();
+    d.y += d.speed;
+    if (d.y > canvas.height) {
+      d.y = -d.len;
+      d.x = Math.random() * canvas.width;
+    }
+  });
+  requestAnimationFrame(drawRain);
+}
+drawRain();
+
+// ── Random glitch flashes ──
+function randomGlitch() {
+  const logo = document.querySelector('.logo');
+  if (Math.random() < 0.3) {
+    logo.style.filter = `blur(${Math.random()*2}px) brightness(${1+Math.random()*0.5})`;
+    setTimeout(() => logo.style.filter = '', 80 + Math.random()*120);
+  }
+  setTimeout(randomGlitch, 2000 + Math.random() * 4000);
+}
+randomGlitch();
+</script>
+<!-- Onboarding Modal -->
+<div id="start-modal" class="modal-overlay" onclick="if(event.target===this)closeStartModal()">
+  <div class="modal-box">
+    <div class="modal-title">// INITIALISATION //</div>
+    <div class="modal-sub">Choisissez votre mode d'accès</div>
+    <div class="modal-grid">
+      <a href="wallet.html" class="modal-card">
+        <div class="modal-icon">🔑</div>
+        <div>
+          <div class="modal-card-title">HARDWARE WALLET</div>
+          <div class="modal-card-desc">Ledger Nano / Stax / Flex · WebHID · BIP44 scan complet</div>
+        </div>
+      </a>
+      <a href="wallet.html" class="modal-card">
+        <div class="modal-icon">⬡</div>
+        <div>
+          <div class="modal-card-title">NOUVEAU WALLET</div>
+          <div class="modal-card-desc">Générer une nouvelle clé BCH · Non-custodial</div>
+        </div>
+      </a>
+      <a href="wallet.html" class="modal-card">
+        <div class="modal-icon">◈</div>
+        <div>
+          <div class="modal-card-title">IMPORTER</div>
+          <div class="modal-card-desc">Clé privée WIF ou phrase mnémonique BIP39</div>
+        </div>
+      </a>
+      <a href="chat.html" class="modal-card">
+        <div class="modal-icon">00</div>
+        <div>
+          <div class="modal-card-title">CHAT CHIFFRÉ</div>
+          <div class="modal-card-desc">Démarrer directement · Nostr + BCH messaging</div>
+        </div>
+      </a>
+    </div>
+    <button class="modal-close" onclick="closeStartModal()">[ ESC ] Fermer</button>
+  </div>
+</div>
+
+<script src="/shell.js"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}</script>
+<script>
+function openStartModal() {
+  document.getElementById('start-modal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeStartModal() {
+  document.getElementById('start-modal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeStartModal(); });
+</script>
+</body>
+</html>
