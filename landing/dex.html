@@ -128,7 +128,12 @@
     .open-btn { display:block; margin:16px 20px; padding:12px; background:rgba(0,255,65,.06); border:1px solid rgba(0,255,65,.25); border-radius:10px; color:rgba(0,255,65,.7); font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px; cursor:pointer; transition:.2s; text-align:center; text-decoration:none; }
     .open-btn:hover { background:rgba(0,255,65,.12); border-color:var(--green); color:var(--green); }
     .empty-state { padding:40px 20px; text-align:center; font-size:11px; color:rgba(0,255,65,.25); letter-spacing:2px; line-height:2.5; }
+    @media (min-width: 900px) {
+      #loading { display: none !important; }
+      #rain, .scanlines, .vignette { display: none !important; }
+    }
   </style>
+  <link rel="stylesheet" href="desktop.css">
 </head>
 <body>
 <canvas id="rain"></canvas>
@@ -140,6 +145,288 @@
   <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
   <div class="loader-status" id="loader-status">LOADING CAULDRON DATA...<span class="blink">_</span></div>
 </div>
+
+<!-- ── Desktop DEX View (hidden on mobile) ── -->
+<div id="dex-desktop" style="display:none">
+  <div class="dt-inner">
+    <div class="dt-page-header">
+      <div class="dt-page-title-wrap">
+        <div class="dt-page-icon">◈</div>
+        <div>
+          <div class="dt-page-title">DEX</div>
+          <div class="dt-page-sub">Cauldron Decentralized Exchange</div>
+        </div>
+      </div>
+      <div class="dt-page-actions">
+        <div class="dt-oracle" id="dt-dex-price">BCH $—</div>
+        <div class="dt-oracle" id="dt-dex-tvl">TVL —</div>
+      </div>
+    </div>
+
+    <div class="dt-tabs" id="dt-dex-tabs">
+      <button class="dt-tab active" onclick="dtDexTab('swap')"><span>⇄</span> Swap</button>
+      <button class="dt-tab" onclick="dtDexTab('tokens')">Tokens</button>
+      <button class="dt-tab" onclick="dtDexTab('pools')">Pools</button>
+    </div>
+
+    <!-- SWAP pane -->
+    <div class="dt-pane active" id="dt-dex-p-swap">
+      <div class="dt-card">
+        <div class="dt-swap-box">
+          <div class="dt-swap-box-label">You Pay</div>
+          <div class="dt-swap-amount-row">
+            <input class="dt-swap-amount-input" id="dt-swap-from" type="number" placeholder="0" oninput="dtDexQuote()">
+            <div class="dt-token-badge"><span style="font-size:16px">₿</span><span class="dt-token-badge-name">BCH</span></div>
+          </div>
+          <div class="dt-swap-usd" id="dt-swap-from-usd">≈ $0.00 USD</div>
+        </div>
+
+        <div class="dt-swap-arrow"><div class="dt-swap-arrow-btn" onclick="dtDexFlip()">⇅</div></div>
+
+        <div class="dt-swap-box">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="dt-swap-box-label" style="margin:0">You Receive</div>
+            <button class="dt-token-badge" id="dt-dex-to-badge" onclick="dtDexOpenModal()">
+              <span class="dt-token-badge-name" id="dt-dex-to-name">Select ▾</span>
+            </button>
+          </div>
+          <div style="font-family:'Inter',sans-serif;font-size:24px;font-weight:700;color:var(--dt-text)" id="dt-swap-to">0</div>
+          <div class="dt-swap-usd" id="dt-swap-to-usd">Select a token</div>
+        </div>
+
+        <div class="dt-swap-rate" id="dt-swap-rate">Select a token to see quote</div>
+
+        <button class="dt-action-btn" onclick="dtDexSwap()" style="margin-top:16px">Swap on Cauldron →</button>
+        <div style="text-align:center;font-size:11px;color:var(--dt-text-secondary);margin-top:8px">Powered by Cauldron DEX · 0.3% LP fee</div>
+      </div>
+    </div>
+
+    <!-- TOKENS pane -->
+    <div class="dt-pane" id="dt-dex-p-tokens">
+      <div class="dt-list">
+        <div class="dt-table-head">
+          <div style="flex:1">Token</div>
+          <div style="width:100px;text-align:right" onclick="dtDexSort('price_now_usd')">Price</div>
+          <div style="width:80px;text-align:right" onclick="dtDexSort('change_24h_bp')">24h</div>
+          <div style="width:80px;text-align:right" onclick="dtDexSort('tvl_sats')">TVL</div>
+        </div>
+        <div id="dt-tokens-list"><div class="dt-empty"><div class="dt-empty-text">Loading tokens...</div></div></div>
+      </div>
+    </div>
+
+    <!-- POOLS pane -->
+    <div class="dt-pane" id="dt-dex-p-pools">
+      <div style="display:flex;gap:12px;margin-bottom:20px">
+        <div class="dt-card" style="flex:1;text-align:center;margin:0">
+          <div class="dt-form-lbl" style="margin-bottom:4px">Total TVL</div>
+          <div style="font-size:20px;font-weight:700;color:var(--dt-text)" id="dt-pools-tvl">—</div>
+        </div>
+        <div class="dt-card" style="flex:1;text-align:center;margin:0">
+          <div class="dt-form-lbl" style="margin-bottom:4px">Tokens</div>
+          <div style="font-size:20px;font-weight:700;color:var(--dt-text)" id="dt-pools-count">—</div>
+        </div>
+      </div>
+      <div class="dt-list" id="dt-pools-list"><div class="dt-empty"><div class="dt-empty-text">Loading pools...</div></div></div>
+      <a class="dt-action-btn-outline" href="https://app.cauldron.quest/pools" target="_blank" style="display:block;text-align:center;text-decoration:none;margin-top:20px">Open Cauldron Pools →</a>
+    </div>
+
+    <!-- Token selector modal -->
+    <div id="dt-dex-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:var(--dt-overlay);align-items:center;justify-content:center">
+      <div class="dt-card" style="width:440px;max-height:520px;display:flex;flex-direction:column;padding:0;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;padding:20px 24px 12px;border-bottom:1px solid var(--dt-border)">
+          <button onclick="document.getElementById('dt-dex-modal').style.display='none'" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--dt-text-secondary);padding:0">←</button>
+          <span style="font-size:13px;font-weight:600;color:var(--dt-text)">Select Token</span>
+        </div>
+        <div style="padding:12px 24px"><input class="dt-form-input" id="dt-dex-modal-search" placeholder="Search name or symbol..." oninput="dtDexFilter()"></div>
+        <div style="flex:1;overflow-y:auto" id="dt-dex-modal-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  if(!window.matchMedia('(min-width:900px)').matches) return;
+  var el=document.getElementById('dex-desktop');if(!el)return;
+  el.style.display='';
+
+  var META=localStorage.getItem('00_ep_meta')||'https://meta.riften.net';
+  var CAULDRON='https://app.cauldron.quest';
+  var _dtTokens=[],_dtSortKey='tvl_sats',_dtSelToken=null;
+
+  function fmtUsd(v){if(v==null||isNaN(v))return'—';if(v>=1e9)return'$'+(v/1e9).toFixed(2)+'B';if(v>=1e6)return'$'+(v/1e6).toFixed(2)+'M';if(v>=1000)return'$'+(v/1000).toFixed(1)+'K';if(v<0.001)return'$'+v.toExponential(2);return'$'+v.toFixed(v<1?4:2);}
+  function fmtBp(bp){return bp?(bp/100).toFixed(2)+'%':'0.00%';}
+  function tSym(t){return t.bcmr?.token?.symbol||t.display_symbol||(t.token_id?t.token_id.slice(0,6)+'…':'???');}
+  function tName(t){return t.bcmr?.name||t.display_name||(t.token_id?t.token_id.slice(0,16)+'…':'Unknown');}
+  function tIcon(t){return META+'/icon/'+t.token_id;}
+
+  /* ── Tabs ─── */
+  window.dtDexTab=function(t){
+    ['swap','tokens','pools'].forEach(function(x){
+      var p=document.getElementById('dt-dex-p-'+x);if(p)p.classList.toggle('active',x===t);
+    });
+    document.querySelectorAll('#dt-dex-tabs .dt-tab').forEach(function(b){
+      b.classList.toggle('active',b.textContent.toLowerCase()===t);
+    });
+  };
+
+  /* ── Swap quote ─── */
+  window.dtDexQuote=function(){
+    var fromAmt=parseFloat(document.getElementById('dt-swap-from').value)||0;
+    var price=window._dtDexPrice||0;
+    document.getElementById('dt-swap-from-usd').textContent='≈ '+fmtUsd(fromAmt*price)+' USD';
+
+    if(!_dtSelToken||!fromAmt){
+      document.getElementById('dt-swap-to').textContent='0';
+      document.getElementById('dt-swap-to-usd').textContent=_dtSelToken?'Enter amount':'Select a token';
+      document.getElementById('dt-swap-rate').textContent='Select a token to see quote';
+      return;
+    }
+    var priceNow=_dtSelToken.price_now/1e12;
+    var priceUsd=_dtSelToken.price_now_usd;
+    var toAmt=priceNow>0?fromAmt/priceNow:0;
+    var fee=fromAmt*0.003;
+    var toFinal=toAmt*(1-0.003);
+    var toUsd=toFinal*priceUsd;
+    var sym=tSym(_dtSelToken);
+
+    document.getElementById('dt-swap-to').textContent=toFinal>1e6?toFinal.toExponential(4):toFinal.toFixed(4);
+    document.getElementById('dt-swap-to-usd').textContent='≈ '+fmtUsd(toUsd);
+
+    var rate=priceNow>0?(1/priceNow):0;
+    document.getElementById('dt-swap-rate').innerHTML=
+      '<div>Rate: <span>1 BCH ≈ '+(rate>=1?rate.toFixed(4):rate.toExponential(4))+' '+sym+'</span></div>'+
+      '<div>LP Fee: <span>0.3% ('+fee.toFixed(4)+' BCH)</span></div>'+
+      '<div>Source: <span>Cauldron AMM</span></div>';
+  };
+
+  window.dtDexFlip=function(){
+    document.getElementById('dt-swap-from').value='';
+    document.getElementById('dt-swap-to').textContent='0';
+    dtDexQuote();
+  };
+
+  window.dtDexSwap=function(){
+    if(!_dtSelToken){alert('Select a token first');return;}
+    window.open(CAULDRON+'/?swap='+_dtSelToken.token_id,'_blank');
+  };
+
+  /* ── Token modal ─── */
+  window.dtDexOpenModal=function(){
+    _dtRenderModalTokens(_dtTokens);
+    document.getElementById('dt-dex-modal').style.display='flex';
+    document.getElementById('dt-dex-modal-search').value='';
+  };
+  window.dtDexFilter=function(){
+    var q=document.getElementById('dt-dex-modal-search').value.toLowerCase();
+    var filtered=q?_dtTokens.filter(function(t){return tSym(t).toLowerCase().indexOf(q)>=0||tName(t).toLowerCase().indexOf(q)>=0;}):_dtTokens;
+    _dtRenderModalTokens(filtered);
+  };
+  window.dtDexPickToken=function(tid){
+    _dtSelToken=_dtTokens.find(function(t){return t.token_id===tid;});
+    if(!_dtSelToken)return;
+    document.getElementById('dt-dex-to-name').textContent=tSym(_dtSelToken)+' ▾';
+    document.getElementById('dt-dex-modal').style.display='none';
+    dtDexQuote();
+  };
+  window.dtDexSelectFromList=function(tid){
+    _dtSelToken=_dtTokens.find(function(t){return t.token_id===tid;});
+    if(!_dtSelToken)return;
+    document.getElementById('dt-dex-to-name').textContent=tSym(_dtSelToken)+' ▾';
+    dtDexTab('swap');
+    dtDexQuote();
+  };
+
+  function _dtRenderModalTokens(list){
+    document.getElementById('dt-dex-modal-list').innerHTML=list.slice(0,60).map(function(t){
+      var sym=tSym(t);
+      return '<div class="dt-row" style="cursor:pointer" onclick="dtDexPickToken(\''+t.token_id+'\')">'+
+        '<div class="dt-row-left">'+
+          '<div class="dt-row-icon swap"><img src="'+tIcon(t)+'" style="width:24px;height:24px;border-radius:50%" onerror="this.style.display=\'none\'"></div>'+
+          '<div><div class="dt-row-title">'+sym+'</div><div class="dt-row-sub">'+tName(t)+'</div></div>'+
+        '</div>'+
+        '<div class="dt-row-right"><div class="dt-row-amount">'+fmtUsd(t.price_now_usd)+'</div></div></div>';
+    }).join('');
+  }
+
+  /* ── Sort ─── */
+  window.dtDexSort=function(key){
+    _dtSortKey=key;
+    _dtRenderTokens();
+  };
+
+  /* ── Render tokens list ─── */
+  function _dtRenderTokens(){
+    var sorted=_dtTokens.slice().sort(function(a,b){return(b[_dtSortKey]||0)-(a[_dtSortKey]||0);});
+    var price=window._dtDexPrice||0;
+    document.getElementById('dt-tokens-list').innerHTML=sorted.slice(0,50).map(function(t){
+      var sym=tSym(t);
+      var ch24=t.change_24h_bp||0;
+      var tvlBch=(t.tvl_sats||0)/1e8;var tvlUsd=tvlBch*price;
+      return '<div class="dt-row" style="cursor:pointer" onclick="dtDexSelectFromList(\''+t.token_id+'\')">'+
+        '<div class="dt-row-left" style="flex:1">'+
+          '<div class="dt-row-icon swap"><img src="'+tIcon(t)+'" style="width:24px;height:24px;border-radius:50%" onerror="this.style.display=\'none\'"></div>'+
+          '<div><div class="dt-row-title">'+sym+'</div><div class="dt-row-sub">'+tName(t)+'</div></div>'+
+        '</div>'+
+        '<div style="width:100px;text-align:right;font-size:13px;font-weight:600;color:var(--dt-text)">'+fmtUsd(t.price_now_usd)+'</div>'+
+        '<div style="width:80px;text-align:right;font-size:12px;font-weight:600;color:'+(ch24>=0?'var(--dt-accent)':'var(--dt-danger)')+'">'+(ch24>=0?'+':'')+fmtBp(Math.abs(ch24))+'</div>'+
+        '<div style="width:80px;text-align:right;font-size:12px;color:var(--dt-text-secondary)">'+fmtUsd(tvlUsd)+'</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  /* ── Render pools list ─── */
+  function _dtRenderPools(){
+    var price=window._dtDexPrice||0;
+    var sorted=_dtTokens.slice().sort(function(a,b){return(b.tvl_sats||0)-(a.tvl_sats||0);}).slice(0,15);
+    document.getElementById('dt-pools-list').innerHTML=sorted.map(function(t){
+      var sym=tSym(t);
+      var tvlBch=(t.tvl_sats||0)/1e8;var tvlUsd=tvlBch*price;
+      var apy=t.apy_30d_bp?fmtBp(t.apy_30d_bp):'—';
+      return '<div class="dt-row" style="cursor:pointer" onclick="window.open(\''+CAULDRON+'\',\'_blank\')">'+
+        '<div class="dt-row-left">'+
+          '<div class="dt-row-icon swap"><img src="'+tIcon(t)+'" style="width:24px;height:24px;border-radius:50%" onerror="this.style.display=\'none\'"></div>'+
+          '<div><div class="dt-row-title">BCH / '+sym+'</div><div class="dt-row-sub">TVL '+fmtUsd(tvlUsd)+'</div></div>'+
+        '</div>'+
+        '<div class="dt-row-right"><div class="dt-row-amount" style="color:var(--dt-accent)">'+apy+' APY</div></div></div>';
+    }).join('');
+  }
+
+  /* ── Poll data from mobile ─── */
+  function _dtPoll(){
+    var prEl=document.getElementById('bch-price');
+    if(prEl){
+      var m=prEl.textContent.match(/\$([\d.]+)/);
+      if(m){window._dtDexPrice=parseFloat(m[1]);document.getElementById('dt-dex-price').textContent='BCH $'+parseFloat(m[1]).toFixed(2);}
+    }
+    var tvlEl=document.getElementById('tvl-val');
+    if(tvlEl&&tvlEl.textContent!=='---'){document.getElementById('dt-dex-tvl').textContent='TVL '+tvlEl.textContent;}
+
+    var pcEl=document.getElementById('pools-token-count');
+    if(pcEl&&pcEl.textContent!=='---'){document.getElementById('dt-pools-count').textContent=pcEl.textContent;}
+
+    var ptEl=document.getElementById('pools-tvl');
+    if(ptEl&&ptEl.textContent!=='---'){document.getElementById('dt-pools-tvl').textContent=ptEl.textContent;}
+  }
+
+  /* ── Fetch tokens independently for desktop ─── */
+  var INDEXER=localStorage.getItem('00_ep_indexer')||'https://indexer.riften.net';
+  function dtFetchTokens(){
+    fetch(INDEXER+'/cauldron/tokens/list_cached')
+      .then(function(r){return r.json();})
+      .then(function(data){
+        _dtTokens=data;
+        _dtRenderTokens();
+        _dtRenderPools();
+      })
+      .catch(function(){});
+  }
+
+  setInterval(_dtPoll,1000);
+  setTimeout(function(){_dtPoll();dtFetchTokens();},3000);
+})();
+</script>
 
 <div class="phone-wrap">
   <div class="phone">
@@ -262,6 +549,7 @@
   </div>
 </div>
 
+<script>if(sessionStorage.getItem('00_gate')!=='1'){window.location.href='/';}else if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
 <script>
 (function(){
   const c=document.getElementById('rain'),ctx=c.getContext('2d');

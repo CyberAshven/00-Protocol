@@ -1,8 +1,9 @@
-// 0penw0rld Shell — lang switcher, app switcher, disconnect, endpoint settings
+// 0penw0rld Shell — lang switcher, app switcher, disconnect, endpoint settings, desktop sidebar
 (function () {
 'use strict';
 
 const APPS = [
+  { name: '00 Dashboard', url: 'index.html' },
   { name: '00 Wallet', url: 'wallet.html' },
   { name: '00 Chat',   url: 'chat.html'   },
   { name: '00 Pay',    url: 'pay.html'    },
@@ -10,8 +11,53 @@ const APPS = [
   { name: '00 Loan',   url: 'loan.html'   },
   { name: '00 ID',     url: 'id.html'     },
   { name: '00 Mesh',   url: 'mesh.html'   },
-  { name: '00 Fusion', url: 'fusion.html' },
+  { name: '00 Joiner', url: 'fusion.html' },
+  { name: '00 Onion', url: 'onion.html' },
+  { name: '00 Swap', url: 'swap.html' },
+  { name: '00 Vault', url: 'vault.html' },
+  { name: '00 Config', url: 'config.html' },
 ];
+
+// ── Desktop UI ─────────────────────────────────────────────────
+const APP_ICONS = {
+  'index.html': '00', 'wallet.html': '00', 'chat.html': '00', 'pay.html': '00',
+  'swap.html': '00', 'dex.html': '00', 'loan.html': '00',
+  'id.html': '00', 'mesh.html': '00', 'fusion.html': '00',
+  'onion.html': '00', 'vault.html': '00', 'config.html': '⚙',
+};
+const APP_SECTIONS = {
+  Overview: ['index.html'],
+  Finance:  ['wallet.html','pay.html','swap.html','dex.html','loan.html'],
+  Privacy:  ['chat.html','fusion.html','onion.html'],
+  Identity: ['id.html','mesh.html','vault.html'],
+};
+
+const _desktopMQ = window.matchMedia('(min-width: 900px)');
+let IS_DESKTOP = _desktopMQ.matches;
+
+function getTheme() { return localStorage.getItem('00_theme') || 'light'; }
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('00_theme', theme);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = theme === 'dark' ? '#0c0d12' : '#f5f6f8';
+  const icon = document.getElementById('dt-theme-icon');
+  const label = document.getElementById('dt-theme-label');
+  if (icon) icon.textContent = theme === 'dark' ? '☀' : '☾';
+  if (label) label.textContent = theme === 'dark' ? 'Light mode' : 'Dark mode';
+  // Override hacker green with BCH green on desktop
+  if (IS_DESKTOP) {
+    const r = document.documentElement.style;
+    const accent = theme === 'dark' ? '#1DD9A5' : '#0AC18E';
+    r.setProperty('--green', accent, 'important');
+    r.setProperty('--green-dim', accent, 'important');
+    r.setProperty('--green-dark', 'rgba(10,193,142,.15)', 'important');
+    r.setProperty('--accent-rgb', '10,193,142', 'important');
+  }
+}
+
+// Apply theme immediately on desktop
+if (IS_DESKTOP) setTheme(getTheme());
 
 const LANGS = ['EN', 'FR', 'ES', 'CN'];
 
@@ -28,8 +74,10 @@ function isConnected() {
 
 // ── Endpoint defaults & config ────────────────────────────────
 const EP_DEFAULTS = {
-  fulcrum: ['wss://bch.imaginary.cash:50004','wss://electroncash.de:50004','wss://bch.loping.net:50004'],
-  relays:  ['wss://relay.damus.io','wss://nos.lol','wss://relay.nostr.band','wss://relay.snort.social'],
+  fulcrum:      ['wss://bch.imaginary.cash:50004','wss://electroncash.de:50004','wss://bch.loping.net:50004'],
+  btc_electrum: ['wss://e2.keff.org:50004','wss://fulcrum.grey.pw:50004','wss://btc.electroncash.dk:50004','wss://electrum.petrkr.net:50004','wss://bitcoinserver.nl:50004','wss://mempool.8333.mobi:50004'],
+  relays:       ['wss://relay.damus.io','wss://nos.lol','wss://relay.nostr.band','wss://relay.snort.social'],
+  eth_rpc:  'https://ethereum-rpc.publicnode.com',
   indexer: 'https://indexer.riften.net',
   midgard: 'https://midgard.ninerealms.com/v2',
   meta:    'https://meta.riften.net',
@@ -46,8 +94,10 @@ function _epRead(key, fallback) {
 }
 
 window._00ep = {
-  get fulcrum() { return _epRead('fulcrum', EP_DEFAULTS.fulcrum); },
-  get relays()  { return _epRead('relays',  EP_DEFAULTS.relays); },
+  get fulcrum()      { return _epRead('fulcrum',      EP_DEFAULTS.fulcrum); },
+  get btc_electrum() { return _epRead('btc_electrum', EP_DEFAULTS.btc_electrum); },
+  get relays()       { return _epRead('relays',       EP_DEFAULTS.relays); },
+  get eth_rpc()      { return _epRead('eth_rpc',      EP_DEFAULTS.eth_rpc); },
   get indexer() { return _epRead('indexer', EP_DEFAULTS.indexer); },
   get midgard() { return _epRead('midgard', EP_DEFAULTS.midgard); },
   get meta()    { return _epRead('meta',    EP_DEFAULTS.meta); },
@@ -190,6 +240,32 @@ st.textContent = `
     font-size:8px; color:rgba(0,255,65,.2); margin-top:12px;
     letter-spacing:.5px; text-align:center;
   }
+  /* ── iOS Home Indicator pill ── */
+  .home-indicator {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 0 10px;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .home-pill {
+    width: 134px;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(0,255,65,.35);
+    transition: background .15s, box-shadow .15s;
+  }
+  .home-indicator:hover .home-pill {
+    background: rgba(0,255,65,.6);
+    box-shadow: 0 0 8px rgba(0,255,65,.2);
+  }
+  .home-indicator:active .home-pill {
+    background: var(--green, #00ff41);
+    box-shadow: 0 0 12px rgba(0,255,65,.35);
+  }
 `;
 document.head.appendChild(st);
 
@@ -199,20 +275,34 @@ function buildSettingsModal() {
   overlay.className = 'ep-overlay';
   overlay.onclick = e => { if (e.target === overlay) overlay.classList.remove('open'); };
 
-  const fulcrumVal = () => (JSON.parse(localStorage.getItem('00_ep_fulcrum') || 'null') || EP_DEFAULTS.fulcrum).join('\n');
-  const relaysVal  = () => (JSON.parse(localStorage.getItem('00_ep_relays')  || 'null') || EP_DEFAULTS.relays).join('\n');
+  const fulcrumVal    = () => (JSON.parse(localStorage.getItem('00_ep_fulcrum') || 'null') || EP_DEFAULTS.fulcrum).join('\n');
+  const btcElecVal   = () => (JSON.parse(localStorage.getItem('00_ep_btc_electrum') || 'null') || EP_DEFAULTS.btc_electrum).join('\n');
+  const relaysVal    = () => (JSON.parse(localStorage.getItem('00_ep_relays')  || 'null') || EP_DEFAULTS.relays).join('\n');
   const indexerVal = () => localStorage.getItem('00_ep_indexer') ? JSON.parse(localStorage.getItem('00_ep_indexer')) : EP_DEFAULTS.indexer;
   const midgardVal = () => localStorage.getItem('00_ep_midgard') ? JSON.parse(localStorage.getItem('00_ep_midgard')) : EP_DEFAULTS.midgard;
   const metaVal    = () => localStorage.getItem('00_ep_meta')    ? JSON.parse(localStorage.getItem('00_ep_meta'))    : EP_DEFAULTS.meta;
+  const ethRpcVal  = () => localStorage.getItem('00_ep_eth_rpc') ? JSON.parse(localStorage.getItem('00_ep_eth_rpc')) : EP_DEFAULTS.eth_rpc;
 
   overlay.innerHTML = `
     <div class="ep-modal">
       <div class="ep-title">// ENDPOINTS</div>
 
       <div class="ep-group">
-        <div class="ep-label">FULCRUM / ELECTRUM NODES</div>
+        <div class="ep-label">BCH FULCRUM NODES</div>
         <textarea class="ep-textarea" id="ep-fulcrum" rows="3">${fulcrumVal()}</textarea>
         <div class="ep-hint">one wss:// URL per line</div>
+      </div>
+
+      <div class="ep-group">
+        <div class="ep-label">BTC ELECTRUM NODES</div>
+        <textarea class="ep-textarea" id="ep-btc-electrum" rows="3">${btcElecVal()}</textarea>
+        <div class="ep-hint">one wss:// URL per line (port 50004)</div>
+      </div>
+
+      <div class="ep-group">
+        <div class="ep-label">ETH RPC ENDPOINT</div>
+        <input class="ep-input" id="ep-eth-rpc" value="${ethRpcVal()}">
+        <div class="ep-hint">Ethereum JSON-RPC URL</div>
       </div>
 
       <div class="ep-group">
@@ -248,15 +338,21 @@ function buildSettingsModal() {
 
   overlay.querySelector('#ep-btn-save').onclick = () => {
     const lines = s => s.split('\n').map(l => l.trim()).filter(l => l.startsWith('wss://'));
-    const fulcrum = lines(overlay.querySelector('#ep-fulcrum').value);
-    const relays  = lines(overlay.querySelector('#ep-relays').value);
+    const fulcrum      = lines(overlay.querySelector('#ep-fulcrum').value);
+    const btcElectrum  = lines(overlay.querySelector('#ep-btc-electrum').value);
+    const relays       = lines(overlay.querySelector('#ep-relays').value);
+    const ethRpc       = overlay.querySelector('#ep-eth-rpc').value.trim();
     const indexer = overlay.querySelector('#ep-indexer').value.trim();
     const midgard = overlay.querySelector('#ep-midgard').value.trim();
     const meta    = overlay.querySelector('#ep-meta').value.trim();
     if (fulcrum.length) localStorage.setItem('00_ep_fulcrum', JSON.stringify(fulcrum));
     else localStorage.removeItem('00_ep_fulcrum');
+    if (btcElectrum.length) localStorage.setItem('00_ep_btc_electrum', JSON.stringify(btcElectrum));
+    else localStorage.removeItem('00_ep_btc_electrum');
     if (relays.length)  localStorage.setItem('00_ep_relays', JSON.stringify(relays));
     else localStorage.removeItem('00_ep_relays');
+    if (ethRpc) localStorage.setItem('00_ep_eth_rpc', JSON.stringify(ethRpc));
+    else localStorage.removeItem('00_ep_eth_rpc');
     if (indexer) localStorage.setItem('00_ep_indexer', JSON.stringify(indexer));
     else localStorage.removeItem('00_ep_indexer');
     if (midgard) localStorage.setItem('00_ep_midgard', JSON.stringify(midgard));
@@ -267,12 +363,14 @@ function buildSettingsModal() {
   };
 
   overlay.querySelector('#ep-btn-reset').onclick = () => {
-    ['fulcrum','relays','indexer','midgard','meta'].forEach(k => localStorage.removeItem('00_ep_' + k));
-    overlay.querySelector('#ep-fulcrum').value = EP_DEFAULTS.fulcrum.join('\n');
-    overlay.querySelector('#ep-relays').value  = EP_DEFAULTS.relays.join('\n');
-    overlay.querySelector('#ep-indexer').value  = EP_DEFAULTS.indexer;
-    overlay.querySelector('#ep-midgard').value  = EP_DEFAULTS.midgard;
-    overlay.querySelector('#ep-meta').value     = EP_DEFAULTS.meta;
+    ['fulcrum','btc_electrum','relays','eth_rpc','indexer','midgard','meta'].forEach(k => localStorage.removeItem('00_ep_' + k));
+    overlay.querySelector('#ep-fulcrum').value       = EP_DEFAULTS.fulcrum.join('\n');
+    overlay.querySelector('#ep-btc-electrum').value  = EP_DEFAULTS.btc_electrum.join('\n');
+    overlay.querySelector('#ep-relays').value         = EP_DEFAULTS.relays.join('\n');
+    overlay.querySelector('#ep-eth-rpc').value        = EP_DEFAULTS.eth_rpc;
+    overlay.querySelector('#ep-indexer').value         = EP_DEFAULTS.indexer;
+    overlay.querySelector('#ep-midgard').value         = EP_DEFAULTS.midgard;
+    overlay.querySelector('#ep-meta').value            = EP_DEFAULTS.meta;
   };
 
   document.body.appendChild(overlay);
@@ -284,8 +382,10 @@ function openSettings() {
   if (!_settingsOverlay) _settingsOverlay = buildSettingsModal();
   // Refresh values on open
   const ov = _settingsOverlay;
-  ov.querySelector('#ep-fulcrum').value = (JSON.parse(localStorage.getItem('00_ep_fulcrum') || 'null') || EP_DEFAULTS.fulcrum).join('\n');
-  ov.querySelector('#ep-relays').value  = (JSON.parse(localStorage.getItem('00_ep_relays')  || 'null') || EP_DEFAULTS.relays).join('\n');
+  ov.querySelector('#ep-fulcrum').value       = (JSON.parse(localStorage.getItem('00_ep_fulcrum') || 'null') || EP_DEFAULTS.fulcrum).join('\n');
+  ov.querySelector('#ep-btc-electrum').value = (JSON.parse(localStorage.getItem('00_ep_btc_electrum') || 'null') || EP_DEFAULTS.btc_electrum).join('\n');
+  ov.querySelector('#ep-relays').value       = (JSON.parse(localStorage.getItem('00_ep_relays')  || 'null') || EP_DEFAULTS.relays).join('\n');
+  ov.querySelector('#ep-eth-rpc').value = localStorage.getItem('00_ep_eth_rpc') ? JSON.parse(localStorage.getItem('00_ep_eth_rpc')) : EP_DEFAULTS.eth_rpc;
   ov.querySelector('#ep-indexer').value = localStorage.getItem('00_ep_indexer') ? JSON.parse(localStorage.getItem('00_ep_indexer')) : EP_DEFAULTS.indexer;
   ov.querySelector('#ep-midgard').value = localStorage.getItem('00_ep_midgard') ? JSON.parse(localStorage.getItem('00_ep_midgard')) : EP_DEFAULTS.midgard;
   ov.querySelector('#ep-meta').value    = localStorage.getItem('00_ep_meta')    ? JSON.parse(localStorage.getItem('00_ep_meta'))    : EP_DEFAULTS.meta;
@@ -299,6 +399,15 @@ function buildControls(showApps) {
   wrap.className = 'shell-controls';
 
   if (showApps) {
+    // Home button — back to launcher
+    const home = document.createElement('a');
+    home.href = '/';
+    home.className = 'shell-btn';
+    home.textContent = '\u2302';  // ⌂
+    home.title = 'Home';
+    home.style.cssText = 'font-size:14px;text-decoration:none;display:flex;align-items:center;padding:2px 6px';
+    wrap.appendChild(home);
+
     const appsHtml = APPS.map(a =>
       `<a href="${a.url}"${a.url === cur ? ' class="cur"' : ''}>${a.name}</a>`
     ).join('');
@@ -368,6 +477,103 @@ document.addEventListener('click', () => {
   document.querySelectorAll('.shell-menu').forEach(m => m.classList.remove('open'));
 });
 
+// ── Home Indicator (iOS pill) ──────────────────────────────────
+function buildHomeIndicator() {
+  const a = document.createElement('a');
+  a.href = '/index.html';
+  a.className = 'home-indicator';
+  a.innerHTML = '<div class="home-pill"></div>';
+  return a;
+}
+
+// ── Desktop Sidebar ────────────────────────────────────────────
+function buildDesktopSidebar() {
+  const cur = window.location.pathname.split('/').pop() || 'index.html';
+  const sb = document.createElement('nav');
+  sb.className = 'desktop-sidebar';
+  sb.id = 'desktop-sidebar';
+  if (localStorage.getItem('00_sidebar_collapsed') === '1') sb.classList.add('collapsed');
+
+  // Logo
+  const logo = document.createElement('a');
+  logo.className = 'sidebar-logo';
+  logo.href = '/';
+  logo.innerHTML = '<span class="sidebar-logo-icon">00</span><span class="sidebar-logo-text sidebar-label">Protocol</span>';
+  sb.appendChild(logo);
+
+  // Nav sections
+  const nav = document.createElement('div');
+  nav.className = 'sidebar-nav';
+  for (const [section, urls] of Object.entries(APP_SECTIONS)) {
+    const lbl = document.createElement('div');
+    lbl.className = 'sidebar-section-label sidebar-label';
+    lbl.textContent = section;
+    nav.appendChild(lbl);
+    for (const url of urls) {
+      const app = APPS.find(a => a.url === url);
+      if (!app) continue;
+      const a = document.createElement('a');
+      a.className = 'sidebar-nav-item' + (url === cur ? ' active' : '');
+      a.href = url;
+      a.innerHTML = `<span class="sidebar-nav-icon">${APP_ICONS[url] || '●'}</span><span class="sidebar-label">${app.name.replace('00 ', '')}</span>`;
+      nav.appendChild(a);
+    }
+  }
+  sb.appendChild(nav);
+
+  // Bottom actions
+  const bot = document.createElement('div');
+  bot.className = 'sidebar-bottom';
+
+  // Docs link
+  const docBtn = document.createElement('a');
+  docBtn.className = 'sidebar-bottom-item';
+  docBtn.href = 'docs.html';
+  docBtn.innerHTML = '<span class="sidebar-bottom-icon">📖</span><span class="sidebar-label">Docs</span>';
+  bot.appendChild(docBtn);
+
+  // Theme toggle
+  const theme = getTheme();
+  const themeBtn = document.createElement('button');
+  themeBtn.className = 'sidebar-bottom-item';
+  themeBtn.innerHTML = `<span class="sidebar-bottom-icon" id="dt-theme-icon">${theme === 'dark' ? '☀' : '☾'}</span><span class="sidebar-label" id="dt-theme-label">${theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>`;
+  themeBtn.onclick = () => setTheme(getTheme() === 'light' ? 'dark' : 'light');
+  bot.appendChild(themeBtn);
+
+  // Settings
+  const setBtn = document.createElement('button');
+  setBtn.className = 'sidebar-bottom-item';
+  setBtn.innerHTML = '<span class="sidebar-bottom-icon">⚙</span><span class="sidebar-label">Settings</span>';
+  setBtn.onclick = () => openSettings();
+  bot.appendChild(setBtn);
+
+  // Connect / Disconnect
+  const discBtn = document.createElement('button');
+  if (isConnected()) {
+    discBtn.className = 'sidebar-bottom-item danger';
+    discBtn.innerHTML = '<span class="sidebar-bottom-icon">⏻</span><span class="sidebar-label">' + t('disc') + '</span>';
+    discBtn.onclick = disconnect;
+  } else {
+    discBtn.className = 'sidebar-bottom-item';
+    discBtn.innerHTML = '<span class="sidebar-bottom-icon">⏻</span><span class="sidebar-label">' + t('connect') + '</span>';
+    discBtn.onclick = () => { window.location.href = 'wallet.html'; };
+  }
+  bot.appendChild(discBtn);
+
+  // Collapse toggle
+  const colBtn = document.createElement('button');
+  colBtn.className = 'sidebar-bottom-item';
+  colBtn.innerHTML = '<span class="sidebar-bottom-icon">☰</span><span class="sidebar-label">Collapse</span>';
+  colBtn.onclick = () => {
+    sb.classList.toggle('collapsed');
+    localStorage.setItem('00_sidebar_collapsed', sb.classList.contains('collapsed') ? '1' : '0');
+  };
+  bot.appendChild(colBtn);
+
+  sb.appendChild(bot);
+  return sb;
+}
+
 // ── Inject ─────────────────────────────────────────────────────
 function inject() {
   const path      = window.location.pathname.split('/').pop() || 'index.html';
@@ -377,32 +583,53 @@ function inject() {
   // Remove blinking cursor to avoid visual conflict with shell controls
   document.querySelectorAll('.blink').forEach(el => el.remove());
 
-  if (isLanding) {
-    // Append into terminal-bar right span (after clock)
-    const bar   = document.querySelector('.terminal-bar');
-    if (!bar) return;
-    const right = bar.querySelector('span:last-child');
-    if (right) {
-      right.style.gap = '16px';
-      right.appendChild(buildControls(false));
-    }
-  } else if (isDocs) {
-    const bar = document.querySelector('.top-bar');
-    if (!bar) return;
-    bar.appendChild(buildControls(true));
-  } else {
-    // App pages: fixed overlay — no DOM manipulation of existing layout
-    const ctrl = buildControls(true);
-    ctrl.style.cssText = `
-      position:fixed; top:0; right:0; z-index:9000;
-      background:rgba(2,10,3,.88); backdrop-filter:blur(4px);
-      padding:6px 10px;
-      border-bottom:1px solid rgba(0,255,65,.1);
-      border-left:1px solid rgba(0,255,65,.1);
-    `;
-    document.body.appendChild(ctrl);
+  // ── Desktop: inject sidebar ──
+  if (IS_DESKTOP && !isDocs) {
+    document.body.prepend(buildDesktopSidebar());
   }
+
+  // ── Mobile / tablet: original behavior ──
+  if (!IS_DESKTOP) {
+    if (isLanding) {
+      // Landing page: no overlay needed
+    } else if (isDocs) {
+      // Docs has its own top-bar layout — skip shell controls
+    } else {
+      const phone = document.querySelector('.phone');
+      if (phone) {
+        phone.appendChild(buildHomeIndicator());
+      }
+    }
+  }
+
+  // Docs: skip shell controls — docs has its own top-bar layout
+  // if (IS_DESKTOP && isDocs) {
+  //   const bar = document.querySelector('.top-bar');
+  //   if (bar) bar.appendChild(buildControls(true));
+  // }
 }
+
+// ── Resize listener — desktop ↔ mobile ─────────────────────────
+_desktopMQ.addEventListener('change', (e) => {
+  IS_DESKTOP = e.matches;
+  if (e.matches) {
+    setTheme(getTheme());
+    if (!document.getElementById('desktop-sidebar')) {
+      const path = window.location.pathname.split('/').pop() || 'index.html';
+      if (path !== 'docs.html') document.body.prepend(buildDesktopSidebar());
+    }
+  } else {
+    // Restore hacker theme for mobile
+    document.documentElement.removeAttribute('data-theme');
+    const r = document.documentElement.style;
+    r.removeProperty('--green');
+    r.removeProperty('--green-dim');
+    r.removeProperty('--green-dark');
+    r.removeProperty('--accent-rgb');
+    const sb = document.getElementById('desktop-sidebar');
+    if (sb) sb.remove();
+  }
+});
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', inject);

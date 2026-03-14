@@ -145,7 +145,13 @@
     .auth-divider { width:100%; border-top:1px solid rgba(0,255,65,.1); }
     .auth-lbl { font-size:9px; color:rgba(0,255,65,.35); letter-spacing:2px; align-self:flex-start; }
     #main-view { min-height:0; }
+    /* Desktop: skip loading, hide phone overlays */
+    @media (min-width: 900px) {
+      #loading { display: none !important; }
+      #rain, .scanlines, .vignette { display: none !important; }
+    }
   </style>
+  <link rel="stylesheet" href="desktop.css">
 </head>
 <body>
 <canvas id="rain"></canvas>
@@ -157,6 +163,337 @@
   <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
   <div class="loader-status" id="loader-status"></div>
 </div>
+
+<!-- ── Desktop ID View (hidden on mobile) ── -->
+<div id="id-desktop" style="display:none">
+  <div class="dt-inner">
+    <div class="dt-page-header">
+      <div class="dt-page-title-wrap">
+        <div class="dt-page-icon">◈</div>
+        <div>
+          <div class="dt-page-title">Identity</div>
+          <div class="dt-page-sub">Sovereign Decentralized ID</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dt-status-bar" id="dt-id-status-bar">
+      <div class="dt-status-chip" id="dt-status-id-nostr">
+        <div class="dt-status-dot" id="dt-id-dot-nostr"></div>
+        <span class="dt-status-label">Nostr</span>
+        <span class="dt-status-server" id="dt-status-id-nostr-server">—</span>
+      </div>
+    </div>
+
+    <div class="dt-tabs" id="dt-id-tabs">
+      <button class="dt-tab active" onclick="dtIdTab('card')">Card</button>
+      <button class="dt-tab" onclick="dtIdTab('edit')">Edit</button>
+      <button class="dt-tab" onclick="dtIdTab('share')">Share</button>
+      <button class="dt-tab" onclick="dtIdTab('lookup')">Lookup</button>
+    </div>
+
+    <!-- CARD pane -->
+    <div class="dt-pane active" id="dt-id-p-card">
+      <div class="dt-card" style="max-width:520px">
+        <div style="display:flex;gap:20px;align-items:center;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--dt-border)">
+          <div class="dt-id-avatar">
+            <canvas id="dt-id-avatar-canvas" width="72" height="72" style="border-radius:50%;width:72px;height:72px"></canvas>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="dt-id-name" id="dt-card-name">ANONYMOUS</div>
+            <div class="dt-id-bio" id="dt-card-bio">// no bio set</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <div class="dt-form-lbl" style="margin-bottom:6px">BCH ADDRESS</div>
+          <div id="dt-card-bch" style="font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;color:var(--dt-text-secondary);word-break:break-all;background:var(--dt-input-bg);padding:10px 14px;border-radius:10px;border:1px solid var(--dt-border);line-height:1.6;min-height:20px;margin-bottom:8px"></div>
+          <button class="dt-action-btn-outline" style="width:auto;padding:6px 22px;font-size:11px;display:inline-flex;align-items:center;gap:5px" onclick="var v=document.getElementById('dt-card-bch').textContent;if(v){navigator.clipboard.writeText(v);var b=this;b.textContent='Copied ✓';setTimeout(function(){b.textContent='📋 Copy'},1500)}">📋 Copy</button>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <div class="dt-form-lbl" style="margin-bottom:6px">NOSTR NPUB</div>
+          <div id="dt-card-npub" style="font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;color:var(--dt-text-secondary);word-break:break-all;background:var(--dt-input-bg);padding:10px 14px;border-radius:10px;border:1px solid var(--dt-border);line-height:1.6;min-height:20px;margin-bottom:8px"></div>
+          <button class="dt-action-btn-outline" style="width:auto;padding:6px 22px;font-size:11px;display:inline-flex;align-items:center;gap:5px" onclick="var v=document.getElementById('dt-card-npub').textContent;if(v){navigator.clipboard.writeText(v);var b=this;b.textContent='Copied ✓';setTimeout(function(){b.textContent='📋 Copy'},1500)}">📋 Copy</button>
+        </div>
+
+        <div style="margin-bottom:20px">
+          <div class="dt-form-lbl" style="margin-bottom:6px">HEX PUBKEY</div>
+          <div id="dt-card-pubhex" style="font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px;color:var(--dt-text-secondary);word-break:break-all;background:var(--dt-input-bg);padding:10px 14px;border-radius:10px;border:1px solid var(--dt-border);line-height:1.6;min-height:20px;opacity:.7;margin-bottom:8px"></div>
+          <button class="dt-action-btn-outline" style="width:auto;padding:6px 22px;font-size:11px;display:inline-flex;align-items:center;gap:5px" onclick="var v=document.getElementById('dt-card-pubhex').textContent;if(v){navigator.clipboard.writeText(v);var b=this;b.textContent='Copied ✓';setTimeout(function(){b.textContent='📋 Copy'},1500)}">📋 Copy</button>
+        </div>
+
+        <div style="display:flex;gap:10px">
+          <button class="dt-action-btn" onclick="dtIdTab('share')" style="width:auto;padding:10px 24px">Share</button>
+          <button class="dt-action-btn" onclick="dtIdTab('edit')" style="width:auto;padding:10px 24px">Edit</button>
+          <button class="dt-action-btn" onclick="if(window.publishToNostr)window.publishToNostr()" style="width:auto;padding:10px 24px;background:var(--dt-accent-bg);color:var(--dt-accent-text)">◈ Publish</button>
+        </div>
+        <div id="dt-card-publish-status" style="font-size:12px;color:var(--dt-text-secondary);margin-top:10px;min-height:18px"></div>
+      </div>
+    </div>
+
+    <!-- EDIT pane -->
+    <div class="dt-pane" id="dt-id-p-edit">
+      <div class="dt-card" style="max-width:520px">
+        <div class="dt-card-title">Edit Profile</div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">Display Name</div>
+          <input class="dt-form-input" id="dt-edit-name" placeholder="anon" maxlength="40">
+        </div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">Bio</div>
+          <textarea class="dt-form-input" id="dt-edit-bio" placeholder="// about you..." rows="3" style="resize:vertical"></textarea>
+        </div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">Picture URL (optional)</div>
+          <input class="dt-form-input" id="dt-edit-picture" placeholder="https://...">
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="dt-action-btn" onclick="dtIdSaveLocal()" style="width:auto;padding:10px 24px">Save Locally</button>
+          <button class="dt-action-btn" onclick="dtIdPublish()" style="width:auto;padding:10px 24px;background:var(--dt-accent-bg);color:var(--dt-accent-text)">◈ Broadcast Identity</button>
+        </div>
+        <div id="dt-publish-status" style="font-size:12px;color:var(--dt-text-secondary);margin-top:10px;min-height:18px"></div>
+      </div>
+    </div>
+
+    <!-- SHARE pane -->
+    <div class="dt-pane" id="dt-id-p-share">
+      <div class="dt-card" style="max-width:520px;text-align:center">
+        <div class="dt-card-title">Share Identity</div>
+        <div style="font-size:12px;color:var(--dt-text-secondary);margin-bottom:20px">Universal QR — works in all 00 apps</div>
+        <div style="display:flex;justify-content:center;margin-bottom:20px">
+          <canvas id="dt-share-qr" width="200" height="200" style="border-radius:12px;background:var(--dt-input-bg);padding:16px"></canvas>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px">
+          <button class="dt-action-btn-outline" onclick="if(window.copyShareData)window.copyShareData()" style="width:auto;padding:8px 22px">📋 Copy JSON</button>
+          <button class="dt-action-btn-outline" onclick="if(window.copyShareLink)window.copyShareLink()" style="width:auto;padding:8px 22px">🔗 Copy Link</button>
+        </div>
+        <div id="dt-share-info" style="font-size:10px;color:var(--dt-text-secondary);word-break:break-all;font-family:'SF Mono','Fira Code','Consolas',monospace;background:var(--dt-input-bg);padding:10px 14px;border-radius:10px;border:1px solid var(--dt-border);line-height:1.5;text-align:left;margin-bottom:10px;max-height:60px;overflow:hidden"></div>
+        <div id="dt-share-url" style="font-size:10px;color:var(--dt-text-secondary);word-break:break-all;font-family:'SF Mono','Fira Code','Consolas',monospace;background:var(--dt-input-bg);padding:10px 14px;border-radius:10px;border:1px solid var(--dt-border);line-height:1.5;text-align:left;cursor:pointer;max-height:60px;overflow:hidden" onclick="if(window.copyShareLink)window.copyShareLink()"></div>
+        <div style="font-size:11px;color:var(--dt-text-secondary);margin-top:12px;opacity:.5">QR contains BCH + Nostr public keys — no private data shared</div>
+      </div>
+    </div>
+
+    <!-- LOOKUP pane -->
+    <div class="dt-pane" id="dt-id-p-lookup">
+      <div class="dt-card" style="max-width:520px">
+        <div class="dt-card-title">Lookup Identity</div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">npub or Hex Pubkey</div>
+          <input class="dt-form-input" id="dt-lookup-input" placeholder="npub1... or 64-char hex" onkeydown="if(event.key==='Enter')dtIdLookup()">
+        </div>
+        <button class="dt-action-btn" onclick="dtIdLookup()" style="width:100%;padding:12px">⌖ Resolve Identity</button>
+        <div id="dt-lookup-error" style="font-size:12px;color:var(--dt-danger);margin-top:10px;min-height:18px"></div>
+        <div id="dt-lookup-spinner" style="display:none;text-align:center;padding:20px">
+          <div style="display:inline-block;width:24px;height:24px;border:2px solid var(--dt-border);border-top-color:var(--dt-accent);border-radius:50%;animation:spin 1s linear infinite"></div>
+          <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+        </div>
+        <div id="dt-lookup-result" style="display:none;margin-top:16px">
+          <div class="dt-card" style="background:var(--dt-input-bg)">
+            <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px">
+              <canvas id="dt-lookup-avatar" width="56" height="56" style="border-radius:50%;width:56px;height:56px;flex-shrink:0"></canvas>
+              <div style="flex:1;min-width:0">
+                <div id="dt-lookup-name" style="font-weight:700;font-size:16px;color:var(--dt-text)"></div>
+                <div id="dt-lookup-bio" style="font-size:13px;color:var(--dt-text-secondary);margin-top:2px"></div>
+              </div>
+            </div>
+            <div id="dt-lookup-bch-field" style="font-size:12px;color:var(--dt-text-secondary);word-break:break-all;margin-bottom:8px;font-family:monospace"></div>
+            <div id="dt-lookup-npub-field" style="font-size:12px;color:var(--dt-text-secondary);word-break:break-all;margin-bottom:16px;font-family:monospace"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="dt-action-btn-outline" onclick="if(window.addToChat)window.addToChat()" style="width:auto;font-size:12px;padding:6px 14px">+ 00 Chat</button>
+              <button class="dt-action-btn-outline" onclick="if(window.followOnMesh)window.followOnMesh()" style="width:auto;font-size:12px;padding:6px 14px">+ 00 Mesh</button>
+              <button class="dt-action-btn-outline" onclick="if(window.sendBch)window.sendBch()" style="width:auto;font-size:12px;padding:6px 14px">⬡ Send BCH</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  if(!window.matchMedia('(min-width:900px)').matches) return;
+  var el=document.getElementById('id-desktop');if(!el)return;
+  el.style.display='';
+
+  /* ── Tab switching ─── */
+  var _tabs=['card','edit','share','lookup'];
+  window.dtIdTab=function(t){
+    _tabs.forEach(function(x){
+      var p=document.getElementById('dt-id-p-'+x);
+      if(p)p.classList.toggle('active',x===t);
+    });
+    var btns=document.querySelectorAll('#dt-id-tabs .dt-tab');
+    btns.forEach(function(b){b.classList.toggle('active',b.textContent.toLowerCase()===t);});
+    // Sync to mobile tab so QR / lookup get triggered
+    if(window.switchTab) window.switchTab(t);
+  };
+
+  /* ── Save locally — sync to mobile inputs then call saveLocal ─── */
+  window.dtIdSaveLocal=function(){
+    var mn=document.getElementById('edit-name');
+    var mb=document.getElementById('edit-bio');
+    var mp=document.getElementById('edit-picture');
+    if(mn) mn.value=document.getElementById('dt-edit-name').value;
+    if(mb) mb.value=document.getElementById('dt-edit-bio').value;
+    if(mp) mp.value=document.getElementById('dt-edit-picture').value;
+    if(window.saveLocal) window.saveLocal();
+    var st=document.getElementById('dt-publish-status');
+    if(st){st.textContent='Saved locally ✓';setTimeout(function(){st.textContent='';},3000);}
+  };
+
+  /* ── Publish — sync to mobile inputs then call publishToNostr ─── */
+  window.dtIdPublish=function(){
+    var mn=document.getElementById('edit-name');
+    var mb=document.getElementById('edit-bio');
+    var mp=document.getElementById('edit-picture');
+    if(mn) mn.value=document.getElementById('dt-edit-name').value;
+    if(mb) mb.value=document.getElementById('dt-edit-bio').value;
+    if(mp) mp.value=document.getElementById('dt-edit-picture').value;
+    if(window.publishToNostr) window.publishToNostr();
+  };
+
+  /* ── Lookup — sync to mobile input then call lookupIdentity ─── */
+  window.dtIdLookup=function(){
+    var mi=document.getElementById('lookup-input');
+    if(mi) mi.value=document.getElementById('dt-lookup-input').value;
+    if(window.lookupIdentity) window.lookupIdentity();
+  };
+
+  /* ── Mirror avatar canvas ─── */
+  function mirrorCanvas(srcId,dstId,w,h,recolor){
+    var src=document.getElementById(srcId);
+    var dst=document.getElementById(dstId);
+    if(!src||!dst)return;
+    try{
+      var ctx=dst.getContext('2d');
+      dst.width=w;dst.height=h;
+      ctx.drawImage(src,0,0,w,h);
+      if(recolor){
+        var img=ctx.getImageData(0,0,w,h);
+        var d=img.data;
+        for(var i=0;i<d.length;i+=4){
+          // Replace neon green (#00ff41 / high-green low-blue) with accent (#0AC18E)
+          if(d[i+1]>200&&d[i]<50&&d[i+2]<100&&d[i+3]>200){
+            d[i]=10;d[i+1]=193;d[i+2]=142;
+          }
+        }
+        ctx.putImageData(img,0,0);
+      }
+    }catch(e){}
+  }
+
+  /* ── Poll mobile DOM ─── */
+  var _lastData='';
+  setInterval(function(){
+    // Mirror identity fields
+    var cn=document.getElementById('card-name');
+    var cb=document.getElementById('card-bio');
+    var cbch=document.getElementById('card-bch');
+    var cnp=document.getElementById('card-npub');
+    var cph=document.getElementById('card-pubhex');
+
+    var dn=document.getElementById('dt-card-name');
+    var db=document.getElementById('dt-card-bio');
+    var dbch=document.getElementById('dt-card-bch');
+    var dnp=document.getElementById('dt-card-npub');
+    var dph=document.getElementById('dt-card-pubhex');
+
+    if(cn&&dn) dn.textContent=cn.textContent;
+    if(cb&&db) db.textContent=cb.textContent;
+    if(cbch&&dbch) dbch.textContent=cbch.textContent;
+    if(cnp&&dnp) dnp.textContent=cnp.textContent;
+    if(cph&&dph) dph.textContent=cph.textContent;
+
+    // Mirror avatar
+    mirrorCanvas('my-avatar','dt-id-avatar-canvas',72,72);
+
+    // Mirror share QR
+    mirrorCanvas('share-qr','dt-share-qr',200,200,true);
+
+    // Mirror share info + URL
+    var si=document.getElementById('share-info');
+    var dsi=document.getElementById('dt-share-info');
+    if(si&&dsi) dsi.textContent=si.textContent;
+
+    var su=document.getElementById('share-url-preview');
+    var dsu=document.getElementById('dt-share-url');
+    if(su&&dsu) dsu.textContent=su.textContent;
+
+    // Mirror edit fields (only if desktop fields are empty — don't overwrite user edits)
+    var en=document.getElementById('edit-name');
+    var eb=document.getElementById('edit-bio');
+    var ep=document.getElementById('edit-picture');
+    var den=document.getElementById('dt-edit-name');
+    var deb=document.getElementById('dt-edit-bio');
+    var dep=document.getElementById('dt-edit-picture');
+    var sig=''+(cn?cn.textContent:'')+(cbch?cbch.textContent:'');
+    if(sig!==_lastData){
+      _lastData=sig;
+      if(en&&den&&!den.value) den.value=en.value;
+      if(eb&&deb&&!deb.value) deb.value=eb.value;
+      if(ep&&dep&&!dep.value) dep.value=ep.value;
+    }
+
+    // Mirror publish status
+    var ps=document.getElementById('publish-status');
+    var dps=document.getElementById('dt-publish-status');
+    if(ps&&dps&&ps.textContent) dps.textContent=ps.textContent;
+    var cps=document.getElementById('card-publish-status');
+    var dcps=document.getElementById('dt-card-publish-status');
+    if(cps&&dcps&&cps.textContent) dcps.textContent=cps.textContent;
+
+    // Mirror lookup results
+    var lr=document.getElementById('lookup-result');
+    var dlr=document.getElementById('dt-lookup-result');
+    if(lr&&dlr){
+      dlr.style.display=lr.style.display==='none'?'none':'block';
+    }
+    var le=document.getElementById('lookup-error');
+    var dle=document.getElementById('dt-lookup-error');
+    if(le&&dle) dle.textContent=le.textContent;
+
+    var ls=document.getElementById('lookup-spinner');
+    var dls=document.getElementById('dt-lookup-spinner');
+    if(ls&&dls) dls.style.display=(ls.style.display==='none'||!ls.style.display)?'none':'block';
+
+    // Mirror lookup result fields
+    var ln=document.getElementById('lookup-name');
+    var dln=document.getElementById('dt-lookup-name');
+    if(ln&&dln) dln.textContent=ln.textContent;
+    var lb=document.getElementById('lookup-bio');
+    var dlb=document.getElementById('dt-lookup-bio');
+    if(lb&&dlb) dlb.textContent=lb.textContent;
+    var lbf=document.getElementById('lookup-bch-field');
+    var dlbf=document.getElementById('dt-lookup-bch-field');
+    if(lbf&&dlbf) dlbf.textContent=lbf.textContent;
+    var lnf=document.getElementById('lookup-npub-field');
+    var dlnf=document.getElementById('dt-lookup-npub-field');
+    if(lnf&&dlnf) dlnf.textContent=lnf.textContent;
+
+    // Mirror lookup avatar
+    mirrorCanvas('lookup-avatar','dt-lookup-avatar',56,56);
+
+    // Mirror relay status chip
+    var rd=document.getElementById('relay-row');
+    var nChip=document.getElementById('dt-status-id-nostr');
+    var nDot=document.getElementById('dt-id-dot-nostr');
+    var nSrv=document.getElementById('dt-status-id-nostr-server');
+    if(rd&&nChip){
+      var dots=rd.querySelectorAll('.relay-mini-dot');
+      var anyOn=false;
+      dots.forEach(function(d){if(d.classList.contains('on'))anyOn=true;});
+      nChip.classList.toggle('on',anyOn);
+      nChip.classList.toggle('err',!anyOn);
+      if(nDot){nDot.classList.toggle('on',anyOn);nDot.classList.toggle('err',!anyOn);}
+      var rl=document.getElementById('relay-status-lbl');
+      if(rl&&nSrv) nSrv.textContent=rl.textContent||'—';
+    }
+  },800);
+})();
+</script>
 
 <div class="phone-wrap">
   <div class="phone">
@@ -331,6 +668,7 @@
   </div>
 </div>
 
+<script>if(sessionStorage.getItem('00_gate')!=='1'){window.location.href='/';}else if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
 <script>
 (function() {
   const statuses = ['BOOT 0penw0rld OS...','LOADING IDENTITY MODULE...','DERIVING KEYS...','IDENTITY READY'];
@@ -678,7 +1016,11 @@ async function idImport() {
 }
 async function idUnlock() {
   const pass = document.getElementById('unlock-pass').value;
-  try { await bootApp(await decryptVault(localStorage.getItem('00id_vault'), pass)); }
+  try {
+    await bootApp(await decryptVault(localStorage.getItem('00id_vault'), pass));
+    // Shared session — all apps auto-unlock
+    localStorage.setItem('00_session_auth', JSON.stringify({ p: btoa(pass), ts: Date.now() }));
+  }
   catch { document.getElementById('unlock-error').textContent = '// wrong password'; }
 }
 function idGenKey() {
@@ -719,9 +1061,44 @@ async function bootApp(profile) {
 }
 function updateClock() { const el=document.getElementById('phone-clock'); if(el) el.textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }
 
-window._idBoot = function() {
-  if (localStorage.getItem('00id_vault')) document.getElementById('auth-unlock').style.display = 'flex';
-  else document.getElementById('auth-import').style.display = 'flex';
+window._idBoot = async function() {
+  const vault = localStorage.getItem('00id_vault');
+  if (vault) {
+    // Auto-unlock from shared session (cross-app, 30 min TTL)
+    try {
+      const sess = JSON.parse(localStorage.getItem('00_session_auth') || '{}');
+      if (sess.p && sess.ts && Date.now() - sess.ts < 30 * 60 * 1000) {
+        const pass = atob(sess.p);
+        await bootApp(await decryptVault(vault, pass));
+        localStorage.setItem('00_session_auth', JSON.stringify({ p: sess.p, ts: Date.now() }));
+        return;
+      }
+    } catch {}
+    document.getElementById('auth-unlock').style.display = 'flex';
+  }
+  else {
+    // No ID vault — try auto-create from wallet vault + session
+    try {
+      const sess = JSON.parse(localStorage.getItem('00_session_auth') || '{}');
+      const wv = localStorage.getItem('00wallet_vault');
+      if (sess.p && sess.ts && Date.now() - sess.ts < 30 * 60 * 1000 && wv) {
+        const pass = atob(sess.p);
+        const wp = await decryptVault(wv, pass);
+        const seed64 = wp.seedHex ? h2b(wp.seedHex) : await mnemonicToSeed(wp.bchPrivHex);
+        const bchPriv = deriveBchPriv(seed64);
+        const nostrPriv = deriveNostrPriv(seed64);
+        const nostrPub = secp256k1.getPublicKey(nostrPriv, true).slice(1);
+        const bchPub33 = secp256k1.getPublicKey(bchPriv, true);
+        const bchHash160 = ripemd160(sha256(bchPub33));
+        const profile = { bchPrivHex: b2h(bchPriv), nostrPrivHex: b2h(nostrPriv), nostrPubHex: b2h(nostrPub), bchAddr: pubHashToCashAddr(Array.from(bchHash160)) };
+        localStorage.setItem('00id_vault', await encryptVault(profile, pass));
+        localStorage.setItem('00_session_auth', JSON.stringify({ p: sess.p, ts: Date.now() }));
+        await bootApp(profile);
+        return;
+      }
+    } catch { /* wallet decrypt failed */ }
+    document.getElementById('auth-import').style.display = 'flex';
+  }
 };
 Object.assign(window, {
   idImport, idUnlock, idGenKey, showIdImport,

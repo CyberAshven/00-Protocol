@@ -13,9 +13,14 @@
   <title>00 Wallet — 0penw0rld</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+    /* Desktop: skip loading, hide phone mockup */
+    @media (min-width: 900px) {
+      #loading { display: none !important; }
+      #rain, .scanlines, .vignette { display: none !important; }
+    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #00ff41; --green-dim: #00c832; --green-dark: #003d0f;
+      --green: #00ff41; --green-dim: #00c832; --green-dark: #003d0f; --accent-rgb: 0,255,65;
       --black: #020a03; --grey: #0a110a; --panel: #060e06;
       --red: #ff4040; --gold: #f0a500;
     }
@@ -24,187 +29,197 @@
     .scanlines { position:fixed; inset:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.12) 2px,rgba(0,0,0,.12) 4px); }
     .vignette { position:fixed; inset:0; z-index:1; pointer-events:none; background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.9) 100%); }
     #loading { position:fixed; inset:0; z-index:100; background:var(--black); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; }
-    .loader-logo { font-family:'Orbitron',monospace; font-size:52px; font-weight:900; color:var(--green); text-shadow:0 0 20px var(--green),0 0 50px var(--green),0 0 100px rgba(0,255,65,.3); animation:logoPulse 1s ease-in-out infinite; }
-    @keyframes logoPulse { 0%,100%{text-shadow:0 0 20px var(--green),0 0 50px var(--green)} 50%{text-shadow:0 0 30px var(--green),0 0 70px var(--green),0 0 140px rgba(0,255,65,.5)} }
-    .loader-bar-wrap { width:200px; height:2px; background:rgba(0,255,65,.1); border-radius:2px; overflow:hidden; }
+    .loader-logo { font-family:'Orbitron',monospace; font-size:52px; font-weight:900; color:var(--green); text-shadow:0 0 20px var(--green),0 0 50px var(--green),0 0 100px rgba(var(--accent-rgb),.3); animation:logoPulse 1s ease-in-out infinite; }
+    @keyframes logoPulse { 0%,100%{text-shadow:0 0 20px var(--green),0 0 50px var(--green)} 50%{text-shadow:0 0 30px var(--green),0 0 70px var(--green),0 0 140px rgba(var(--accent-rgb),.5)} }
+    .loader-bar-wrap { width:200px; height:2px; background:rgba(var(--accent-rgb),.1); border-radius:2px; overflow:hidden; }
     .loader-bar { height:100%; background:var(--green); box-shadow:0 0 8px var(--green); animation:loadBar 2.5s ease-in-out forwards; }
     @keyframes loadBar { from{width:0} to{width:100%} }
-    .loader-status { font-size:10px; color:rgba(0,255,65,.3); letter-spacing:2px; min-height:14px; }
+    .loader-status { font-size:10px; color:rgba(var(--accent-rgb),.3); letter-spacing:2px; min-height:14px; }
     .blink { animation:blink .8s step-end infinite; }
     @keyframes blink { 50%{opacity:0} }
 
     /* Phone */
     .phone-wrap { position:relative; z-index:10; display:flex; align-items:center; justify-content:center; }
-    .phone { width:375px; height:780px; background:var(--panel); border-radius:42px; border:2px solid rgba(0,255,65,.2); box-shadow:0 0 0 1px rgba(0,255,65,.05),0 0 40px rgba(0,255,65,.08),0 0 80px rgba(0,255,65,.04),inset 0 0 30px rgba(0,0,0,.5); display:flex; flex-direction:column; overflow:hidden; position:relative; }
+    .phone { width:375px; height:780px; background:var(--panel); border-radius:42px; border:2px solid rgba(var(--accent-rgb),.2); box-shadow:0 0 0 1px rgba(var(--accent-rgb),.05),0 0 40px rgba(var(--accent-rgb),.08),0 0 80px rgba(var(--accent-rgb),.04),inset 0 0 30px rgba(0,0,0,.5); display:flex; flex-direction:column; overflow:hidden; position:relative; }
     .notch { position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:28px; background:var(--black); border-radius:0 0 18px 18px; z-index:50; display:flex; align-items:center; justify-content:center; gap:8px; }
     .notch-cam { width:8px; height:8px; border-radius:50%; background:#111; border:1px solid #222; }
     .notch-speaker { width:40px; height:4px; border-radius:2px; background:#111; }
-    .status-bar { padding:10px 20px 4px; display:flex; align-items:center; justify-content:space-between; font-size:10px; color:rgba(0,255,65,.5); flex-shrink:0; margin-top:14px; }
+    .status-bar { padding:10px 20px 4px; display:flex; align-items:center; justify-content:space-between; font-size:10px; color:rgba(var(--accent-rgb),.5); flex-shrink:0; margin-top:14px; }
     .app-header { padding:10px 20px 0; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
-    .app-title { font-family:'Orbitron',monospace; font-size:18px; font-weight:700; color:var(--green); text-shadow:0 0 10px rgba(0,255,65,.4); }
-    .app-title span { font-size:11px; color:rgba(0,255,65,.4); display:block; letter-spacing:2px; }
-    .header-icon { font-size:18px; cursor:pointer; color:rgba(0,255,65,.6); transition:.15s; }
+    .app-title { font-family:'Orbitron',monospace; font-size:18px; font-weight:700; color:var(--green); text-shadow:0 0 10px rgba(var(--accent-rgb),.4); }
+    .app-title span { font-size:11px; color:rgba(var(--accent-rgb),.4); display:block; letter-spacing:2px; }
+    .header-icon { font-size:18px; cursor:pointer; color:rgba(var(--accent-rgb),.6); transition:.15s; }
     .header-icon:hover { color:var(--green); }
 
     /* Fulcrum bar */
-    .fulcrum-bar { display:flex; align-items:center; gap:8px; padding:5px 20px; border-bottom:1px solid rgba(0,255,65,.08); flex-shrink:0; font-size:9px; color:rgba(0,255,65,.4); letter-spacing:1px; }
-    .fulcrum-dot { width:5px; height:5px; border-radius:50%; background:rgba(0,255,65,.2); flex-shrink:0; transition:.3s; }
+    .fulcrum-bar { display:flex; align-items:center; gap:8px; padding:5px 20px; border-bottom:1px solid rgba(var(--accent-rgb),.08); flex-shrink:0; font-size:9px; color:rgba(var(--accent-rgb),.4); letter-spacing:1px; }
+    .fulcrum-dot { width:5px; height:5px; border-radius:50%; background:rgba(var(--accent-rgb),.2); flex-shrink:0; transition:.3s; }
     .fulcrum-dot.on { background:var(--green); box-shadow:0 0 4px var(--green); }
     .fulcrum-dot.err { background:var(--red); }
 
+    /* Chain selector */
+    .chain-sel { display:none; padding:3px 16px 4px; gap:4px; flex-shrink:0; }
+    .chain-btn { flex:1; padding:5px; text-align:center; font-size:9px; letter-spacing:2px; color:rgba(var(--accent-rgb),.25); cursor:pointer; border:1px solid rgba(var(--accent-rgb),.08); border-radius:4px; transition:.15s; font-family:inherit; }
+    .chain-btn.active { color:var(--green); border-color:rgba(var(--accent-rgb),.35); background:rgba(var(--accent-rgb),.05); }
+    .chain-btn:hover { border-color:rgba(var(--accent-rgb),.25); color:rgba(var(--accent-rgb),.5); }
+
     /* Tabs */
-    .tabs { display:flex; padding:0 16px; border-bottom:1px solid rgba(0,255,65,.1); flex-shrink:0; }
-    .tab { flex:1; padding:10px; text-align:center; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:rgba(0,255,65,.3); cursor:pointer; border-bottom:2px solid transparent; transition:.2s; }
+    .tabs { display:flex; padding:0 16px; border-bottom:1px solid rgba(var(--accent-rgb),.1); flex-shrink:0; }
+    .tab { flex:1; padding:10px; text-align:center; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:rgba(var(--accent-rgb),.3); cursor:pointer; border-bottom:2px solid transparent; transition:.2s; }
     .tab.active { color:var(--green); border-bottom-color:var(--green); }
     .tab-pane { display:none; flex:1; overflow-y:auto; scrollbar-width:none; min-height:0; flex-direction:column; }
     .tab-pane::-webkit-scrollbar { display:none; }
     .tab-pane.active { display:flex; }
 
     /* Balance tab */
-    .balance-hero { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px 20px 20px; border-bottom:1px solid rgba(0,255,65,.07); flex-shrink:0; }
-    .balance-amount { font-family:'Orbitron',monospace; font-size:30px; font-weight:900; color:var(--green); text-shadow:0 0 20px rgba(0,255,65,.4); letter-spacing:2px; }
-    .balance-unit { font-size:13px; color:rgba(0,255,65,.5); margin-left:6px; }
-    .balance-sats { font-size:11px; color:rgba(0,255,65,.35); margin-top:4px; letter-spacing:1px; }
+    .balance-hero { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px 20px 20px; border-bottom:1px solid rgba(var(--accent-rgb),.07); flex-shrink:0; }
+    .balance-amount { font-family:'Orbitron',monospace; font-size:30px; font-weight:900; color:var(--green); text-shadow:0 0 20px rgba(var(--accent-rgb),.4); letter-spacing:2px; }
+    .balance-unit { font-size:13px; color:rgba(var(--accent-rgb),.5); margin-left:6px; }
+    .balance-sats { font-size:11px; color:rgba(var(--accent-rgb),.35); margin-top:4px; letter-spacing:1px; }
     .balance-unconf { font-size:9px; color:#f0a500; margin-top:3px; letter-spacing:1px; }
     .balance-actions { display:flex; gap:12px; margin-top:18px; width:100%; }
-    .wallet-btn { flex:1; padding:12px; background:rgba(0,255,65,.08); border:1px solid rgba(0,255,65,.3); border-radius:10px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:2px; cursor:pointer; transition:.2s; text-align:center; }
-    .wallet-btn:hover { background:rgba(0,255,65,.15); border-color:var(--green); }
+    .wallet-btn { flex:1; padding:12px; background:rgba(var(--accent-rgb),.08); border:1px solid rgba(var(--accent-rgb),.3); border-radius:10px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:2px; cursor:pointer; transition:.2s; text-align:center; }
+    .wallet-btn:hover { background:rgba(var(--accent-rgb),.15); border-color:var(--green); }
     .wallet-btn.danger { border-color:rgba(255,64,64,.3); color:rgba(255,64,64,.7); }
     .wallet-btn.danger:hover { background:rgba(255,64,64,.1); border-color:var(--red); color:var(--red); }
-    .utxo-info { display:flex; align-items:center; justify-content:space-between; padding:10px 20px; font-size:9px; color:rgba(0,255,65,.3); letter-spacing:1px; flex-shrink:0; }
-    .refresh-btn { font-size:9px; color:rgba(0,255,65,.4); cursor:pointer; padding:2px 8px; border:1px solid rgba(0,255,65,.2); border-radius:3px; transition:.15s; }
-    .refresh-btn:hover { color:var(--green); border-color:rgba(0,255,65,.5); }
+    .utxo-info { display:flex; align-items:center; justify-content:space-between; padding:10px 20px; font-size:9px; color:rgba(var(--accent-rgb),.3); letter-spacing:1px; flex-shrink:0; }
+    .refresh-btn { font-size:9px; color:rgba(var(--accent-rgb),.4); cursor:pointer; padding:2px 8px; border:1px solid rgba(var(--accent-rgb),.2); border-radius:3px; transition:.15s; }
+    .refresh-btn:hover { color:var(--green); border-color:rgba(var(--accent-rgb),.5); }
     .refresh-btn.spinning { animation:spin .7s linear infinite; }
     @keyframes spin { to{transform:rotate(360deg)} }
 
     /* UTXO list */
-    .utxo-item { padding:10px 20px; border-bottom:1px solid rgba(0,255,65,.05); font-size:10px; display:flex; align-items:center; justify-content:space-between; }
-    .utxo-txid { color:rgba(0,255,65,.4); font-size:9px; }
-    .utxo-val { color:var(--green); font-size:11px; }
-    .utxo-conf { font-size:9px; padding:1px 5px; border-radius:3px; }
+    .utxo-item { padding:12px 20px; border-bottom:1px solid rgba(var(--accent-rgb),.05); display:flex; align-items:center; justify-content:space-between; }
+    .utxo-left { display:flex; flex-direction:column; gap:3px; min-width:0; }
+    .utxo-val { color:var(--green); font-size:13px; font-family:'Orbitron',monospace; letter-spacing:1px; }
+    .utxo-meta { font-size:8px; color:rgba(var(--accent-rgb),.3); letter-spacing:.5px; display:flex; gap:6px; align-items:center; }
+    .utxo-right { display:flex; flex-direction:column; align-items:flex-end; gap:3px; flex-shrink:0; }
+    .utxo-conf { font-size:8px; padding:2px 6px; border-radius:3px; letter-spacing:1px; }
     .utxo-conf.unconf { color:#f0a500; border:1px solid rgba(240,165,0,.3); }
-    .utxo-conf.conf { color:rgba(0,255,65,.5); border:1px solid rgba(0,255,65,.2); }
+    .utxo-conf.conf { color:rgba(var(--accent-rgb),.5); border:1px solid rgba(var(--accent-rgb),.2); }
     .utxo-conf.stealth { color:#bf5af2; border:1px solid rgba(191,90,242,.35); }
+    .utxo-time { font-size:8px; color:rgba(var(--accent-rgb),.25); }
 
     /* Send tab */
     .send-form { display:flex; flex-direction:column; gap:14px; padding:20px; flex:1; }
-    .form-lbl { font-size:9px; color:rgba(0,255,65,.4); letter-spacing:2px; margin-bottom:4px; }
-    .form-input { width:100%; background:rgba(0,255,65,.04); border:1px solid rgba(0,255,65,.2); border-radius:8px; padding:11px 14px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:11px; outline:none; transition:.2s; }
-    .form-input:focus { border-color:rgba(0,255,65,.5); box-shadow:0 0 8px rgba(0,255,65,.08); }
-    .form-input::placeholder { color:rgba(0,255,65,.2); }
+    .form-lbl { font-size:9px; color:rgba(var(--accent-rgb),.4); letter-spacing:2px; margin-bottom:4px; }
+    .form-input { width:100%; background:rgba(var(--accent-rgb),.04); border:1px solid rgba(var(--accent-rgb),.2); border-radius:8px; padding:11px 14px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:11px; outline:none; transition:.2s; }
+    .form-input:focus { border-color:rgba(var(--accent-rgb),.5); box-shadow:0 0 8px rgba(var(--accent-rgb),.08); }
+    .form-input::placeholder { color:rgba(var(--accent-rgb),.2); }
     .amount-wrap { display:flex; gap:8px; align-items:center; }
     .amount-wrap .form-input { flex:1; }
-    .max-btn { background:rgba(0,255,65,.06); border:1px solid rgba(0,255,65,.25); border-radius:8px; padding:0 14px; color:rgba(0,255,65,.6); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; cursor:pointer; transition:.15s; white-space:nowrap; }
+    .max-btn { background:rgba(var(--accent-rgb),.06); border:1px solid rgba(var(--accent-rgb),.25); border-radius:8px; padding:0 14px; color:rgba(var(--accent-rgb),.6); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; cursor:pointer; transition:.15s; white-space:nowrap; }
     .max-btn:hover { color:var(--green); border-color:var(--green); }
     .fee-row { display:flex; gap:6px; }
-    .fee-opt { flex:1; padding:7px; border:1px solid rgba(0,255,65,.2); border-radius:6px; color:rgba(0,255,65,.4); font-size:9px; letter-spacing:1px; text-align:center; cursor:pointer; transition:.15s; }
-    .fee-opt.active { border-color:var(--green); color:var(--green); background:rgba(0,255,65,.06); }
-    .fee-opt:hover { border-color:rgba(0,255,65,.4); color:rgba(0,255,65,.7); }
-    .send-summary { background:rgba(0,255,65,.03); border:1px solid rgba(0,255,65,.1); border-radius:8px; padding:12px 14px; font-size:10px; color:rgba(0,255,65,.6); line-height:2; }
+    .fee-opt { flex:1; padding:7px; border:1px solid rgba(var(--accent-rgb),.2); border-radius:6px; color:rgba(var(--accent-rgb),.4); font-size:9px; letter-spacing:1px; text-align:center; cursor:pointer; transition:.15s; }
+    .fee-opt.active { border-color:var(--green); color:var(--green); background:rgba(var(--accent-rgb),.06); }
+    .fee-opt:hover { border-color:rgba(var(--accent-rgb),.4); color:rgba(var(--accent-rgb),.7); }
+    .send-summary { background:rgba(var(--accent-rgb),.03); border:1px solid rgba(var(--accent-rgb),.1); border-radius:8px; padding:12px 14px; font-size:10px; color:rgba(var(--accent-rgb),.6); line-height:2; }
     .send-summary span { color:var(--green); }
     .send-error { font-size:10px; color:var(--red); letter-spacing:1px; min-height:14px; }
-    .broadcast-btn { width:100%; padding:14px; background:rgba(0,255,65,.1); border:1px solid rgba(0,255,65,.4); border-radius:8px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:13px; letter-spacing:3px; cursor:pointer; transition:.2s; }
-    .broadcast-btn:hover { background:rgba(0,255,65,.18); box-shadow:0 0 16px rgba(0,255,65,.2); }
+    .broadcast-btn { width:100%; padding:14px; background:rgba(var(--accent-rgb),.1); border:1px solid rgba(var(--accent-rgb),.4); border-radius:8px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:13px; letter-spacing:3px; cursor:pointer; transition:.2s; }
+    .broadcast-btn:hover { background:rgba(var(--accent-rgb),.18); box-shadow:0 0 16px rgba(var(--accent-rgb),.2); }
     .broadcast-btn:disabled { opacity:.4; cursor:not-allowed; }
 
     /* Receive tab */
     .receive-wrap { display:flex; flex-direction:column; align-items:center; padding:24px 20px; gap:16px; flex:1; }
-    .qr-canvas-wrap { background:#000; border:2px solid rgba(0,255,65,.3); border-radius:12px; padding:12px; box-shadow:0 0 20px rgba(0,255,65,.1); }
+    .qr-canvas-wrap { background:#000; border:2px solid rgba(var(--accent-rgb),.3); border-radius:12px; padding:12px; box-shadow:0 0 20px rgba(var(--accent-rgb),.1); }
     #qr-canvas { display:block; }
-    .addr-box { width:100%; background:rgba(0,255,65,.03); border:1px solid rgba(0,255,65,.1); border-radius:8px; padding:10px 14px; font-size:9px; color:rgba(0,255,65,.7); word-break:break-all; line-height:1.7; }
+    .addr-box { width:100%; background:rgba(var(--accent-rgb),.03); border:1px solid rgba(var(--accent-rgb),.1); border-radius:8px; padding:10px 14px; font-size:9px; color:rgba(var(--accent-rgb),.7); word-break:break-all; line-height:1.7; }
     .copy-row { display:flex; gap:8px; width:100%; }
-    .copy-btn { flex:1; background:none; border:1px solid rgba(0,255,65,.25); color:rgba(0,255,65,.6); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; padding:8px; border-radius:6px; cursor:pointer; transition:.15s; }
-    .copy-btn:hover { border-color:rgba(0,255,65,.6); color:var(--green); }
+    .copy-btn { flex:1; background:none; border:1px solid rgba(var(--accent-rgb),.25); color:rgba(var(--accent-rgb),.6); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; padding:8px; border-radius:6px; cursor:pointer; transition:.15s; }
+    .copy-btn:hover { border-color:rgba(var(--accent-rgb),.6); color:var(--green); }
 
     /* History tab */
-    .tx-item { padding:11px 16px; border-bottom:1px solid rgba(0,255,65,.05); cursor:pointer; transition:.15s; }
-    .tx-item:hover { background:rgba(0,255,65,.03); }
+    .tx-item { padding:11px 16px; border-bottom:1px solid rgba(var(--accent-rgb),.05); cursor:pointer; transition:.15s; }
+    .tx-item:hover { background:rgba(var(--accent-rgb),.03); }
     .tx-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
     .tx-dir { font-size:10px; letter-spacing:1px; }
     .tx-dir.in { color:var(--green); }
-    .tx-dir.out { color:rgba(0,255,65,.5); }
-    .tx-dir.unknown { color:rgba(0,255,65,.3); }
-    .tx-height { font-size:9px; color:rgba(0,255,65,.25); }
-    .tx-hash { font-size:9px; color:rgba(0,255,65,.3); font-family:monospace; }
+    .tx-dir.out { color:rgba(var(--accent-rgb),.5); }
+    .tx-dir.unknown { color:rgba(var(--accent-rgb),.3); }
+    .tx-height { font-size:9px; color:rgba(var(--accent-rgb),.25); }
+    .tx-hash { font-size:9px; color:rgba(var(--accent-rgb),.3); font-family:monospace; }
     .tx-amount { font-size:11px; color:var(--green); font-family:'Orbitron',monospace; }
     .tx-unconf { font-size:9px; color:#f0a500; }
-    .empty-state { padding:40px 20px; text-align:center; font-size:11px; color:rgba(0,255,65,.25); letter-spacing:2px; line-height:2.5; }
+    .empty-state { padding:40px 20px; text-align:center; font-size:11px; color:rgba(var(--accent-rgb),.25); letter-spacing:2px; line-height:2.5; }
 
     /* Addresses tab */
-    .addr-item { padding:8px 16px; border-bottom:1px solid rgba(0,255,65,.05); display:flex; align-items:center; justify-content:space-between; }
-    .addr-hash { font-size:9px; color:rgba(0,255,65,.5); word-break:break-all; flex:1; min-width:0; }
+    .addr-item { padding:8px 16px; border-bottom:1px solid rgba(var(--accent-rgb),.05); display:flex; align-items:center; justify-content:space-between; }
+    .addr-hash { font-size:9px; color:rgba(var(--accent-rgb),.5); word-break:break-all; flex:1; min-width:0; }
     .addr-balance { font-size:11px; color:var(--green); font-family:'Orbitron',monospace; margin-left:10px; white-space:nowrap; }
     .addr-item.empty { opacity:.35; }
-    .addr-chain-hdr { padding:8px 16px; font-size:8px; color:rgba(0,255,65,.3); letter-spacing:2px; border-bottom:1px solid rgba(0,255,65,.06); background:rgba(0,255,65,.02); display:flex; justify-content:space-between; align-items:center; }
-    .show0-toggle { display:flex; align-items:center; gap:5px; cursor:pointer; font-size:8px; color:rgba(0,255,65,.3); letter-spacing:1px; user-select:none; }
+    .addr-chain-hdr { padding:8px 16px; font-size:8px; color:rgba(var(--accent-rgb),.3); letter-spacing:2px; border-bottom:1px solid rgba(var(--accent-rgb),.06); background:rgba(var(--accent-rgb),.02); display:flex; justify-content:space-between; align-items:center; }
+    .show0-toggle { display:flex; align-items:center; gap:5px; cursor:pointer; font-size:8px; color:rgba(var(--accent-rgb),.3); letter-spacing:1px; user-select:none; }
     .show0-toggle input { accent-color:var(--green); width:12px; height:12px; }
 
     /* Auth */
     #auth-import, #auth-unlock { display:none; flex:1; flex-direction:column; }
     #auth-view { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px 24px; gap:16px; }
-    .auth-logo { font-family:'Orbitron',monospace; font-size:28px; font-weight:900; color:var(--green); text-shadow:0 0 20px rgba(0,255,65,.5); }
-    .auth-sub { font-size:10px; color:rgba(0,255,65,.35); letter-spacing:3px; margin-top:-8px; }
-    .auth-input { width:100%; background:rgba(0,255,65,.04); border:1px solid rgba(0,255,65,.2); border-radius:8px; padding:12px 14px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:12px; outline:none; transition:.2s; }
-    .auth-input:focus { border-color:rgba(0,255,65,.5); box-shadow:0 0 8px rgba(0,255,65,.1); }
-    .auth-input::placeholder { color:rgba(0,255,65,.2); }
-    .auth-btn { width:100%; padding:14px; background:rgba(0,255,65,.1); border:1px solid rgba(0,255,65,.4); border-radius:8px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:13px; letter-spacing:3px; cursor:pointer; transition:.2s; }
-    .auth-btn:hover { background:rgba(0,255,65,.18); box-shadow:0 0 16px rgba(0,255,65,.2); }
-    .auth-btn-secondary { background:transparent; border-color:rgba(0,255,65,.2); color:rgba(0,255,65,.5); font-size:11px; padding:10px; }
+    .auth-logo { font-family:'Orbitron',monospace; font-size:28px; font-weight:900; color:var(--green); text-shadow:0 0 20px rgba(var(--accent-rgb),.5); }
+    .auth-sub { font-size:10px; color:rgba(var(--accent-rgb),.35); letter-spacing:3px; margin-top:-8px; }
+    .auth-input { width:100%; background:rgba(var(--accent-rgb),.04); border:1px solid rgba(var(--accent-rgb),.2); border-radius:8px; padding:12px 14px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:12px; outline:none; transition:.2s; }
+    .auth-input:focus { border-color:rgba(var(--accent-rgb),.5); box-shadow:0 0 8px rgba(var(--accent-rgb),.1); }
+    .auth-input::placeholder { color:rgba(var(--accent-rgb),.2); }
+    .auth-btn { width:100%; padding:14px; background:rgba(var(--accent-rgb),.1); border:1px solid rgba(var(--accent-rgb),.4); border-radius:8px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:13px; letter-spacing:3px; cursor:pointer; transition:.2s; }
+    .auth-btn:hover { background:rgba(var(--accent-rgb),.18); box-shadow:0 0 16px rgba(var(--accent-rgb),.2); }
+    .auth-btn-secondary { background:transparent; border-color:rgba(var(--accent-rgb),.2); color:rgba(var(--accent-rgb),.5); font-size:11px; padding:10px; }
     .auth-error { font-size:10px; color:#ff4040; letter-spacing:1px; min-height:14px; }
-    .auth-divider { width:100%; border-top:1px solid rgba(0,255,65,.1); }
-    .auth-lbl { font-size:9px; color:rgba(0,255,65,.35); letter-spacing:2px; align-self:flex-start; }
+    .auth-divider { width:100%; border-top:1px solid rgba(var(--accent-rgb),.1); }
+    .auth-lbl { font-size:9px; color:rgba(var(--accent-rgb),.35); letter-spacing:2px; align-self:flex-start; }
 
     /* Coin Control */
     .cc-header { display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
-    .cc-header:hover .form-lbl { color:rgba(0,255,65,.7); }
-    .cc-badge { font-size:8px; padding:1px 7px; border:1px solid rgba(0,255,65,.2); border-radius:3px; color:rgba(0,255,65,.38); letter-spacing:1px; }
+    .cc-header:hover .form-lbl { color:rgba(var(--accent-rgb),.7); }
+    .cc-badge { font-size:8px; padding:1px 7px; border:1px solid rgba(var(--accent-rgb),.2); border-radius:3px; color:rgba(var(--accent-rgb),.38); letter-spacing:1px; }
     .cc-badge.manual { border-color:rgba(0,212,255,.35); color:rgba(0,212,255,.7); }
-    .cc-panel { margin-top:8px; border:1px solid rgba(0,255,65,.1); border-radius:6px; overflow:hidden; display:none; }
-    .cc-utxo { display:flex; align-items:center; gap:10px; padding:9px 12px; border-bottom:1px solid rgba(0,255,65,.04); cursor:pointer; transition:.1s; }
+    .cc-panel { margin-top:8px; border:1px solid rgba(var(--accent-rgb),.1); border-radius:6px; overflow:hidden; display:none; }
+    .cc-utxo { display:flex; align-items:center; gap:10px; padding:9px 12px; border-bottom:1px solid rgba(var(--accent-rgb),.04); cursor:pointer; transition:.1s; }
     .cc-utxo:last-child { border-bottom:none; }
-    .cc-utxo:hover { background:rgba(0,255,65,.03); }
-    .cc-utxo.sel { background:rgba(0,255,65,.05); }
-    .cc-cb { width:14px; height:14px; border:1px solid rgba(0,255,65,.25); border-radius:2px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:9px; color:transparent; transition:.1s; }
-    .cc-utxo.sel .cc-cb { background:rgba(0,255,65,.18); border-color:var(--green); color:var(--green); }
+    .cc-utxo:hover { background:rgba(var(--accent-rgb),.03); }
+    .cc-utxo.sel { background:rgba(var(--accent-rgb),.05); }
+    .cc-cb { width:14px; height:14px; border:1px solid rgba(var(--accent-rgb),.25); border-radius:2px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:9px; color:transparent; transition:.1s; }
+    .cc-utxo.sel .cc-cb { background:rgba(var(--accent-rgb),.18); border-color:var(--green); color:var(--green); }
     .cc-info { flex:1; min-width:0; }
-    .cc-txid { font-size:8px; color:rgba(0,255,65,.32); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cc-txid { font-size:8px; color:rgba(var(--accent-rgb),.32); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .cc-addr { font-size:8px; color:rgba(0,212,255,.35); margin-top:1px; }
     .cc-val { font-size:11px; color:var(--green); text-align:right; }
     .cc-conf { font-size:8px; text-align:right; }
-    .cc-footer { display:flex; align-items:center; justify-content:space-between; padding:7px 12px; background:rgba(0,255,65,.02); border-top:1px solid rgba(0,255,65,.06); }
-    .cc-total { font-size:10px; color:rgba(0,255,65,.5); }
+    .cc-footer { display:flex; align-items:center; justify-content:space-between; padding:7px 12px; background:rgba(var(--accent-rgb),.02); border-top:1px solid rgba(var(--accent-rgb),.06); }
+    .cc-total { font-size:10px; color:rgba(var(--accent-rgb),.5); }
     .cc-total span { color:var(--green); }
     .cc-acts { display:flex; gap:5px; }
-    .cc-btn { font-size:9px; padding:2px 8px; border:1px solid rgba(0,255,65,.18); color:rgba(0,255,65,.45); background:transparent; cursor:pointer; border-radius:3px; font-family:'Share Tech Mono',monospace; transition:.1s; }
-    .cc-btn:hover { border-color:rgba(0,255,65,.5); color:var(--green); }
+    .cc-btn { font-size:9px; padding:2px 8px; border:1px solid rgba(var(--accent-rgb),.18); color:rgba(var(--accent-rgb),.45); background:transparent; cursor:pointer; border-radius:3px; font-family:'Share Tech Mono',monospace; transition:.1s; }
+    .cc-btn:hover { border-color:rgba(var(--accent-rgb),.5); color:var(--green); }
 
     /* Success overlay */
     .success-overlay { position:absolute; inset:0; z-index:40; background:rgba(2,10,3,.97); border-radius:42px; display:none; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:28px 24px; }
     .success-icon { font-size:48px; }
     .success-title { font-family:'Orbitron',monospace; font-size:14px; color:var(--green); letter-spacing:3px; }
-    .success-txid { font-size:9px; color:rgba(0,255,65,.5); word-break:break-all; text-align:center; line-height:1.8; }
+    .success-txid { font-size:9px; color:rgba(var(--accent-rgb),.5); word-break:break-all; text-align:center; line-height:1.8; }
     #main-view { min-height:0; }
 
     /* Nostr bar */
-    .nostr-bar { display:flex; align-items:center; gap:8px; padding:5px 20px; border-bottom:1px solid rgba(0,255,65,.08); flex-shrink:0; font-size:9px; color:rgba(0,255,65,.4); letter-spacing:1px; }
-    .nostr-dot { width:5px; height:5px; border-radius:50%; background:rgba(0,255,65,.2); flex-shrink:0; transition:.3s; }
+    .nostr-bar { display:flex; align-items:center; gap:8px; padding:5px 20px; border-bottom:1px solid rgba(var(--accent-rgb),.08); flex-shrink:0; font-size:9px; color:rgba(var(--accent-rgb),.4); letter-spacing:1px; }
+    .nostr-dot { width:5px; height:5px; border-radius:50%; background:rgba(var(--accent-rgb),.2); flex-shrink:0; transition:.3s; }
     .nostr-dot.on { background:var(--green); box-shadow:0 0 4px var(--green); }
 
     /* Stealth tab */
     .stealth-section { padding:16px 20px; }
-    .stealth-section-title { font-size:9px; color:rgba(0,255,65,.4); letter-spacing:2px; margin-bottom:10px; }
-    .stealth-code-box { width:100%; background:rgba(0,255,65,.03); border:1px solid rgba(0,255,65,.15); border-radius:8px; padding:10px 12px; font-size:8px; color:rgba(0,255,65,.6); word-break:break-all; line-height:1.6; cursor:pointer; transition:.15s; }
-    .stealth-code-box:hover { border-color:rgba(0,255,65,.4); }
-    .stealth-code-box:active { background:rgba(0,255,65,.06); }
-    .stealth-rx-item { padding:10px 16px; border-bottom:1px solid rgba(0,255,65,.05); display:flex; align-items:center; justify-content:space-between; }
-    .stealth-rx-from { font-size:9px; color:rgba(0,255,65,.4); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .stealth-section-title { font-size:9px; color:rgba(var(--accent-rgb),.4); letter-spacing:2px; margin-bottom:10px; }
+    .stealth-code-box { width:100%; background:rgba(var(--accent-rgb),.03); border:1px solid rgba(var(--accent-rgb),.15); border-radius:8px; padding:10px 12px; font-size:8px; color:rgba(var(--accent-rgb),.6); word-break:break-all; line-height:1.6; cursor:pointer; transition:.15s; }
+    .stealth-code-box:hover { border-color:rgba(var(--accent-rgb),.4); }
+    .stealth-code-box:active { background:rgba(var(--accent-rgb),.06); }
+    .stealth-rx-item { padding:10px 16px; border-bottom:1px solid rgba(var(--accent-rgb),.05); display:flex; align-items:center; justify-content:space-between; }
+    .stealth-rx-from { font-size:9px; color:rgba(var(--accent-rgb),.4); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .stealth-rx-val { font-size:11px; color:var(--green); font-family:'Orbitron',monospace; margin-left:10px; white-space:nowrap; }
     .stealth-rx-status { font-size:8px; margin-left:8px; padding:1px 5px; border-radius:3px; }
-    .stealth-rx-status.unspent { color:var(--green); border:1px solid rgba(0,255,65,.2); }
-    .stealth-rx-status.spent { color:rgba(0,255,65,.25); border:1px solid rgba(0,255,65,.08); }
-    .stealth-scan-btn { width:100%; padding:10px; background:rgba(0,255,65,.06); border:1px solid rgba(0,255,65,.2); border-radius:8px; color:rgba(0,255,65,.5); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px; cursor:pointer; transition:.2s; margin-top:8px; }
-    .stealth-scan-btn:hover { background:rgba(0,255,65,.12); border-color:rgba(0,255,65,.4); color:var(--green); }
+    .stealth-rx-status.unspent { color:var(--green); border:1px solid rgba(var(--accent-rgb),.2); }
+    .stealth-rx-status.spent { color:rgba(var(--accent-rgb),.25); border:1px solid rgba(var(--accent-rgb),.08); }
+    .stealth-scan-btn { width:100%; padding:10px; background:rgba(var(--accent-rgb),.06); border:1px solid rgba(var(--accent-rgb),.2); border-radius:8px; color:rgba(var(--accent-rgb),.5); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px; cursor:pointer; transition:.2s; margin-top:8px; }
+    .stealth-scan-btn:hover { background:rgba(var(--accent-rgb),.12); border-color:rgba(var(--accent-rgb),.4); color:var(--green); }
   </style>
+  <link rel="stylesheet" href="desktop.css">
 </head>
 <body>
 <canvas id="rain"></canvas>
@@ -216,6 +231,1467 @@
   <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
   <div class="loader-status" id="loader-status"></div>
 </div>
+
+<!-- ── Desktop Wallet: Accounts View (hidden on mobile) ── -->
+<div id="wallet-desktop" style="display:none">
+  <!-- Portfolio Overview Hero -->
+  <div class="wd-overview" id="wd-overview">
+    <div class="wd-ov-top">
+      <div>
+        <div class="wd-ov-label">Portfolio Value</div>
+        <div class="wd-ov-total" id="wd-total">$0.00</div>
+      </div>
+      <button class="wd-ov-refresh" onclick="wdForceRefresh()" title="Refresh balances">↻</button>
+    </div>
+    <div class="wd-ov-prices" id="wd-ov-prices">
+      <span class="wd-ov-price"><span class="wd-ov-dot" style="background:#0AC18E"></span>BCH <span id="wd-p-bch">$—</span></span>
+      <span class="wd-ov-price"><span class="wd-ov-dot" style="background:#F7931A"></span>BTC <span id="wd-p-btc">$—</span></span>
+      <span class="wd-ov-price"><span class="wd-ov-dot" style="background:#627EEA"></span>ETH <span id="wd-p-eth">$—</span></span>
+    </div>
+  </div>
+  <!-- Account Cards -->
+  <div class="wd-accounts" id="wd-accounts">
+    <div class="wd-account" id="wd-bch">
+      <div class="wd-acc-left">
+        <img class="wd-acc-icon" src="icons/bch.png" alt="BCH">
+        <div>
+          <div class="wd-acc-chain">BITCOIN CASH</div>
+          <div class="wd-acc-name">Bitcoin Cash</div>
+        </div>
+      </div>
+      <div class="wd-acc-right">
+        <span class="wd-acc-balance" id="wd-bal-bch">0 BCH</span>
+        <span class="wd-acc-fiat" id="wd-fiat-bch">$0.00</span>
+      </div>
+    </div>
+    <div class="wd-account stealth" id="wd-sbch">
+      <div class="wd-acc-left">
+        <div class="wd-acc-icon" style="background:#BF5AF2"><span>₿</span></div>
+        <div>
+          <div class="wd-acc-chain">STEALTH BITCOIN CASH</div>
+          <div class="wd-acc-name">Stealth Bitcoin Cash</div>
+        </div>
+      </div>
+      <div class="wd-acc-right">
+        <span class="wd-acc-balance" id="wd-bal-sbch">0 BCH</span>
+        <span class="wd-acc-fiat" id="wd-fiat-sbch">$0.00</span>
+      </div>
+    </div>
+    <div class="wd-account" id="wd-btc">
+      <div class="wd-acc-left">
+        <img class="wd-acc-icon" src="icons/btc.png" alt="BTC">
+        <div>
+          <div class="wd-acc-chain">BITCOIN</div>
+          <div class="wd-acc-name">Bitcoin</div>
+        </div>
+      </div>
+      <div class="wd-acc-right">
+        <span class="wd-acc-balance" id="wd-bal-btc">0 BTC</span>
+        <span class="wd-acc-fiat" id="wd-fiat-btc">$0.00</span>
+      </div>
+    </div>
+    <div class="wd-account" id="wd-eth">
+      <div class="wd-acc-left">
+        <img class="wd-acc-icon" src="icons/eth.png" alt="ETH">
+        <div>
+          <div class="wd-acc-chain">ETHEREUM</div>
+          <div class="wd-acc-name">Ethereum</div>
+        </div>
+      </div>
+      <div class="wd-acc-right">
+        <span class="wd-acc-balance" id="wd-bal-eth">0 ETH</span>
+        <span class="wd-acc-fiat" id="wd-fiat-eth">$0.00</span>
+      </div>
+    </div>
+    <div class="wd-account" id="wd-usdc">
+      <div class="wd-acc-left">
+        <img class="wd-acc-icon" src="icons/usdc.png" alt="USDC">
+        <div>
+          <div class="wd-acc-chain">USD COIN</div>
+          <div class="wd-acc-name">USDC</div>
+        </div>
+      </div>
+      <div class="wd-acc-right">
+        <span class="wd-acc-balance" id="wd-bal-usdc">0 USDC</span>
+        <span class="wd-acc-fiat" id="wd-fiat-usdc">$0.00</span>
+      </div>
+    </div>
+    <div class="wd-account" id="wd-usdt">
+      <div class="wd-acc-left">
+        <img class="wd-acc-icon" src="icons/usdt.png" alt="USDT">
+        <div>
+          <div class="wd-acc-chain">TETHER</div>
+          <div class="wd-acc-name">USDT</div>
+        </div>
+      </div>
+      <div class="wd-acc-right">
+        <span class="wd-acc-balance" id="wd-bal-usdt">0 USDT</span>
+        <span class="wd-acc-fiat" id="wd-fiat-usdt">$0.00</span>
+      </div>
+    </div>
+  </div>
+  <!-- No wallet: Import/Create form -->
+  <div class="wd-empty" id="wd-empty" style="display:none">
+    <div class="wd-auth-card" id="wd-auth-import">
+      <div class="wd-auth-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="wd-auth-title">Set up your wallet</div>
+      <div class="wd-auth-subtitle">Import a seed phrase, hex key, or generate a new one</div>
+      <div class="dt-form-group">
+        <div class="dt-form-lbl">Seed Phrase or Hex Key</div>
+        <textarea class="dt-form-input" id="wd-import-seed" rows="4" placeholder="12 words or 64-char hex..."></textarea>
+      </div>
+      <div class="wd-auth-row">
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">Password</div>
+          <input class="dt-form-input" id="wd-import-pass" type="password" placeholder="min 8 chars...">
+        </div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">Confirm</div>
+          <input class="dt-form-input" id="wd-import-pass2" type="password" placeholder="confirm...">
+        </div>
+      </div>
+      <div class="wd-auth-error" id="wd-import-error"></div>
+      <button class="wd-auth-cta" id="wd-import-btn" onclick="wdImport()">Import Wallet →</button>
+      <button class="wd-auth-secondary" onclick="wdGenKey()">⚡ Generate New Key</button>
+      <div class="wd-auth-divider"><span>OR</span></div>
+      <div class="wd-auth-hw">
+        <button class="wd-auth-hw-btn ledger" id="wd-ledger-btn" onclick="wdConnectLedger()">🔑 Ledger</button>
+        <button class="wd-auth-hw-btn wc" id="wd-wc-btn" onclick="wdConnectWC()">⛓ WalletConnect</button>
+      </div>
+      <div class="wd-auth-error" id="wd-hw-error"></div>
+    </div>
+  </div>
+  <!-- Wallet exists but locked -->
+  <div id="wd-auth-unlock" style="display:none">
+    <div class="wd-auth-card">
+      <div class="wd-auth-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="wd-auth-title">Unlock Wallet</div>
+      <div class="wd-auth-subtitle">Enter your password to continue</div>
+      <div class="dt-form-group">
+        <div class="dt-form-lbl">Password</div>
+        <input class="dt-form-input" id="wd-unlock-pass" type="password" placeholder="Enter password..." onkeydown="if(event.key==='Enter')wdUnlock()">
+      </div>
+      <div class="wd-auth-error" id="wd-unlock-error"></div>
+      <button class="wd-auth-cta" id="wd-unlock-btn" onclick="wdUnlock()">Unlock →</button>
+      <button class="wd-auth-secondary" onclick="wdShowImport()">← Import New Key</button>
+      <div class="wd-auth-divider"><span>OR</span></div>
+      <div class="wd-auth-hw">
+        <button class="wd-auth-hw-btn ledger" id="wd-ledger-btn2" onclick="wdConnectLedger()">🔑 Ledger</button>
+        <button class="wd-auth-hw-btn wc" id="wd-wc-btn2" onclick="wdConnectWC()">⛓ WalletConnect</button>
+      </div>
+      <div class="wd-auth-error" id="wd-hw-error2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Desktop Wallet: Coin Detail View (shown when ?coin=xxx) ── -->
+<div id="coin-detail">
+  <div class="cd-back" onclick="window.location='wallet.html'">← Back</div>
+  <div class="cd-head">
+    <div class="cd-head-left">
+      <div class="cd-icon" id="cd-icon"></div>
+      <div>
+        <div class="cd-chain" id="cd-chain"></div>
+        <div class="cd-name" id="cd-name"></div>
+      </div>
+    </div>
+    <div class="cd-actions">
+      <a class="cd-action-btn" href="swap.html"><span>⇄</span> Swap</a>
+      <a class="cd-action-btn cd-primary" onclick="cdOpenSend()"><span>↑</span> Send</a>
+      <a class="cd-action-btn" onclick="cdOpenReceive()"><span>↓</span> Receive</a>
+    </div>
+  </div>
+  <div class="cd-balance-card">
+    <div class="cd-bal-top">
+      <div class="cd-bal-amount" id="cd-bal-amount">0</div>
+      <div class="cd-bal-row">
+        <span class="cd-bal-fiat" id="cd-bal-fiat">$0.00</span>
+        <span class="cd-bal-price" id="cd-bal-price"></span>
+      </div>
+    </div>
+    <div class="cd-chart-wrap">
+      <div class="cd-chart-amount" id="cd-chart-amount"></div>
+      <div class="cd-periods" id="cd-periods">
+        <button class="cd-period" data-days="1" onclick="cdPeriod(1)">1D</button>
+        <button class="cd-period" data-days="7" onclick="cdPeriod(7)">1W</button>
+        <button class="cd-period" data-days="30" onclick="cdPeriod(30)">1M</button>
+        <button class="cd-period active" data-days="365" onclick="cdPeriod(365)">1Y</button>
+        <button class="cd-period" data-days="max" onclick="cdPeriod('max')">ALL</button>
+      </div>
+      <div class="cd-chart-container">
+        <svg id="cd-chart" viewBox="0 0 800 280" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="cd-chart-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--dt-accent,#0AC18E)" stop-opacity=".25"/>
+              <stop offset="100%" stop-color="var(--dt-accent,#0AC18E)" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path id="cd-chart-fill" fill="url(#cd-chart-grad)" d=""/>
+          <path id="cd-chart-line" fill="none" stroke="var(--dt-accent,#0AC18E)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d=""/>
+          <line id="cd-chart-vline" x1="0" y1="0" x2="0" y2="280" stroke="var(--dt-border,#e2e8f0)" stroke-width="1" stroke-dasharray="4,4" opacity="0"/>
+          <circle id="cd-chart-dot" r="5" fill="var(--dt-accent,#0AC18E)" stroke="var(--dt-surface,#fff)" stroke-width="2.5" opacity="0"/>
+        </svg>
+        <div class="cd-tooltip" id="cd-tooltip"></div>
+      </div>
+    </div>
+  </div>
+  <div class="cd-tx-card">
+    <div class="cd-tx-head">
+      <div class="cd-tx-tabs">
+        <button class="cd-tx-tab active" data-tab="txs" onclick="cdSwitchTxTab('txs')">Transactions</button>
+        <button class="cd-tx-tab" data-tab="utxos" onclick="cdSwitchTxTab('utxos')">UTXOs</button>
+      </div>
+      <select class="cd-tx-page-select" id="cd-tx-page-size" onchange="cdSetTxPageSize(this.value)">
+        <option value="20" selected>20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+    </div>
+    <div id="cd-tx-list">
+      <div class="cd-tx-empty" id="cd-tx-empty">No transactions yet</div>
+    </div>
+    <div id="cd-utxo-list" class="cd-hidden"></div>
+  </div>
+
+  <!-- Send Modal -->
+  <div class="cd-modal-overlay" id="cd-send-modal" onclick="if(event.target===this)cdCloseSend()">
+    <div class="cd-modal">
+      <div class="cd-modal-header">
+        <span>Send</span>
+        <div class="cd-modal-close" onclick="cdCloseSend()">✕</div>
+      </div>
+      <!-- Mode toggle (BCH only) -->
+      <div class="cd-send-mode" id="cd-send-mode">
+        <button class="cd-send-mode-btn active" data-mode="normal" onclick="cdSetSendMode('normal')">Normal</button>
+        <button class="cd-send-mode-btn" data-mode="stealth" onclick="cdSetSendMode('stealth')">Stealth</button>
+      </div>
+      <!-- Normal mode fields -->
+      <div id="cd-send-normal" style="display:flex;flex-direction:column;gap:16px">
+        <div>
+          <div class="cd-form-lbl">RECIPIENT ADDRESS</div>
+          <input class="cd-form-input" id="cd-send-addr" placeholder="address" oninput="cdUpdateSendSummary()">
+        </div>
+        <div>
+          <div class="cd-form-lbl">AMOUNT</div>
+          <div class="cd-amount-wrap">
+            <input class="cd-form-input" id="cd-send-amount" type="number" step="0.00000001" min="0" placeholder="0.00000000" oninput="cdUpdateSendSummary()">
+            <div class="cd-max-btn" onclick="cdSetMax()">MAX</div>
+          </div>
+        </div>
+        <div id="cd-fee-section">
+          <div class="cd-form-lbl">FEE RATE (SAT/BYTE)</div>
+          <div class="cd-fee-row">
+            <div class="cd-fee-opt active" data-rate="1" onclick="cdSetFee(1,'low')">LOW<br><span style="opacity:.6">1 sat/B</span></div>
+            <div class="cd-fee-opt" data-rate="1.5" onclick="cdSetFee(1.5,'normal')">NORMAL<br><span style="opacity:.6">1.5 sat/B</span></div>
+            <div class="cd-fee-opt" data-rate="2" onclick="cdSetFee(2,'high')">HIGH<br><span style="opacity:.6">2 sat/B</span></div>
+          </div>
+        </div>
+        <!-- Coin Control (BCH/BTC only) -->
+        <div id="cd-cc-section">
+          <div class="cd-cc-header" onclick="cdToggleCoinControl()">
+            <div class="cd-form-lbl" style="margin:0">COIN CONTROL</div>
+            <span class="cd-cc-icon" id="cd-cc-icon">▾</span>
+            <span class="cd-cc-badge" id="cd-cc-badge">AUTO</span>
+          </div>
+          <div class="cd-cc-panel" id="cd-cc-panel" style="display:none">
+            <div id="cd-cc-list"></div>
+            <div class="cd-cc-footer" id="cd-cc-footer"></div>
+          </div>
+        </div>
+        <div class="cd-send-summary" id="cd-send-summary" style="display:none"></div>
+        <div class="cd-send-error" id="cd-send-error"></div>
+        <button class="cd-broadcast-btn" id="cd-broadcast-btn" onclick="cdSendTx()">⚡ BROADCAST →</button>
+      </div>
+      <!-- Stealth mode fields (hidden by default) -->
+      <div id="cd-send-stealth" style="display:none;flex-direction:column;gap:16px">
+        <div>
+          <div class="cd-form-lbl">RECIPIENT STEALTH CODE</div>
+          <input class="cd-form-input" id="cd-stealth-code" placeholder="stealth:02abc...">
+        </div>
+        <div>
+          <div class="cd-form-lbl">AMOUNT (BCH)</div>
+          <div class="cd-amount-wrap">
+            <input class="cd-form-input" id="cd-stealth-amount" type="number" step="0.00000001" min="0" placeholder="0.00000000">
+            <div class="cd-max-btn" onclick="cdStealthMax()">MAX</div>
+          </div>
+        </div>
+        <!-- Coin Control shared — same panel used by both modes -->
+        <div id="cd-cc-section-stealth">
+          <div class="cd-cc-header" onclick="cdToggleCoinControl()">
+            <div class="cd-form-lbl" style="margin:0">COIN CONTROL</div>
+            <span class="cd-cc-icon" id="cd-cc-icon-st">▾</span>
+            <span class="cd-cc-badge" id="cd-cc-badge-st">AUTO</span>
+          </div>
+          <div class="cd-cc-panel" id="cd-cc-panel-st" style="display:none">
+            <div id="cd-cc-list-st"></div>
+            <div class="cd-cc-footer" id="cd-cc-footer-st"></div>
+          </div>
+        </div>
+        <div class="cd-send-error" id="cd-stealth-error"></div>
+        <button class="cd-broadcast-btn" id="cd-stealth-btn" onclick="cdSendStealth()">⚡ STEALTH SEND →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receive Modal -->
+  <div class="cd-modal-overlay" id="cd-receive-modal" onclick="if(event.target===this)cdCloseReceive()">
+    <div class="cd-modal">
+      <div class="cd-modal-header">
+        <span>Receive</span>
+        <div class="cd-modal-close" onclick="cdCloseReceive()">✕</div>
+      </div>
+      <!-- Mode toggle (BCH only) -->
+      <div class="cd-send-mode" id="cd-recv-mode">
+        <button class="cd-send-mode-btn active" data-mode="normal" onclick="cdSetRecvMode('normal')">Normal</button>
+        <button class="cd-send-mode-btn" data-mode="stealth" onclick="cdSetRecvMode('stealth')">Stealth</button>
+      </div>
+      <!-- Normal receive -->
+      <div id="cd-recv-normal">
+        <div class="cd-receive-label" id="cd-receive-label">YOUR ADDRESS</div>
+        <div class="cd-qr-wrap">
+          <canvas id="cd-qr-canvas" width="200" height="200"></canvas>
+        </div>
+        <div class="cd-addr-display" id="cd-receive-addr">—</div>
+        <div class="cd-copy-row">
+          <button class="cd-copy-btn" onclick="cdCopyAddr(false)">COPY FULL</button>
+          <button class="cd-copy-btn" onclick="cdCopyAddr(true)">COPY SHORT</button>
+        </div>
+        <div class="cd-path-info" id="cd-path-info"></div>
+      </div>
+      <!-- Stealth receive (BCH only) -->
+      <div id="cd-recv-stealth" style="display:none">
+        <div class="cd-receive-label" id="cd-receive-label-st">YOUR STEALTH CODE</div>
+        <div class="cd-qr-wrap">
+          <canvas id="cd-qr-canvas-st" width="200" height="200"></canvas>
+        </div>
+        <div class="cd-addr-display cd-stealth-code-display" id="cd-receive-stealth-code">—</div>
+        <div class="cd-copy-row">
+          <button class="cd-copy-btn" onclick="cdCopyStealthCode()">COPY CODE</button>
+        </div>
+        <div class="cd-path-info" id="cd-path-info-st">// ECDH STEALTH · SCAN + SPEND PUBKEYS</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// On mobile, strip ?coin= param (detail view is desktop only)
+if(!window.matchMedia('(min-width:900px)').matches && window.location.search.indexOf('coin=')!==-1){
+  window.location.replace('wallet.html');
+}
+(function(){
+  if(!window.matchMedia('(min-width:900px)').matches) return;
+  // CSS handles hiding loading + phone-wrap via desktop.css
+
+  // If window resizes to mobile while on detail view, redirect back
+  window.matchMedia('(min-width:900px)').addEventListener('change',function(e){
+    if(!e.matches && window.location.search.indexOf('coin=')!==-1){
+      window.location.replace('wallet.html');
+    }
+  });
+
+  var fmt=function(v){return '$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})};
+
+  /* ── Loading state helpers ─── */
+  var _spinSvg='<svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:8px;animation:wd-spin .8s linear infinite"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="50 20" stroke-linecap="round"/></svg>';
+  var _spinStyle=document.createElement('style');
+  _spinStyle.textContent='@keyframes wd-spin{to{transform:rotate(360deg)}}';
+  document.head.appendChild(_spinStyle);
+  function _wdBtnLoading(btn,text){btn.disabled=true;btn.innerHTML=_spinSvg+text;}
+  function _wdBtnReset(btn,text){btn.disabled=false;btn.textContent=text;}
+
+  /* ── Desktop wallet auth functions ─── */
+  window.wdImport=function(){
+    var seed=document.getElementById('wd-import-seed').value.trim();
+    var pass=document.getElementById('wd-import-pass').value;
+    var pass2=document.getElementById('wd-import-pass2').value;
+    var mi=document.getElementById('import-seed');if(mi)mi.value=seed;
+    mi=document.getElementById('import-pass');if(mi)mi.value=pass;
+    mi=document.getElementById('import-pass2');if(mi)mi.value=pass2;
+    var errEl=document.getElementById('wd-import-error');
+    if(!seed){errEl.textContent='Seed required';return;}
+    if(pass.length<8){errEl.textContent='Password min 8 chars';return;}
+    if(pass!==pass2){errEl.textContent='Passwords don\'t match';return;}
+    var btn=document.getElementById('wd-import-btn');
+    _wdBtnLoading(btn,'Deriving keys...');
+    errEl.textContent='';
+    if(window.walletImport) window.walletImport().then(function(){
+      _wdBtnLoading(btn,'Scanning addresses...');
+      setTimeout(function(){ wdRefresh(); _wdBtnReset(btn,'Unlock Wallet →'); },500);
+    }).catch(function(e){
+      errEl.textContent=e&&e.message||'Import failed';
+      _wdBtnReset(btn,'Unlock Wallet →');
+    });
+  };
+  window.wdUnlock=function(){
+    var pass=document.getElementById('wd-unlock-pass').value;
+    var mi=document.getElementById('unlock-pass');if(mi)mi.value=pass;
+    var errEl=document.getElementById('wd-unlock-error');
+    if(!pass){errEl.textContent='Password required';return;}
+    errEl.textContent='';
+    var btn=document.getElementById('wd-unlock-btn');
+    _wdBtnLoading(btn,'Unlocking...');
+    if(window.walletUnlock){
+      window.walletUnlock().then(function(){
+        _wdBtnLoading(btn,'Scanning addresses...');
+        setTimeout(function(){ wdRefresh(); _wdBtnReset(btn,'Unlock →'); },500);
+      }).catch(function(){
+        errEl.textContent='Wrong password';
+        _wdBtnReset(btn,'Unlock →');
+      });
+    }
+  };
+  window.wdGenKey=function(){
+    if(window.walletGenKey) window.walletGenKey();
+    // Mirror the generated key back to desktop
+    setTimeout(function(){
+      var mi=document.getElementById('import-seed');
+      var di=document.getElementById('wd-import-seed');
+      if(mi&&di) di.value=mi.value;
+    },50);
+  };
+  window.wdShowImport=function(){
+    document.getElementById('wd-auth-unlock').style.display='none';
+    document.getElementById('wd-empty').style.display='block';
+    document.getElementById('wd-auth-import').style.display='';
+  };
+  window.wdConnectLedger=function(){
+    if(window.connectLedgerWallet){
+      window.connectLedgerWallet().then(function(){ wdRefresh(); });
+    }
+  };
+  window.wdConnectWC=function(){
+    if(window.connectWalletConnect){
+      window.connectWalletConnect().then(function(){ wdRefresh(); });
+    }
+  };
+
+  function wdRefresh(){
+    // Balances from localStorage
+    var bal={bch:0,btc:0,eth:0};
+    try{bal=JSON.parse(localStorage.getItem('00_balances')||'{}')}catch(e){}
+    // Stealth balance
+    var stealthBal=0;
+    try{var su=JSON.parse(localStorage.getItem('00stealth_utxos')||'[]');stealthBal=su.reduce(function(s,u){return s+(u.value||0)},0)}catch(e){}
+    // Wallet exists?
+    var hasWallet=!!localStorage.getItem('00wallet_vault');
+    // Check if already unlocked (main-view visible OR valid session auth)
+    var mainView=document.getElementById('main-view');
+    var isUnlocked=mainView&&mainView.style.display!=='none';
+    if(!isUnlocked){
+      try{var sess=JSON.parse(localStorage.getItem('00_session_auth')||'{}');if(sess.ts&&Date.now()-sess.ts<30*60*1000)isUnlocked=true;}catch(e){}
+    }
+    if(hasWallet&&!isUnlocked){
+      // Show unlock form
+      document.getElementById('wd-empty').style.display='none';
+      document.getElementById('wd-accounts').style.display='none';
+      document.getElementById('wd-overview').style.display='none';
+      document.getElementById('wd-auth-unlock').style.display='';
+    } else {
+      document.getElementById('wd-auth-unlock').style.display='none';
+      document.getElementById('wd-empty').style.display=hasWallet?'none':'block';
+      document.getElementById('wd-accounts').style.display=hasWallet?'':'none';
+      document.getElementById('wd-overview').style.display=hasWallet?'':'none';
+    }
+    // Prices (reuse dashboard cache)
+    var prices={};
+    try{var c=JSON.parse(localStorage.getItem('00_dash_prices')||'{}');if(c.ts&&Date.now()-c.ts<300000){prices=c}else{throw 0}}catch(e){
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash,bitcoin,ethereum,usd-coin,tether&vs_currencies=usd&include_24hr_change=true')
+        .then(function(r){return r.json()}).then(function(d){
+          prices={bch:{price:d['bitcoin-cash']&&d['bitcoin-cash'].usd||0},btc:{price:d.bitcoin&&d.bitcoin.usd||0},eth:{price:d.ethereum&&d.ethereum.usd||0},usdc:{price:d['usd-coin']&&d['usd-coin'].usd||1},usdt:{price:d.tether&&d.tether.usd||1},ts:Date.now()};
+          try{localStorage.setItem('00_dash_prices',JSON.stringify(prices))}catch(e){}
+          wdRender(bal,stealthBal,prices);
+        }).catch(function(){});
+    }
+    wdRender(bal,stealthBal,prices);
+  }
+
+  function wdRender(bal,stealthBal,prices){
+    var pBch=prices.bch&&prices.bch.price||0;
+    var pBtc=prices.btc&&prices.btc.price||0;
+    var pEth=prices.eth&&prices.eth.price||0;
+    var pUsdc=prices.usdc&&prices.usdc.price||1;
+    var pUsdt=prices.usdt&&prices.usdt.price||1;
+
+    var bchCoins=(bal.bch||0)/1e8;
+    document.getElementById('wd-bal-bch').textContent=bchCoins.toFixed(8)+' BCH';
+    document.getElementById('wd-fiat-bch').textContent=fmt(bchCoins*pBch);
+    var sbchCoins=stealthBal/1e8;
+    document.getElementById('wd-bal-sbch').textContent=sbchCoins.toFixed(8)+' BCH';
+    document.getElementById('wd-fiat-sbch').textContent=fmt(sbchCoins*pBch);
+    var btcCoins=(bal.btc||0)/1e8;
+    document.getElementById('wd-bal-btc').textContent=btcCoins.toFixed(8)+' BTC';
+    document.getElementById('wd-fiat-btc').textContent=fmt(btcCoins*pBtc);
+    var ethWei=Number(bal.eth)||0;
+    var ethCoins=ethWei>1e15?ethWei/1e18:ethWei;
+    document.getElementById('wd-bal-eth').textContent=ethCoins.toFixed(8)+' ETH';
+    document.getElementById('wd-fiat-eth').textContent=fmt(ethCoins*pEth);
+    // USDC (ERC-20, 6 decimals)
+    var usdcRaw=bal.usdc||0;
+    var usdcCoins=usdcRaw>1e4?usdcRaw/1e6:usdcRaw;
+    document.getElementById('wd-bal-usdc').textContent=usdcCoins.toFixed(2)+' USDC';
+    document.getElementById('wd-fiat-usdc').textContent=fmt(usdcCoins*pUsdc);
+    // USDT (ERC-20, 6 decimals)
+    var usdtRaw=bal.usdt||0;
+    var usdtCoins=usdtRaw>1e4?usdtRaw/1e6:usdtRaw;
+    document.getElementById('wd-bal-usdt').textContent=usdtCoins.toFixed(2)+' USDT';
+    document.getElementById('wd-fiat-usdt').textContent=fmt(usdtCoins*pUsdt);
+
+    // ── Portfolio overview hero ──
+    var total=(bchCoins+sbchCoins)*pBch + btcCoins*pBtc + ethCoins*pEth + usdcCoins*pUsdc + usdtCoins*pUsdt;
+    document.getElementById('wd-total').textContent=fmt(total);
+    // Live price tickers
+    if(pBch) document.getElementById('wd-p-bch').textContent=fmt(pBch);
+    if(pBtc) document.getElementById('wd-p-btc').textContent=fmt(pBtc);
+    if(pEth) document.getElementById('wd-p-eth').textContent=fmt(pEth);
+  }
+
+  window.wdForceRefresh=function(){
+    // Clear price cache so next refresh fetches fresh prices
+    try{localStorage.removeItem('00_dash_prices')}catch(e){}
+    var btn=document.querySelector('.wd-ov-refresh');
+    if(btn){btn.style.animation='wd-spin .8s linear infinite';setTimeout(function(){btn.style.animation=''},2000);}
+    wdRefresh();
+  };
+
+  wdRefresh();
+  // Fast poll for first 5s to catch mobile auto-unlock, then slow poll
+  var _bootPolls=0;
+  var _bootInterval=setInterval(function(){_bootPolls++;wdRefresh();if(_bootPolls>=10)clearInterval(_bootInterval);},500);
+  setInterval(wdRefresh,60000);
+  window.addEventListener('storage',function(e){
+    if(e.key==='00_balances'||e.key==='00stealth_utxos'||e.key==='00_session_auth') wdRefresh();
+  });
+
+  /* ── Coin Detail View ── */
+  var COIN_META = {
+    bch:  { chain:'BITCOIN CASH',         name:'Bitcoin Cash',         ticker:'BCH',  coingecko:'bitcoin-cash', icon:'icons/bch.png', color:'#0AC18E', decimals:8 },
+    sbch: { chain:'STEALTH BITCOIN CASH',  name:'Stealth Bitcoin Cash', ticker:'BCH',  coingecko:'bitcoin-cash', icon:null, iconBg:'#BF5AF2', iconChar:'₿', color:'#BF5AF2', decimals:8 },
+    btc:  { chain:'BITCOIN',               name:'Bitcoin',              ticker:'BTC',  coingecko:'bitcoin',      icon:'icons/btc.png', color:'#F7931A', decimals:8 },
+    eth:  { chain:'ETHEREUM',              name:'Ethereum',             ticker:'ETH',  coingecko:'ethereum',     icon:'icons/eth.png', color:'#627EEA', decimals:18 },
+    usdc: { chain:'USD COIN',              name:'USDC',                 ticker:'USDC', coingecko:'usd-coin',     icon:'icons/usdc.png', color:'#2775CA', decimals:6 },
+    usdt: { chain:'TETHER',                name:'USDT',                 ticker:'USDT', coingecko:'tether',       icon:'icons/usdt.png', color:'#26A17B', decimals:6 }
+  };
+
+  var _cdCoin = null;
+  var _cdDays = 365;
+  var _cdChartPts = null;
+  var _cdChartVals = null;
+
+  function openCoinDetail(coin){
+    var meta = COIN_META[coin];
+    if(!meta) return;
+    _cdCoin = coin;
+    document.getElementById('wallet-desktop').classList.add('cd-hidden');
+    document.getElementById('coin-detail').classList.add('active');
+    // Icon
+    var iconEl = document.getElementById('cd-icon');
+    if(meta.icon){
+      iconEl.innerHTML='<img src="'+meta.icon+'" style="width:48px;height:48px;border-radius:50%">';
+    } else {
+      iconEl.innerHTML='<div style="width:48px;height:48px;border-radius:50%;background:'+meta.iconBg+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">'+meta.iconChar+'</div>';
+    }
+    document.getElementById('cd-chain').textContent = meta.chain;
+    document.getElementById('cd-chain').style.color = meta.color;
+    document.getElementById('cd-name').textContent = meta.name;
+    // Balance
+    cdRefreshBalance(coin, meta);
+    // Chart
+    cdFetchChart(coin, meta, _cdDays);
+    // Transactions
+    cdRenderTx(coin);
+    // Chart hover
+    cdInitHover();
+  }
+
+  function cdRefreshBalance(coin, meta){
+    var bal = {bch:0,btc:0,eth:0,usdc:0,usdt:0};
+    try { bal = JSON.parse(localStorage.getItem('00_balances')||'{}'); } catch(e){}
+    var stealthBal = 0;
+    try { var su=JSON.parse(localStorage.getItem('00stealth_utxos')||'[]'); stealthBal=su.reduce(function(s,u){return s+(u.value||0)},0); } catch(e){}
+    var raw = coin==='sbch' ? stealthBal : (bal[coin]||0);
+    var coins = raw / Math.pow(10, meta.decimals);
+    if(meta.decimals===6 && raw>1e4) coins = raw/1e6;
+    if(meta.decimals===18 && raw>1e15) coins = raw/1e18;
+    var prices = {};
+    try { var c=JSON.parse(localStorage.getItem('00_dash_prices')||'{}'); if(c.ts&&Date.now()-c.ts<300000) prices=c; } catch(e){}
+    var priceKey = coin==='sbch'?'bch':coin;
+    var price = prices[priceKey]&&prices[priceKey].price||0;
+    var fiat = coins * price;
+    document.getElementById('cd-bal-amount').textContent = coins.toFixed(coin==='usdc'||coin==='usdt'?2:8) + ' ' + meta.ticker;
+    document.getElementById('cd-bal-fiat').textContent = fmt(fiat);
+    document.getElementById('cd-bal-price').textContent = price>0 ? '1 '+meta.ticker+' = '+fmt(price) : '';
+  }
+
+  function cdFetchChart(coin, meta, days){
+    var cacheKey = '00_cd_chart_'+meta.coingecko+'_'+days;
+    var cached = null;
+    try {
+      var r=JSON.parse(localStorage.getItem(cacheKey)||'{}');
+      if(r._ts && Date.now()-r._ts<900000) cached=r.data;
+    } catch(e){}
+    if(cached){ cdRenderChart(cached); return; }
+    fetch('https://api.coingecko.com/api/v3/coins/'+meta.coingecko+'/market_chart?vs_currency=usd&days='+days)
+      .then(function(r){return r.ok?r.json():null})
+      .then(function(d){
+        if(!d||!d.prices) return;
+        try { localStorage.setItem(cacheKey, JSON.stringify({data:d.prices, _ts:Date.now()})); } catch(e){}
+        cdRenderChart(d.prices);
+      }).catch(function(){});
+  }
+
+  function cdCatmullRom(pts, tension){
+    tension = tension || 0.5;
+    var n = pts.length;
+    if(n < 2) return '';
+    if(n === 2) return 'M'+pts[0][0]+','+pts[0][1]+' L'+pts[1][0]+','+pts[1][1];
+    var d = 'M'+pts[0][0]+','+pts[0][1];
+    for(var i = 0; i < n-1; i++){
+      var p0 = pts[Math.max(0,i-1)];
+      var p1 = pts[i];
+      var p2 = pts[Math.min(n-1,i+1)];
+      var p3 = pts[Math.min(n-1,i+2)];
+      var cp1x = p1[0] + (p2[0]-p0[0]) / (6/tension);
+      var cp1y = p1[1] + (p2[1]-p0[1]) / (6/tension);
+      var cp2x = p2[0] - (p3[0]-p1[0]) / (6/tension);
+      var cp2y = p2[1] - (p3[1]-p1[1]) / (6/tension);
+      d += ' C'+cp1x.toFixed(1)+','+cp1y.toFixed(1)+' '+cp2x.toFixed(1)+','+cp2y.toFixed(1)+' '+p2[0].toFixed(1)+','+p2[1].toFixed(1);
+    }
+    return d;
+  }
+
+  function cdRenderChart(prices){
+    var fillEl = document.getElementById('cd-chart-fill');
+    var lineEl = document.getElementById('cd-chart-line');
+    if(!prices||!prices.length){ fillEl.setAttribute('d',''); lineEl.setAttribute('d',''); return; }
+    var source = prices;
+    if(source.length > 200){
+      var step = Math.ceil(source.length / 200);
+      var down = [];
+      for(var i=0; i<source.length; i+=step) down.push(source[i]);
+      if(down[down.length-1] !== source[source.length-1]) down.push(source[source.length-1]);
+      source = down;
+    }
+    var values = source.map(function(p){ return { ts:p[0], val:p[1] }; });
+    var W=800, H=280, padT=20, padB=20;
+    var min=Infinity, max=-Infinity;
+    values.forEach(function(v){ if(v.val<min)min=v.val; if(v.val>max)max=v.val; });
+    var range=max-min||1;
+    var pts = values.map(function(v,i){
+      var x = values.length>1 ? (i/(values.length-1))*W : W/2;
+      var y = padT + (1-(v.val-min)/range)*(H-padT-padB);
+      return [x,y];
+    });
+    _cdChartPts = pts;
+    _cdChartVals = values;
+    var line = cdCatmullRom(pts);
+    lineEl.setAttribute('d', line);
+    var fill = line + ' L'+pts[pts.length-1][0]+','+H+' L'+pts[0][0]+','+H+' Z';
+    fillEl.setAttribute('d', fill);
+  }
+
+  function cdInitHover(){
+    var container = document.querySelector('.cd-chart-container');
+    if(!container||container._hoverBound) return;
+    container._hoverBound=true;
+    var svg = document.getElementById('cd-chart');
+    var dot = document.getElementById('cd-chart-dot');
+    var vline = document.getElementById('cd-chart-vline');
+    var tooltip = document.getElementById('cd-tooltip');
+    var amtEl = document.getElementById('cd-chart-amount');
+    container.addEventListener('mousemove', function(e){
+      if(!_cdChartPts||!_cdChartVals||!_cdChartPts.length) return;
+      var rect=svg.getBoundingClientRect();
+      var scaleX=800/rect.width;
+      var mx=(e.clientX-rect.left)*scaleX;
+      var bestI=0,bestD=Infinity;
+      for(var i=0;i<_cdChartPts.length;i++){
+        var d=Math.abs(_cdChartPts[i][0]-mx);
+        if(d<bestD){bestD=d;bestI=i;}
+      }
+      var px=_cdChartPts[bestI][0],py=_cdChartPts[bestI][1];
+      var v=_cdChartVals[bestI];
+      dot.setAttribute('cx',px);dot.setAttribute('cy',py);dot.setAttribute('opacity','1');
+      vline.setAttribute('x1',px);vline.setAttribute('x2',px);vline.setAttribute('opacity','1');
+      var dateStr=new Date(v.ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      tooltip.textContent=dateStr+'  •  '+fmt(v.val);
+      tooltip.style.opacity='1';
+      var pct=(e.clientX-rect.left)/rect.width*100;
+      tooltip.style.left=pct+'%';
+      tooltip.style.transform=pct>70?'translateX(-100%)':pct<30?'translateX(0)':'translateX(-50%)';
+      if(amtEl) amtEl.textContent=fmt(v.val);
+    });
+    container.addEventListener('mouseleave', function(){
+      dot.setAttribute('opacity','0');vline.setAttribute('opacity','0');tooltip.style.opacity='0';
+      if(amtEl) amtEl.textContent='';
+    });
+  }
+
+  function cdRenderTx(coin){
+    var listEl=document.getElementById('cd-tx-list');
+    var emptyEl=document.getElementById('cd-tx-empty');
+    if(!listEl) return;
+    var txs=[];
+    try { var r=localStorage.getItem('00_tx_history'); if(r)txs=JSON.parse(r); } catch(e){}
+    // Stealth txid set
+    var stealthTxids=new Set();
+    try { var su=JSON.parse(localStorage.getItem('00stealth_utxos')||'[]'); for(var i=0;i<su.length;i++) if(su[i].txid)stealthTxids.add(su[i].txid); } catch(e){}
+    for(var i=0;i<txs.length;i++){
+      if(txs[i].dir!=='stealth'&&txs[i].chain==='bch'&&stealthTxids.has(txs[i].txid)) txs[i].dir='stealth';
+    }
+    // Filter by coin
+    var chain = coin==='sbch'?'bch':coin;
+    var filtered=[];
+    for(var i=0;i<txs.length;i++){
+      var tx=txs[i];
+      if(tx.chain!==chain) continue;
+      if(coin==='sbch' && tx.dir!=='stealth') continue;
+      if(coin==='bch' && tx.dir==='stealth') continue;
+      filtered.push(tx);
+    }
+    listEl.querySelectorAll('.cd-tx-row,.cd-tx-date').forEach(function(r){r.remove();});
+    if(!filtered.length){ if(emptyEl) emptyEl.style.display='block'; return; }
+    if(emptyEl) emptyEl.style.display='none';
+    var display=filtered.slice(0,_cdTxPageSize);
+    var html='';
+    var lastDate='';
+    for(var i=0;i<display.length;i++){
+      var tx=display[i];
+      var date=tx.height>0?new Date(tx.timestamp*1000||Date.now()):new Date();
+      var dateStr=date.toLocaleDateString('en-US',{day:'2-digit',month:'2-digit',year:'numeric'});
+      if(dateStr!==lastDate){
+        html+='<div class="cd-tx-date">'+dateStr+'</div>';
+        lastDate=dateStr;
+      }
+      var coins=tx.amount/1e8;
+      var dirLabel=tx.dir==='stealth'?'Stealth':tx.dir==='in'?'Received':tx.dir==='fusion'?'CashFusion':'Sent';
+      var dirIcon=tx.dir==='stealth'?'↓':tx.dir==='in'?'↓':tx.dir==='fusion'?'⇄':'↑';
+      var dirClass=tx.dir==='stealth'?'stealth':tx.dir==='in'?'in':tx.dir==='fusion'?'fusion':'out';
+      var sign=tx.dir==='out'?'-':'+';
+      var shortAddr=tx.txid.slice(0,16)+'...'+tx.txid.slice(-8);
+      var meta=COIN_META[coin];
+      var explorer=coin==='btc'?'bitcoin':coin==='eth'?'ethereum':'bitcoin-cash';
+      html+='<div class="cd-tx-row" onclick="window.open(\'https://blockchair.com/'+explorer+'/transaction/'+tx.txid+'\',\'_blank\')">'+
+        '<div class="cd-tx-left"><div class="cd-tx-icon '+dirClass+'"><span>'+dirIcon+'</span></div><div><div class="cd-tx-type">'+dirLabel+'</div><div class="cd-tx-addr">'+shortAddr+'</div></div></div>'+
+        '<div class="cd-tx-right"><div class="cd-tx-amount '+dirClass+'">'+sign+coins.toFixed(8)+' '+meta.ticker+'</div></div></div>';
+    }
+    listEl.insertAdjacentHTML('beforeend',html);
+  }
+
+  window.cdRefreshTx = function(){ if(_cdCoin) cdRenderTx(_cdCoin); };
+
+  window.cdPeriod = function(days){
+    _cdDays=days;
+    var btns=document.querySelectorAll('.cd-period');
+    btns.forEach(function(b){b.classList.remove('active')});
+    var sel=document.querySelector('.cd-period[data-days="'+days+'"]');
+    if(sel) sel.classList.add('active');
+    if(_cdCoin) cdFetchChart(_cdCoin, COIN_META[_cdCoin], days);
+  };
+
+  // Check URL for ?coin= param
+  var params = new URLSearchParams(window.location.search);
+  var coinParam = params.get('coin');
+  if(coinParam && COIN_META[coinParam]){
+    openCoinDetail(coinParam);
+  }
+
+  // Add click handlers to account rows
+  var accountMap = {
+    'wd-bch':'bch','wd-sbch':'sbch','wd-btc':'btc',
+    'wd-eth':'eth','wd-usdc':'usdc','wd-usdt':'usdt'
+  };
+  Object.keys(accountMap).forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.onclick=function(){ window.location='wallet.html?coin='+accountMap[id]; };
+  });
+
+  /* ── UTXO / Transactions Tab Switching ── */
+  var _cdTxTab = 'txs';
+  var _cdTxPageSize = 20;
+
+  window.cdSetTxPageSize = function(val){
+    _cdTxPageSize = parseInt(val,10)||20;
+    if(_cdCoin) cdRenderTx(_cdCoin);
+  };
+
+  window.cdSwitchTxTab = function(tab){
+    _cdTxTab = tab;
+    document.querySelectorAll('.cd-tx-tab').forEach(function(b){ b.classList.toggle('active', b.dataset.tab===tab); });
+    var txList = document.getElementById('cd-tx-list');
+    var utxoList = document.getElementById('cd-utxo-list');
+    var pageSelect = document.getElementById('cd-tx-page-size');
+    if(tab==='txs'){
+      if(txList) txList.classList.remove('cd-hidden');
+      if(utxoList) utxoList.classList.add('cd-hidden');
+      if(pageSelect) pageSelect.style.display = '';
+    } else {
+      if(txList) txList.classList.add('cd-hidden');
+      if(utxoList) utxoList.classList.remove('cd-hidden');
+      if(pageSelect) pageSelect.style.display = 'none';
+      cdRenderUtxos();
+    }
+  };
+
+  function cdRenderUtxos(){
+    var listEl = document.getElementById('cd-utxo-list');
+    if(!listEl) return;
+    listEl.innerHTML = '';
+    var coin = _cdCoin;
+    if(!coin) return;
+    // ETH/USDC/USDT/SBCH don't use UTXOs
+    if(coin==='eth'||coin==='usdc'||coin==='usdt'||coin==='sbch'){
+      listEl.innerHTML='<div class="cd-utxo-empty">'+COIN_META[coin].name+' does not use UTXOs</div>';
+      return;
+    }
+    var utxos = coin==='bch' ? (window.cdUtxos||[]) : coin==='btc' ? (window.cdBtcUtxos||[]) : [];
+    if(!utxos.length){
+      listEl.innerHTML='<div class="cd-utxo-empty">No UTXOs found</div>';
+      return;
+    }
+    var meta = COIN_META[coin];
+    var explorer = coin==='btc'?'bitcoin':'bitcoin-cash';
+    var html = '';
+    for(var i=0;i<utxos.length;i++){
+      var u = utxos[i];
+      var sats = u.value;
+      var coins = (sats/1e8).toFixed(8);
+      var short = u.txid.slice(0,12)+'...'+u.txid.slice(-6);
+      html += '<div class="cd-utxo-row" onclick="window.open(\'https://blockchair.com/'+explorer+'/transaction/'+u.txid+'\',\'_blank\')">';
+      html += '<div class="cd-utxo-left"><div class="cd-utxo-txid">'+short+'</div><div class="cd-utxo-vout">Output #'+u.vout+'</div></div>';
+      html += '<div class="cd-utxo-value">'+coins+' '+meta.ticker+'</div>';
+      html += '</div>';
+    }
+    listEl.innerHTML = html;
+  }
+
+  /* ── Send Modal ── */
+  var _cdFeeRate = 1.0;
+  var _cdSending = false;
+  var _cdSendMode = 'normal';
+  var _cdCcActive = false;
+  var _cdCcSel = new Set();
+
+  function _cdCcId(u){ return u.txid+':'+u.vout; }
+
+  /* ── Mode Toggle ── */
+  window.cdSetSendMode = function(mode){
+    _cdSendMode = mode;
+    document.querySelectorAll('.cd-send-mode-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.mode===mode); });
+    document.getElementById('cd-send-normal').style.display = mode==='normal' ? 'flex' : 'none';
+    document.getElementById('cd-send-stealth').style.display = mode==='stealth' ? 'flex' : 'none';
+  };
+
+  /* ── Coin Control ── */
+  // Get active CC elements (normal or stealth panel)
+  function _ccEls(){
+    var isSt = _cdSendMode==='stealth';
+    return {
+      panel: document.getElementById(isSt?'cd-cc-panel-st':'cd-cc-panel'),
+      icon:  document.getElementById(isSt?'cd-cc-icon-st':'cd-cc-icon'),
+      badge: document.getElementById(isSt?'cd-cc-badge-st':'cd-cc-badge'),
+      list:  document.getElementById(isSt?'cd-cc-list-st':'cd-cc-list'),
+      footer:document.getElementById(isSt?'cd-cc-footer-st':'cd-cc-footer')
+    };
+  }
+
+  window.cdToggleCoinControl = function(){
+    _cdCcActive = !_cdCcActive;
+    var els = _ccEls();
+    if(_cdCcActive){
+      els.panel.style.display = 'block';
+      els.icon.textContent = '▴';
+      els.badge.textContent = 'MANUAL';
+      els.badge.classList.add('manual');
+      if(!_cdCcSel.size) cdCcSelectAll();
+      else cdRenderCcList();
+    } else {
+      els.panel.style.display = 'none';
+      els.icon.textContent = '▾';
+      els.badge.textContent = 'AUTO';
+      els.badge.classList.remove('manual');
+      _cdCcSel.clear();
+    }
+    cdUpdateSendSummaryInner();
+  };
+
+  window.cdCcToggle = function(id){
+    if(_cdCcSel.has(id)) _cdCcSel.delete(id); else _cdCcSel.add(id);
+    cdRenderCcList();
+    cdUpdateSendSummaryInner();
+  };
+
+  window.cdCcSelectAll = function(){
+    var utxos = _cdCoin==='bch' ? (window.cdUtxos||[]) : (window.cdBtcUtxos||[]);
+    utxos.forEach(function(u){ _cdCcSel.add(_cdCcId(u)); });
+    cdRenderCcList();
+    cdUpdateSendSummaryInner();
+  };
+
+  window.cdCcClearAll = function(){
+    _cdCcSel.clear();
+    cdRenderCcList();
+    cdUpdateSendSummaryInner();
+  };
+
+  function cdGetSelectedUtxos(){
+    if(!_cdCcActive || !_cdCcSel.size) return null;
+    var utxos = _cdCoin==='bch' ? (window.cdUtxos||[]) : (window.cdBtcUtxos||[]);
+    return utxos.filter(function(u){ return _cdCcSel.has(_cdCcId(u)); });
+  }
+
+  function cdRenderCcList(){
+    var els = _ccEls();
+    var listEl = els.list;
+    if(!listEl) return;
+    var utxos = _cdCoin==='bch' ? (window.cdUtxos||[]) : (window.cdBtcUtxos||[]);
+    var meta = COIN_META[_cdCoin];
+    var stealthTxids = new Set();
+    try { var su=window.cdStealthUtxos||[]; for(var i=0;i<su.length;i++) if(su[i].txid) stealthTxids.add(su[i].txid); } catch(e){}
+    var html = '';
+    for(var i=0;i<utxos.length;i++){
+      var u = utxos[i];
+      var id = _cdCcId(u);
+      var sel = _cdCcSel.has(id);
+      var isStealth = stealthTxids.has(u.txid);
+      var short = u.txid.slice(0,8)+'...'+u.txid.slice(-6)+':'+u.vout;
+      var confClass = isStealth ? 'stealth' : (u.height>0 ? 'confirmed' : 'unconfirmed');
+      var confLabel = isStealth ? 'STEALTH' : (u.height>0 ? '✓ conf' : 'unconf');
+      html += '<div class="cd-cc-utxo'+(sel?' sel':'')+'" onclick="cdCcToggle(\''+id+'\')">';
+      html += '<div class="cd-cc-cb">✓</div>';
+      html += '<div class="cd-cc-info"><div class="cd-cc-txid">'+short+'</div></div>';
+      html += '<div class="cd-cc-right"><div class="cd-cc-val">'+(u.value/1e8).toFixed(8)+' '+meta.ticker+'</div>';
+      html += '<div class="cd-cc-conf '+confClass+'">'+confLabel+'</div></div>';
+      html += '</div>';
+    }
+    listEl.innerHTML = html;
+    var footerEl = els.footer;
+    var selTotal = 0, selCount = 0;
+    utxos.forEach(function(u){ if(_cdCcSel.has(_cdCcId(u))){ selCount++; selTotal+=u.value; } });
+    footerEl.innerHTML = '<div class="cd-cc-total">'+selCount+'/'+utxos.length+' · <span>'+(selTotal/1e8).toFixed(8)+' '+meta.ticker+'</span></div>'+
+      '<div class="cd-cc-acts"><button class="cd-cc-btn" onclick="cdCcSelectAll()">ALL</button><button class="cd-cc-btn" onclick="cdCcClearAll()">CLEAR</button></div>';
+  }
+
+  /* ── Open / Close ── */
+  window.cdOpenSend = function(){
+    if(!_cdCoin) return;
+    var meta = COIN_META[_cdCoin];
+    var modal = document.getElementById('cd-send-modal');
+    // Reset normal fields
+    document.getElementById('cd-send-addr').value = '';
+    document.getElementById('cd-send-amount').value = '';
+    document.getElementById('cd-send-error').textContent = '';
+    document.getElementById('cd-send-summary').style.display = 'none';
+    document.getElementById('cd-send-summary').textContent = '';
+    var btn = document.getElementById('cd-broadcast-btn');
+    btn.disabled = false; btn.textContent = '⚡ BROADCAST →';
+    // Reset stealth fields
+    document.getElementById('cd-stealth-code').value = '';
+    document.getElementById('cd-stealth-amount').value = '';
+    document.getElementById('cd-stealth-error').textContent = '';
+    var stBtn = document.getElementById('cd-stealth-btn');
+    stBtn.disabled = false; stBtn.textContent = '⚡ STEALTH SEND →';
+    _cdFeeRate = 1.0;
+    _cdCcActive = false;
+    _cdCcSel.clear();
+    // Mode toggle: BCH shows toggle, SBCH forces stealth, others normal only
+    var isBch = _cdCoin==='bch';
+    var isSbch = _cdCoin==='sbch';
+    document.getElementById('cd-send-mode').style.display = isBch ? 'flex' : 'none';
+    if(isSbch){
+      _cdSendMode = 'stealth';
+      document.getElementById('cd-send-normal').style.display = 'none';
+      document.getElementById('cd-send-stealth').style.display = 'flex';
+    } else {
+      _cdSendMode = 'normal';
+      document.querySelectorAll('#cd-send-mode .cd-send-mode-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.mode==='normal'); });
+      document.getElementById('cd-send-normal').style.display = 'flex';
+      document.getElementById('cd-send-stealth').style.display = 'none';
+    }
+    // Placeholder
+    var addrInput = document.getElementById('cd-send-addr');
+    if(_cdCoin==='bch'||_cdCoin==='sbch') addrInput.placeholder='bitcoincash:q...';
+    else if(_cdCoin==='btc') addrInput.placeholder='1... or bc1...';
+    else if(_cdCoin==='eth'||_cdCoin==='usdc'||_cdCoin==='usdt') addrInput.placeholder='0x...';
+    // Fee section: BCH/BTC/SBCH only
+    document.getElementById('cd-fee-section').style.display = (_cdCoin==='bch'||_cdCoin==='btc'||_cdCoin==='sbch') ? '' : 'none';
+    // Coin control: BCH/BTC/SBCH only
+    document.getElementById('cd-cc-section').style.display = (_cdCoin==='bch'||_cdCoin==='btc'||_cdCoin==='sbch') ? '' : 'none';
+    document.getElementById('cd-cc-panel').style.display = 'none';
+    document.getElementById('cd-cc-icon').textContent = '▾';
+    document.getElementById('cd-cc-badge').textContent = 'AUTO';
+    document.getElementById('cd-cc-badge').classList.remove('manual');
+    // Reset stealth coin control panel too
+    document.getElementById('cd-cc-panel-st').style.display = 'none';
+    document.getElementById('cd-cc-icon-st').textContent = '▾';
+    document.getElementById('cd-cc-badge-st').textContent = 'AUTO';
+    document.getElementById('cd-cc-badge-st').classList.remove('manual');
+    // Reset fee buttons
+    document.querySelectorAll('.cd-fee-opt').forEach(function(b){ b.classList.toggle('active', b.dataset.rate==='1'); });
+    modal.classList.add('open');
+  };
+
+  window.cdCloseSend = function(){
+    document.getElementById('cd-send-modal').classList.remove('open');
+    _cdSending = false;
+  };
+
+  window.cdSetFee = function(rate, level){
+    _cdFeeRate = rate;
+    document.querySelectorAll('.cd-fee-opt').forEach(function(b){ b.classList.toggle('active', parseFloat(b.dataset.rate)===rate); });
+    cdUpdateSendSummaryInner();
+  };
+
+  window.cdSetMax = function(){
+    if(!_cdCoin) return;
+    var utxos;
+    if(_cdCoin==='bch'||_cdCoin==='btc'){
+      // Respect coin control
+      var ccUtxos = cdGetSelectedUtxos();
+      utxos = ccUtxos || (_cdCoin==='bch' ? (window.cdUtxos||[]) : (window.cdBtcUtxos||[]));
+      var total = utxos.reduce(function(s,u){return s+u.value;},0);
+      var fee = Math.ceil(window._estimateTxSize(utxos.length, 1) * _cdFeeRate);
+      document.getElementById('cd-send-amount').value = (Math.max(0,total-fee)/1e8).toFixed(8);
+    } else {
+      var bal = window.cdEthBalance||0;
+      var gas = 21000 * 20e9;
+      document.getElementById('cd-send-amount').value = (Math.max(0,bal-gas)/1e18).toFixed(8);
+    }
+    cdUpdateSendSummaryInner();
+  };
+
+  window.cdStealthMax = function(){
+    var ccUtxos = cdGetSelectedUtxos();
+    var utxos = ccUtxos || (window.cdUtxos||[]);
+    var total = utxos.reduce(function(s,u){return s+u.value;},0);
+    var fee = Math.ceil(window._estimateTxSize(utxos.length, 1) * _cdFeeRate);
+    document.getElementById('cd-stealth-amount').value = (Math.max(0,total-fee)/1e8).toFixed(8);
+  };
+
+  window.cdUpdateSendSummary = function(){ cdUpdateSendSummaryInner(); };
+
+  function cdUpdateSendSummaryInner(){
+    var addr = document.getElementById('cd-send-addr').value.trim();
+    var amt = parseFloat(document.getElementById('cd-send-amount').value)||0;
+    var summaryEl = document.getElementById('cd-send-summary');
+    if(!addr || amt<=0){ summaryEl.style.display='none'; return; }
+    var meta = COIN_META[_cdCoin];
+    if(_cdCoin==='bch'||_cdCoin==='btc'){
+      var ccUtxos = cdGetSelectedUtxos();
+      var utxos = ccUtxos || (_cdCoin==='bch' ? (window.cdUtxos||[]) : (window.cdBtcUtxos||[]));
+      var fee = Math.ceil(window._estimateTxSize(Math.max(1,utxos.length), 2) * _cdFeeRate);
+      summaryEl.innerHTML = 'Amount: '+amt.toFixed(8)+' '+meta.ticker+'<br>Fee: '+(fee/1e8).toFixed(8)+' '+meta.ticker+'<br>Total: '+((amt+fee/1e8)).toFixed(8)+' '+meta.ticker;
+    } else {
+      summaryEl.innerHTML = 'Amount: '+amt.toFixed(8)+' '+meta.ticker;
+    }
+    summaryEl.style.display='block';
+  }
+
+  /* ── Normal Send ── */
+  window.cdSendTx = async function(){
+    if(_cdSending) return;
+    var errEl = document.getElementById('cd-send-error');
+    var btn = document.getElementById('cd-broadcast-btn');
+    errEl.textContent = '';
+    var addr = document.getElementById('cd-send-addr').value.trim();
+    var amt = parseFloat(document.getElementById('cd-send-amount').value)||0;
+    if(!addr){ errEl.textContent='Recipient address required'; return; }
+    if(amt<=0){ errEl.textContent='Enter a valid amount'; return; }
+
+    if(_cdCoin==='bch'){
+      try { window._cashAddrToHash20(addr); } catch(e){ errEl.textContent='Invalid BCH address'; return; }
+      var amtSats = Math.round(amt*1e8);
+      if(amtSats<546){ errEl.textContent='Minimum 546 sats (dust limit)'; return; }
+      // Coin control or auto
+      var ccUtxos = cdGetSelectedUtxos();
+      var utxos = ccUtxos || (window.cdUtxos||[]);
+      if(!utxos.length){ errEl.textContent='No UTXOs — refresh balance'; return; }
+      _cdSending = true;
+      btn.disabled=true; btn.textContent='// BROADCASTING...';
+      try {
+        var selected, total;
+        if(ccUtxos){
+          selected = ccUtxos; total = selected.reduce(function(s,u){return s+u.value;},0);
+        } else {
+          var sorted = utxos.slice().sort(function(a,b){ return b.value-a.value; });
+          selected=[]; total=0;
+          for(var i=0;i<sorted.length;i++){
+            selected.push(sorted[i]); total+=sorted[i].value;
+            var fee=Math.ceil(window._estimateTxSize(selected.length,2)*_cdFeeRate);
+            if(total>=amtSats+fee) break;
+          }
+        }
+        var feeNoChg=Math.ceil(window._estimateTxSize(selected.length,1)*_cdFeeRate);
+        var fee2Out=Math.ceil(window._estimateTxSize(selected.length,2)*_cdFeeRate);
+        var changeWith2=total-amtSats-fee2Out;
+        var fee=changeWith2>=546?fee2Out:feeNoChg;
+        if(total<amtSats+fee){ errEl.textContent='Insufficient balance'; _cdSending=false; btn.disabled=false; btn.textContent='⚡ BROADCAST →'; return; }
+        var toHash160=window._cashAddrToHash20(addr);
+        var toScript=window._p2pkhScript(toHash160);
+        var change=total-amtSats-fee;
+        var outputs=[{value:amtSats,script:toScript}];
+        if(change>=546) outputs.push({value:change,script:window._p2pkhScript(window.cdBchHash160)});
+        var rawHex = cdBuildSignedBchTx(selected, outputs);
+        var result = await window._bcBroadcast(rawHex);
+        if(result && result.success!==false){
+          btn.textContent='✓ SENT'; setTimeout(function(){ cdCloseSend(); },1500);
+        } else {
+          errEl.textContent='Broadcast failed: '+(result.error||'unknown');
+          btn.disabled=false; btn.textContent='⚡ BROADCAST →';
+        }
+      } catch(e){
+        errEl.textContent='Error: '+e.message;
+        btn.disabled=false; btn.textContent='⚡ BROADCAST →';
+      }
+      _cdSending=false;
+    } else if(_cdCoin==='btc'){
+      var amtSats = Math.round(amt*1e8);
+      if(amtSats<546){ errEl.textContent='Minimum 546 sats'; return; }
+      var ccUtxos = cdGetSelectedUtxos();
+      var utxos = ccUtxos || (window.cdBtcUtxos||[]);
+      if(!utxos.length){ errEl.textContent='No UTXOs — refresh balance'; return; }
+      _cdSending=true;
+      btn.disabled=true; btn.textContent='// BROADCASTING...';
+      try {
+        var selected, total;
+        if(ccUtxos){
+          selected = ccUtxos; total = selected.reduce(function(s,u){return s+u.value;},0);
+        } else {
+          var sorted=utxos.slice().sort(function(a,b){return b.value-a.value;});
+          selected=[]; total=0;
+          for(var i=0;i<sorted.length;i++){
+            selected.push(sorted[i]); total+=sorted[i].value;
+            var fee=Math.ceil(window._estimateTxSize(selected.length,2)*_cdFeeRate);
+            if(total>=amtSats+fee) break;
+          }
+        }
+        var feeNoChg=Math.ceil(window._estimateTxSize(selected.length,1)*_cdFeeRate);
+        var fee2Out=Math.ceil(window._estimateTxSize(selected.length,2)*_cdFeeRate);
+        var changeWith2=total-amtSats-fee2Out;
+        var fee=changeWith2>=546?fee2Out:feeNoChg;
+        if(total<amtSats+fee){ errEl.textContent='Insufficient balance'; _cdSending=false; btn.disabled=false; btn.textContent='⚡ BROADCAST →'; return; }
+        var change=total-amtSats-fee;
+        var rawHex = cdBuildSignedBtcTx(selected, addr, amtSats, change);
+        var txid = await window._btcCallFn('blockchain.transaction.broadcast', [rawHex]);
+        if(txid && typeof txid==='string' && txid.length===64){
+          btn.textContent='✓ SENT'; setTimeout(function(){ cdCloseSend(); },1500);
+        } else {
+          errEl.textContent='Broadcast failed: '+(txid||'unknown');
+          btn.disabled=false; btn.textContent='⚡ BROADCAST →';
+        }
+      } catch(e){
+        errEl.textContent='Error: '+e.message;
+        btn.disabled=false; btn.textContent='⚡ BROADCAST →';
+      }
+      _cdSending=false;
+    } else {
+      errEl.textContent = 'Send not yet supported for '+COIN_META[_cdCoin].name;
+    }
+  };
+
+  /* ── Stealth Send ── */
+  window.cdSendStealth = async function(){
+    if(_cdSending) return;
+    var errEl = document.getElementById('cd-stealth-error');
+    var btn = document.getElementById('cd-stealth-btn');
+    errEl.textContent = '';
+    var codeRaw = document.getElementById('cd-stealth-code').value.trim();
+    var amt = parseFloat(document.getElementById('cd-stealth-amount').value)||0;
+    // Parse stealth code
+    var code = codeRaw.replace(/^stealth:/i,'');
+    if(code.length!==132){ errEl.textContent='Invalid stealth code (need 132 hex chars)'; return; }
+    var recipScanPub, recipSpendPub;
+    try {
+      recipScanPub = window._h2b(code.slice(0,66));
+      recipSpendPub = window._h2b(code.slice(66));
+      window._secp256k1.ProjectivePoint.fromHex(recipScanPub);
+      window._secp256k1.ProjectivePoint.fromHex(recipSpendPub);
+    } catch(e){ errEl.textContent='Invalid stealth code (bad keys)'; return; }
+    var amtSats = Math.round(amt*1e8);
+    if(amtSats<546){ errEl.textContent='Minimum 546 sats'; return; }
+    var ccUtxos = cdGetSelectedUtxos();
+    var utxos = ccUtxos || (window.cdUtxos||[]);
+    if(!utxos.length){ errEl.textContent='No UTXOs — refresh balance'; return; }
+    _cdSending = true;
+    btn.disabled=true; btn.textContent='// DERIVING...';
+    try {
+      // UTXO selection: coin control or greedy
+      var selected, total;
+      if(ccUtxos){
+        selected = ccUtxos; total = selected.reduce(function(s,u){return s+u.value;},0);
+      } else {
+        var sorted = utxos.slice().sort(function(a,b){return b.value-a.value;});
+        selected=[]; total=0;
+        for(var i=0;i<sorted.length;i++){
+          selected.push(sorted[i]); total+=sorted[i].value;
+          var fee=Math.ceil(window._estimateTxSize(selected.length,2)*_cdFeeRate);
+          if(total>=amtSats+fee) break;
+        }
+      }
+      var feeNoChg=Math.ceil(window._estimateTxSize(selected.length,1)*_cdFeeRate);
+      var fee2Out=Math.ceil(window._estimateTxSize(selected.length,2)*_cdFeeRate);
+      var changeWith2=total-amtSats-fee2Out;
+      var fee=changeWith2>=546?fee2Out:feeNoChg;
+      if(total<amtSats+fee){ errEl.textContent='Insufficient balance'; _cdSending=false; btn.disabled=false; btn.textContent='⚡ STEALTH SEND →'; return; }
+      // ECDH: use first input's privkey (wallet default)
+      var senderPriv = window.cdBchPriv;
+      var senderPub = window.cdBchPub33;
+      // Outpoint of first selected UTXO
+      var u0 = selected[0];
+      var outpointBytes = window._concat(window._h2b(u0.txid).reverse(), new Uint8Array([u0.vout&0xff,(u0.vout>>8)&0xff,(u0.vout>>16)&0xff,(u0.vout>>24)&0xff]));
+      // Derive stealth address
+      var derived = window._stealthDerive(senderPriv, senderPub, recipScanPub, recipSpendPub, outpointBytes);
+      var stealthHash160 = window._cashAddrToHash20(derived.addr);
+      var stealthScript = window._p2pkhScript(stealthHash160);
+      var change = total - amtSats - fee;
+      var outputs = [{value:amtSats, script:stealthScript}];
+      if(change>=546) outputs.push({value:change, script:window._p2pkhScript(window.cdBchHash160)});
+      btn.textContent='// BROADCASTING...';
+      var rawHex = cdBuildSignedBchTx(selected, outputs);
+      var result = await window._bcBroadcast(rawHex);
+      if(!result || result.success===false){ errEl.textContent='Broadcast failed: '+(result&&result.error||'unknown'); _cdSending=false; btn.disabled=false; btn.textContent='⚡ STEALTH SEND →'; return; }
+      // Send Nostr notification
+      try {
+        var ephPriv = window._rand(32);
+        var recipScanXOnly = window._b2h(recipScanPub.slice(1));
+        var txid = typeof result==='string' ? result : (result.txid||result.tx_hash||'');
+        var payload = JSON.stringify({txid:txid, sender:window._b2h(senderPub)});
+        var encrypted = await window._nip04Encrypt(ephPriv, recipScanXOnly, payload);
+        var ev = await window._makeNostrEvent(ephPriv, 4, encrypted, [['p', recipScanXOnly]]);
+        window._nostrPublish(ev);
+      } catch(e){ console.error('[STEALTH] Nostr notify error:', e); }
+      btn.textContent='✓ STEALTH SENT';
+      setTimeout(function(){ cdCloseSend(); },1500);
+    } catch(e){
+      errEl.textContent='Error: '+e.message;
+      btn.disabled=false; btn.textContent='⚡ STEALTH SEND →';
+    }
+    _cdSending=false;
+  };
+
+  // Build signed BCH transaction (P2PKH)
+  function cdBuildSignedBchTx(inputs, outputs){
+    var b2h=window._b2h, h2b=window._h2b, concat=window._concat;
+    var priv=window.cdBchPriv, pub33=window.cdBchPub33;
+    var secp=window._secp256k1, sha256=window._sha256;
+    function writeU32LE(v){var b=new Uint8Array(4);b[0]=v&0xff;b[1]=(v>>8)&0xff;b[2]=(v>>16)&0xff;b[3]=(v>>24)&0xff;return b;}
+    function writeU64LE(v){var b=new Uint8Array(8);var lo=v&0xffffffff,hi=Math.floor(v/0x100000000);b[0]=lo&0xff;b[1]=(lo>>8)&0xff;b[2]=(lo>>16)&0xff;b[3]=(lo>>24)&0xff;b[4]=hi&0xff;b[5]=(hi>>8)&0xff;b[6]=(hi>>16)&0xff;b[7]=(hi>>24)&0xff;return b;}
+    function writeVI(v){if(v<0xfd)return new Uint8Array([v]);var b=new Uint8Array(3);b[0]=0xfd;b[1]=v&0xff;b[2]=(v>>8)&0xff;return b;}
+    // BIP143 sighash for BCH
+    var hashPrevouts=sha256(sha256(concat.apply(null,inputs.map(function(u){return concat(h2b(u.txid).reverse(),writeU32LE(u.vout));}))));
+    var hashSequence=sha256(sha256(concat.apply(null,inputs.map(function(){return writeU32LE(0xffffffff);}))));
+    var hashOutputs=sha256(sha256(concat.apply(null,outputs.map(function(o){return concat(writeU64LE(o.value),writeVI(o.script.length),o.script);}))));
+    var rawParts=[writeU32LE(2)]; // version 2
+    rawParts.push(writeVI(inputs.length));
+    for(var i=0;i<inputs.length;i++){
+      var u=inputs[i];
+      var scriptCode=window._p2pkhScript(window.cdBchHash160);
+      var preimage=concat(writeU32LE(2),hashPrevouts,hashSequence,h2b(u.txid).reverse(),writeU32LE(u.vout),writeVI(scriptCode.length),scriptCode,writeU64LE(u.value),writeU32LE(0xffffffff),hashOutputs,writeU32LE(0),writeU32LE(0x41));
+      var sighash=sha256(sha256(preimage));
+      var sig=secp.sign(sighash,priv);
+      var derSig=sig.toDERRawBytes();
+      var sigWithHash=concat(derSig,new Uint8Array([0x41]));
+      var scriptSig=concat(writeVI(sigWithHash.length),sigWithHash,writeVI(pub33.length),pub33);
+      rawParts.push(h2b(u.txid).reverse());
+      rawParts.push(writeU32LE(u.vout));
+      rawParts.push(writeVI(scriptSig.length));
+      rawParts.push(scriptSig);
+      rawParts.push(writeU32LE(0xffffffff));
+    }
+    rawParts.push(writeVI(outputs.length));
+    for(var i=0;i<outputs.length;i++){
+      rawParts.push(writeU64LE(outputs[i].value));
+      rawParts.push(writeVI(outputs[i].script.length));
+      rawParts.push(outputs[i].script);
+    }
+    rawParts.push(writeU32LE(0)); // locktime
+    return b2h(concat.apply(null,rawParts));
+  }
+
+  // Build signed BTC transaction (P2PKH, legacy)
+  function cdBuildSignedBtcTx(inputs, toAddr, amtSats, change){
+    var b2h=window._b2h, h2b=window._h2b, concat=window._concat;
+    var priv=window.cdBtcPriv, pub33=window.cdBtcPub33;
+    var secp=window._secp256k1, sha256=window._sha256, ripemd160=window._ripemd160;
+    function writeU32LE(v){var b=new Uint8Array(4);b[0]=v&0xff;b[1]=(v>>8)&0xff;b[2]=(v>>16)&0xff;b[3]=(v>>24)&0xff;return b;}
+    function writeU64LE(v){var b=new Uint8Array(8);var lo=v&0xffffffff,hi=Math.floor(v/0x100000000);b[0]=lo&0xff;b[1]=(lo>>8)&0xff;b[2]=(lo>>16)&0xff;b[3]=(lo>>24)&0xff;b[4]=hi&0xff;b[5]=(hi>>8)&0xff;b[6]=(hi>>16)&0xff;b[7]=(hi>>24)&0xff;return b;}
+    function writeVI(v){if(v<0xfd)return new Uint8Array([v]);var b=new Uint8Array(3);b[0]=0xfd;b[1]=v&0xff;b[2]=(v>>8)&0xff;return b;}
+    // Decode BTC address (base58check) to hash160
+    function base58Decode(s){
+      var ALPH='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+      var n=BigInt(0);for(var i=0;i<s.length;i++){n=n*58n+BigInt(ALPH.indexOf(s[i]));}
+      var hex=n.toString(16);if(hex.length%2)hex='0'+hex;while(hex.length<50)hex='0'+hex;
+      return h2b(hex.slice(2,42));
+    }
+    var toHash160=base58Decode(toAddr);
+    var toScript=window._p2pkhScript(toHash160);
+    var myHash160=ripemd160(sha256(pub33));
+    var myScript=window._p2pkhScript(myHash160);
+    var outputs=[{value:amtSats,script:toScript}];
+    if(change>=546) outputs.push({value:change,script:window._p2pkhScript(myHash160)});
+    // For each input, sign with legacy sighash
+    var sigParts=[];
+    for(var idx=0;idx<inputs.length;idx++){
+      // Build tx for signing (all inputs' scripts empty except current)
+      var txForSign=[writeU32LE(1)]; // version 1
+      txForSign.push(writeVI(inputs.length));
+      for(var j=0;j<inputs.length;j++){
+        txForSign.push(h2b(inputs[j].txid).reverse());
+        txForSign.push(writeU32LE(inputs[j].vout));
+        if(j===idx){
+          txForSign.push(writeVI(myScript.length));
+          txForSign.push(myScript);
+        } else {
+          txForSign.push(writeVI(0));
+        }
+        txForSign.push(writeU32LE(0xffffffff));
+      }
+      txForSign.push(writeVI(outputs.length));
+      for(var j=0;j<outputs.length;j++){
+        txForSign.push(writeU64LE(outputs[j].value));
+        txForSign.push(writeVI(outputs[j].script.length));
+        txForSign.push(outputs[j].script);
+      }
+      txForSign.push(writeU32LE(0)); // locktime
+      txForSign.push(writeU32LE(1)); // SIGHASH_ALL
+      var preimage=concat.apply(null,txForSign);
+      var sighash=sha256(sha256(preimage));
+      var sig=secp.sign(sighash,priv);
+      var derSig=sig.toDERRawBytes();
+      sigParts.push(concat(derSig,new Uint8Array([0x01]))); // SIGHASH_ALL
+    }
+    // Build final tx
+    var rawParts=[writeU32LE(1)];
+    rawParts.push(writeVI(inputs.length));
+    for(var i=0;i<inputs.length;i++){
+      var scriptSig=concat(writeVI(sigParts[i].length),sigParts[i],writeVI(pub33.length),pub33);
+      rawParts.push(h2b(inputs[i].txid).reverse());
+      rawParts.push(writeU32LE(inputs[i].vout));
+      rawParts.push(writeVI(scriptSig.length));
+      rawParts.push(scriptSig);
+      rawParts.push(writeU32LE(0xffffffff));
+    }
+    rawParts.push(writeVI(outputs.length));
+    for(var i=0;i<outputs.length;i++){
+      rawParts.push(writeU64LE(outputs[i].value));
+      rawParts.push(writeVI(outputs[i].script.length));
+      rawParts.push(outputs[i].script);
+    }
+    rawParts.push(writeU32LE(0));
+    return b2h(concat.apply(null,rawParts));
+  }
+
+  /* ── Receive Modal ── */
+  var _cdRecvMode = 'normal';
+
+  window.cdOpenReceive = function(){
+    if(!_cdCoin) return;
+    var modal = document.getElementById('cd-receive-modal');
+    // Mode toggle: only for BCH; SBCH always stealth
+    var isBch = _cdCoin==='bch';
+    var isSbch = _cdCoin==='sbch';
+    document.getElementById('cd-recv-mode').style.display = isBch ? 'flex' : 'none';
+    if(isSbch){
+      _cdRecvMode = 'stealth';
+      document.getElementById('cd-recv-normal').style.display = 'none';
+      document.getElementById('cd-recv-stealth').style.display = '';
+    } else {
+      _cdRecvMode = 'normal';
+      document.querySelectorAll('#cd-recv-mode .cd-send-mode-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.mode==='normal'); });
+      document.getElementById('cd-recv-normal').style.display = '';
+      document.getElementById('cd-recv-stealth').style.display = 'none';
+    }
+    modal.classList.add('open');
+    if(_cdRecvMode==='stealth') cdRenderReceiveStealth();
+    else cdRenderReceiveInner();
+  };
+
+  window.cdSetRecvMode = function(mode){
+    _cdRecvMode = mode;
+    document.querySelectorAll('#cd-recv-mode .cd-send-mode-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.mode===mode); });
+    document.getElementById('cd-recv-normal').style.display = mode==='normal' ? '' : 'none';
+    document.getElementById('cd-recv-stealth').style.display = mode==='stealth' ? '' : 'none';
+    if(mode==='stealth') cdRenderReceiveStealth();
+    else cdRenderReceiveInner();
+  };
+
+  window.cdCloseReceive = function(){
+    document.getElementById('cd-receive-modal').classList.remove('open');
+  };
+
+  window.cdCopyAddr = function(short){
+    var addr = cdGetAddr();
+    if(short && _cdCoin==='bch') addr = addr.replace('bitcoincash:','');
+    navigator.clipboard.writeText(addr).then(function(){
+      var btns = document.querySelectorAll('#cd-recv-normal .cd-copy-btn');
+      btns.forEach(function(b){ var orig=b.textContent; b.textContent='COPIED ✓'; setTimeout(function(){b.textContent=orig;},1500); });
+    });
+  };
+
+  window.cdCopyStealthCode = function(){
+    var code = cdGetStealthCode();
+    if(!code) return;
+    navigator.clipboard.writeText(code).then(function(){
+      var btns = document.querySelectorAll('#cd-recv-stealth .cd-copy-btn');
+      btns.forEach(function(b){ var orig=b.textContent; b.textContent='COPIED ✓'; setTimeout(function(){b.textContent=orig;},1500); });
+    });
+  };
+
+  function cdGetAddr(){
+    if(_cdCoin==='bch'||_cdCoin==='sbch') return window.cdBchAddr||'';
+    if(_cdCoin==='btc') return window.cdBtcAddr||'';
+    if(_cdCoin==='eth'||_cdCoin==='usdc'||_cdCoin==='usdt') return window.cdEthAddr||'';
+    return '';
+  }
+
+  function cdGetStealthCode(){
+    var scanPub = window.cdStealthScanPub;
+    var spendPub = window.cdStealthSpendPub;
+    if(!scanPub||!spendPub) return '';
+    // scanPub and spendPub are hex strings (33 bytes each = 66 hex chars)
+    var scan = typeof scanPub==='string' ? scanPub : window._b2h(scanPub);
+    var spend = typeof spendPub==='string' ? spendPub : window._b2h(spendPub);
+    return 'stealth:'+scan+spend;
+  }
+
+  function cdRenderReceiveInner(){
+    var meta = COIN_META[_cdCoin];
+    var addr = cdGetAddr();
+    var label = 'YOUR '+meta.ticker+' ADDRESS';
+    var pathInfo = '';
+    if(_cdCoin==='bch') pathInfo="// SAME SEED AS 00 CHAT & 00 MESH<br>// m/44'/145'/0'/0/0";
+    else if(_cdCoin==='btc') pathInfo="// m/44'/145'/0'/3/0";
+    else if(_cdCoin==='eth'||_cdCoin==='usdc'||_cdCoin==='usdt') pathInfo="// m/44'/145'/0'/4/0";
+    document.getElementById('cd-receive-label').textContent = label;
+    document.getElementById('cd-receive-addr').textContent = addr||'—';
+    document.getElementById('cd-path-info').innerHTML = pathInfo;
+    cdRenderQR('cd-qr-canvas', addr, meta.color);
+  }
+
+  function cdRenderReceiveStealth(){
+    var code = cdGetStealthCode();
+    document.getElementById('cd-receive-stealth-code').textContent = code||'—';
+    var meta = COIN_META[_cdCoin];
+    cdRenderQR('cd-qr-canvas-st', code, meta.color);
+  }
+
+  function cdRenderQR(canvasId, data, color, retries){
+    if(retries===undefined) retries=20;
+    try {
+      var canvas = document.getElementById(canvasId);
+      var QR = window._QRCode;
+      if(QR && data){
+        QR.toCanvas(canvas, data, { width:200, margin:1, errorCorrectionLevel:'M', color:{ dark:color, light:'#ffffff' } });
+      } else if(retries>0 && data){
+        setTimeout(function(){ cdRenderQR(canvasId, data, color, retries-1); }, 200);
+      }
+    } catch(e){ console.error('QR error:', e); }
+  }
+})();
+</script>
 
 <div class="phone-wrap">
   <div class="phone">
@@ -236,7 +1712,7 @@
         <button class="auth-btn" onclick="walletImport()">UNLOCK WALLET →</button>
         <div class="auth-divider"></div>
         <button class="auth-btn auth-btn-secondary" onclick="walletGenKey()">⚡ GENERATE NEW KEY</button>
-        <div style="width:100%;text-align:center;color:rgba(0,255,65,.18);font-size:9px;letter-spacing:3px;margin:6px 0">── OR ──</div>
+        <div style="width:100%;text-align:center;color:rgba(var(--accent-rgb),.18);font-size:9px;letter-spacing:3px;margin:6px 0">── OR ──</div>
         <button class="auth-btn" onclick="connectWalletConnect()" style="background:transparent;border-color:rgba(59,130,246,.35);color:#3b82f6">⛓ WALLETCONNECT</button>
         <div class="auth-error" id="wc-error-import"></div>
       </div>
@@ -245,12 +1721,12 @@
     <!-- AUTH UNLOCK -->
     <div id="auth-unlock" style="flex:1;flex-direction:column;align-items:center;justify-content:center;padding:30px 24px;gap:16px">
       <div class="auth-logo">00 WALLET</div>
-      <div style="font-size:10px;color:rgba(0,255,65,.35);letter-spacing:2px">// ENTER PASSWORD</div>
+      <div style="font-size:10px;color:rgba(var(--accent-rgb),.35);letter-spacing:2px">// ENTER PASSWORD</div>
       <input class="auth-input" id="unlock-pass" type="password" placeholder="password..." onkeydown="if(event.key==='Enter')walletUnlock()">
       <div class="auth-error" id="unlock-error"></div>
       <button class="auth-btn" onclick="walletUnlock()">UNLOCK →</button>
       <button class="auth-btn auth-btn-secondary" onclick="showWalletImport()">← IMPORT NEW KEY</button>
-      <div style="width:100%;text-align:center;color:rgba(0,255,65,.18);font-size:9px;letter-spacing:3px;margin:2px 0">── OR ──</div>
+      <div style="width:100%;text-align:center;color:rgba(var(--accent-rgb),.18);font-size:9px;letter-spacing:3px;margin:2px 0">── OR ──</div>
       <button class="auth-btn" id="ledger-wallet-btn" onclick="connectLedgerWallet()" style="background:transparent;border-color:rgba(0,212,255,.35);color:#00d4ff">🔑 CONNECT LEDGER</button>
       <div class="auth-error" id="ledger-wallet-err"></div>
       <button class="auth-btn" id="wc-btn" onclick="connectWalletConnect()" style="background:transparent;border-color:rgba(59,130,246,.35);color:#3b82f6">⛓ WALLETCONNECT</button>
@@ -261,20 +1737,33 @@
     <div id="main-view" style="display:none;flex-direction:column;flex:1">
       <div class="status-bar">
         <span id="phone-clock">00:00</span>
-        <div style="font-size:9px;letter-spacing:1px;color:rgba(0,255,65,.4)" id="wallet-status-top">00 WALLET ●</div>
+        <div style="font-size:9px;letter-spacing:1px;color:rgba(var(--accent-rgb),.4)" id="wallet-status-top">00 WALLET ●</div>
       </div>
       <div class="app-header">
-        <div class="app-title">00 WALLET<span>// BCH SELF-CUSTODY</span></div>
+        <div class="app-title">00 WALLET<span id="wallet-subtitle">// BCH SELF-CUSTODY</span></div>
         <div class="header-icon" onclick="refreshBalance()" title="Refresh" id="refresh-icon">↻</div>
       </div>
-      <div class="fulcrum-bar">
+      <div class="fulcrum-bar" id="bch-bar">
         <div class="fulcrum-dot" id="fulcrum-dot"></div>
         <span id="fulcrum-label">CONNECTING FULCRUM...</span>
         <span style="margin-left:auto;opacity:.5" id="fulcrum-server"></span>
       </div>
+      <div class="fulcrum-bar" id="btc-bar" style="display:none">
+        <div class="fulcrum-dot" id="btc-dot"></div>
+        <span id="btc-label">BTC: connecting...</span>
+      </div>
+      <div class="fulcrum-bar" id="eth-bar" style="display:none">
+        <div class="fulcrum-dot" id="eth-dot"></div>
+        <span id="eth-label">ETH: connecting...</span>
+      </div>
       <div class="nostr-bar" id="nostr-bar" style="display:none">
         <div class="nostr-dot" id="nostr-dot"></div>
         <span id="nostr-label">NOSTR: connecting...</span>
+      </div>
+      <div class="chain-sel" id="chain-selector">
+        <div class="chain-btn active" data-chain="bch" onclick="selectChain('bch')">BCH</div>
+        <div class="chain-btn" data-chain="btc" onclick="selectChain('btc')">BTC</div>
+        <div class="chain-btn" data-chain="eth" onclick="selectChain('eth')">ETH</div>
       </div>
       <div class="tabs">
         <div class="tab active" id="tab-wallet" onclick="switchTab('wallet')">WALLET</div>
@@ -294,7 +1783,7 @@
         <div class="balance-hero" id="balance-hero">
           <div style="display:flex;align-items:baseline">
             <div class="balance-amount" id="bal-bch">0.00000000</div>
-            <div class="balance-unit">BCH</div>
+            <div class="balance-unit" id="bal-unit">BCH</div>
           </div>
           <div class="balance-sats" id="bal-sats">0 sats</div>
           <div class="balance-unconf" id="bal-unconf" style="display:none">⏳ UNCONFIRMED PENDING</div>
@@ -336,7 +1825,7 @@
           <div>
             <div class="cc-header" onclick="toggleCoinControl()">
               <div class="form-lbl" style="margin:0">COIN CONTROL</div>
-              <span id="cc-icon" style="font-size:9px;color:rgba(0,255,65,.4)">▾</span>
+              <span id="cc-icon" style="font-size:9px;color:rgba(var(--accent-rgb),.4)">▾</span>
               <span class="cc-badge" id="cc-badge">AUTO</span>
             </div>
             <div class="cc-panel" id="cc-panel">
@@ -354,7 +1843,7 @@
       <!-- RECEIVE TAB -->
       <div class="tab-pane" id="pane-receive">
         <div class="receive-wrap">
-          <div style="font-size:9px;color:rgba(0,255,65,.4);letter-spacing:2px">YOUR BCH ADDRESS</div>
+          <div style="font-size:9px;color:rgba(var(--accent-rgb),.4);letter-spacing:2px" id="receive-chain-label">YOUR BCH ADDRESS</div>
           <div class="qr-canvas-wrap">
             <canvas id="qr-canvas" width="180" height="180"></canvas>
           </div>
@@ -363,7 +1852,7 @@
             <button class="copy-btn" onclick="copyAddr(false)">COPY FULL</button>
             <button class="copy-btn" onclick="copyAddr(true)">COPY SHORT</button>
           </div>
-          <div style="font-size:9px;color:rgba(0,255,65,.25);letter-spacing:1px;text-align:center;line-height:1.8">
+          <div style="font-size:9px;color:rgba(var(--accent-rgb),.25);letter-spacing:1px;text-align:center;line-height:1.8" id="receive-path-info">
             // SAME SEED AS 00 CHAT & 00 MESH<br>// m/44'/145'/0'/0/0
           </div>
         </div>
@@ -387,22 +1876,22 @@
         <div class="stealth-section">
           <div class="stealth-section-title">MY STEALTH CODE</div>
           <div class="stealth-code-box" id="stealth-code" onclick="copyStealthCode()" title="Click to copy">// UNLOCK WALLET...</div>
-          <div style="font-size:8px;color:rgba(0,255,65,.2);margin-top:6px;letter-spacing:1px">// CLICK TO COPY · SHARE TO RECEIVE STEALTH PAYMENTS</div>
+          <div style="font-size:8px;color:rgba(var(--accent-rgb),.2);margin-top:6px;letter-spacing:1px">// CLICK TO COPY · SHARE TO RECEIVE STEALTH PAYMENTS</div>
         </div>
-        <div class="stealth-section" style="border-top:1px solid rgba(0,255,65,.06)">
+        <div class="stealth-section" style="border-top:1px solid rgba(var(--accent-rgb),.06)">
           <div class="stealth-section-title">SEND STEALTH</div>
           <div style="margin-bottom:8px">
             <div class="form-lbl">RECIPIENT STEALTH CODE</div>
             <input class="form-input" id="stealth-send-code" placeholder="stealth:02abc...">
           </div>
           <div style="margin-bottom:8px">
-            <div class="form-lbl">AMOUNT (BCH)</div>
+            <div class="form-lbl">AMOUNT (BCH) <span style="float:right;cursor:pointer;color:var(--green);font-size:10px;letter-spacing:1px" onclick="stealthMax()">[ MAX ]</span></div>
             <input class="form-input" id="stealth-send-amount" type="number" step="0.00000001" min="0" placeholder="0.00000000">
           </div>
           <div id="stealth-send-error" class="send-error"></div>
           <button class="broadcast-btn" id="stealth-send-btn" onclick="sendStealth()">STEALTH SEND →</button>
         </div>
-        <div class="stealth-section" style="border-top:1px solid rgba(0,255,65,.06)">
+        <div class="stealth-section" style="border-top:1px solid rgba(var(--accent-rgb),.06)">
           <div class="stealth-section-title">RECEIVED <span id="stealth-rx-count">0</span></div>
           <div id="stealth-rx-list">
             <div class="empty-state" style="padding:16px">// NO STEALTH PAYMENTS RECEIVED YET</div>
@@ -416,7 +1905,7 @@
     <div class="success-overlay" id="success-overlay">
       <div class="success-icon">✓</div>
       <div class="success-title">// TX BROADCAST</div>
-      <div style="font-size:9px;color:rgba(0,255,65,.4);letter-spacing:1px">TRANSACTION ID</div>
+      <div style="font-size:9px;color:rgba(var(--accent-rgb),.4);letter-spacing:1px">TRANSACTION ID</div>
       <div class="success-txid" id="success-txid"></div>
       <button class="auth-btn" onclick="closeSendSuccess()">← BACK TO WALLET</button>
     </div>
@@ -432,6 +1921,7 @@
   </div>
 </div>
 
+<script>if(sessionStorage.getItem('00_gate')!=='1'){window.location.href='/';}</script>
 <script src="ledger.js"></script>
 <script>
 (function() {
@@ -460,9 +1950,12 @@ import { hmac }       from 'https://esm.sh/@noble/hashes@1.7.1/hmac';
 import { sha256 }     from 'https://esm.sh/@noble/hashes@1.7.1/sha256';
 import { sha512 }     from 'https://esm.sh/@noble/hashes@1.7.1/sha512';
 import { ripemd160 }  from 'https://esm.sh/@noble/hashes@1.7.1/ripemd160';
+import { keccak_256 } from 'https://esm.sh/@noble/hashes@1.7.1/sha3';
 import QRCode         from 'https://esm.sh/qrcode@1.5.4';
 
 // ── Utils ──────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const $q = sel => document.querySelector(sel);
 const b2h = b => Array.from(b).map(x => x.toString(16).padStart(2,'0')).join('');
 const h2b = h => new Uint8Array(h.match(/.{2}/g).map(b => parseInt(b,16)));
 const concat = (...a) => { const t = new Uint8Array(a.reduce((s,x)=>s+x.length,0)); let o=0; for(const x of a){t.set(x,o);o+=x.length;} return t; };
@@ -689,6 +2182,54 @@ function privToBchAddr(priv32) {
   const pub = secp256k1.getPublicKey(priv32, true);
   return pubHashToCashAddr(Array.from(ripemd160(sha256(pub))));
 }
+
+// ── Base58Check (BTC) ─────────────────────────────
+const B58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+function base58Check(payload) {
+  const input = concat(payload, dsha256(payload).slice(0, 4));
+  let n = BigInt('0x' + b2h(input));
+  let str = '';
+  while (n > 0n) { str = B58_ALPHABET[Number(n % 58n)] + str; n = n / 58n; }
+  for (const b of input) { if (b === 0) str = '1' + str; else break; }
+  return str;
+}
+function base58Decode(str) {
+  let n = 0n;
+  for (const c of str) {
+    const idx = B58_ALPHABET.indexOf(c);
+    if (idx === -1) throw new Error('bad base58 char');
+    n = n * 58n + BigInt(idx);
+  }
+  const hex = n.toString(16).padStart(50, '0');
+  const bytes = h2b(hex);
+  const payload = bytes.slice(0, 21);
+  const checksum = bytes.slice(21, 25);
+  const expected = dsha256(payload).slice(0, 4);
+  if (b2h(checksum) !== b2h(expected)) throw new Error('bad checksum');
+  return payload.slice(1, 21);
+}
+function btcP2pkhAddr(pubkey33) {
+  const hash = ripemd160(sha256(pubkey33));
+  return base58Check(concat(new Uint8Array([0x00]), hash));
+}
+function btcAddrScriptHash(addr) {
+  const h = base58Decode(addr);
+  const script = p2pkhScript(h);
+  return b2h(sha256(script).reverse());
+}
+
+// ── ETH Address (EIP-55 checksum) ─────────────────
+function ethAddr(pubkey33) {
+  const uncompressed = secp256k1.ProjectivePoint.fromHex(pubkey33).toRawBytes(false).slice(1);
+  const hash = keccak_256(uncompressed);
+  const raw = hash.slice(12);
+  const hexLower = b2h(raw);
+  const hashHex = b2h(keccak_256(utf8(hexLower)));
+  let cs = '0x';
+  for (let i = 0; i < 40; i++) cs += parseInt(hashHex[i], 16) >= 8 ? hexLower[i].toUpperCase() : hexLower[i];
+  return cs;
+}
+
 // BIP32 unhardened child derivation (for xpub scanning)
 function bip32Child(parentPub, parentChain, index) {
   const idxB = new Uint8Array([index >>> 24, (index >>> 16) & 0xff, (index >>> 8) & 0xff, index & 0xff]);
@@ -837,6 +2378,9 @@ function parseTxHex(hex) {
     const rVI = () => { const f = b[p++]; if(f<0xfd)return f; if(f===0xfd)return rLE(2); if(f===0xfe)return rLE(4); return rLE(8); };
     const rLE8 = () => { let lo = rLE(4), hi = rLE(4); return hi * 0x100000000 + lo; };
     rLE(4); // version
+    // SegWit detection: marker 0x00 + flag after version
+    let isSegwit = false;
+    if (b[p] === 0x00) { p++; const flag = b[p++]; isSegwit = (flag !== 0); }
     const inCount = rVI();
     for (let i=0;i<inCount;i++) { rB(32); rLE(4); rB(rVI()); rLE(4); }
     const outCount = rVI();
@@ -846,6 +2390,7 @@ function parseTxHex(hex) {
       const script = b2h(rB(rVI()));
       outputs.push({ value, script });
     }
+    if (isSegwit) { for (let i=0;i<inCount;i++) { const wc=rVI(); for(let j=0;j<wc;j++) rB(rVI()); } }
     return outputs;
   } catch { return null; }
 }
@@ -857,6 +2402,17 @@ let _ledgerDevice = null, _ledgerAddresses = [], _ledgerChangePath = null, _ledg
 let _hdAddresses = []; // [{priv, pubKey, addr, path}] — scanned HD addresses for software wallets
 let _hdChangePriv = null, _hdChangeHash160 = null; // change address for HD software wallets
 let _utxos = [], _history = [], _balance = 0, _feeRate = 1.0;
+
+// ── Multi-Chain State ────────────────────────────
+let _activeChain = 'bch'; // 'bch' | 'btc' | 'eth'
+// BTC
+let _btcPriv = null, _btcPub33 = null, _btcAddr = '';
+let _btcBalance = 0, _btcUtxos = [];
+let _btcWs = null, _btcConnected = false, _btcReqId = 1, _btcCbs = {};
+const _btcIdxRef = { v: 0 };
+// ETH
+let _ethPriv = null, _ethAddr = '';
+let _ethBalance = '0'; // wei string
 
 // ── Stealth State ─────────────────────────────────
 let _stealthScanPriv = null, _stealthScanPub = null;
@@ -1066,6 +2622,13 @@ function _registerStealthAddresses() {
 }
 
 // ── Stealth Send ──────────────────────────────────
+function stealthMax() {
+  const total = _utxos.reduce((s, u) => s + u.value, 0);
+  const fee = Math.ceil(estimateTxSize(_utxos.length, 1) * _feeRate);
+  const max = Math.max(0, total - fee);
+  document.getElementById('stealth-send-amount').value = (max / 1e8).toFixed(8);
+}
+
 async function sendStealth() {
   if (_sendInProgress) return;
   const codeRaw = document.getElementById('stealth-send-code').value.trim().replace(/^stealth:/i, '');
@@ -1228,13 +2791,16 @@ function renderStealth() {
     list.innerHTML = '<div class="empty-state" style="padding:16px">// NO STEALTH PAYMENTS RECEIVED YET</div>';
     return;
   }
-  list.innerHTML = _stealthUtxos.map(u => `
-    <div class="stealth-rx-item">
-      <span class="stealth-rx-from" title="${u.addr}">${u.txid.slice(0, 8)}...${u.txid.slice(-6)}</span>
-      <span class="stealth-rx-val">${(u.value / 1e8).toFixed(8)}</span>
-      <span class="stealth-rx-status unspent">UTXO</span>
-    </div>
-  `).join('');
+  list.innerHTML = _stealthUtxos.map(u => {
+    const label = u.txid ? `${u.txid.slice(0, 8)}...${u.txid.slice(-6)}` : u.addr.replace('bitcoincash:','').slice(0, 12) + '…';
+    const valStr = u.value ? (u.value / 1e8).toFixed(8) : '—';
+    const src = u.from === 'fusion' ? '<span style="font-size:7px;color:#a855f7;margin-left:4px">FUSION</span>' : '';
+    return `<div class="stealth-rx-item">
+      <span class="stealth-rx-from" title="${u.addr}">${label}${src}</span>
+      <span class="stealth-rx-val">${valStr}</span>
+      <span class="stealth-rx-status unspent">STEALTH</span>
+    </div>`;
+  }).join('');
 }
 function copyStealthCode() {
   const code = document.getElementById('stealth-code').textContent;
@@ -1247,8 +2813,133 @@ function copyStealthCode() {
   }
 }
 
+// ── BTC Electrum Connection ───────────────────────
+const _BTC_SERVERS = (window._00ep?.btc_electrum) || JSON.parse(localStorage.getItem('00_ep_btc_electrum') || 'null') || ['wss://e2.keff.org:50004','wss://fulcrum.grey.pw:50004','wss://btc.electroncash.dk:50004','wss://electrum.petrkr.net:50004','wss://bitcoinserver.nl:50004','wss://mempool.8333.mobi:50004'];
+
+function _btcConnectWithFallback(attempt) {
+  attempt = attempt || 0;
+  if (!_BTC_SERVERS.length || attempt >= _BTC_SERVERS.length) {
+    const d = $('btc-dot'); if (d) { d.classList.remove('on'); d.classList.add('err'); }
+    const l = $('btc-label'); if (l) l.textContent = 'BTC: all servers failed';
+    setTimeout(() => _btcConnectWithFallback(0), 8000);
+    return;
+  }
+  const idx = (_btcIdxRef.v + attempt) % _BTC_SERVERS.length;
+  const url = _BTC_SERVERS[idx];
+  const l = $('btc-label'); if (l) l.textContent = 'BTC: ' + (attempt > 0 ? '(' + (attempt+1) + '/' + _BTC_SERVERS.length + ') ' : '') + 'connecting...';
+  const d = $('btc-dot'); if (d) d.classList.remove('on', 'err');
+  let done = false;
+  const tryNext = () => { if (done) return; done = true; _btcConnectWithFallback(attempt + 1); };
+  try {
+    const ws = new WebSocket(url);
+    const timeout = setTimeout(() => { try { ws.close(); } catch {} }, 6000);
+    ws.onopen = () => {
+      clearTimeout(timeout); done = true; ws._opened = true;
+      _btcIdxRef.v = idx; _btcWs = ws; _btcConnected = true;
+      if (d) { d.classList.add('on'); d.classList.remove('err'); }
+      if (l) l.textContent = 'BTC: ' + new URL(url).hostname;
+      _refreshBtcBalance().then(() => _loadBtcHistory());
+    };
+    ws.onmessage = e => {
+      try { const msg = JSON.parse(e.data); if (msg.id && _btcCbs[msg.id]) { _btcCbs[msg.id](msg.result, msg.error); delete _btcCbs[msg.id]; } } catch {}
+    };
+    ws.onerror = () => clearTimeout(timeout);
+    ws.onclose = () => {
+      clearTimeout(timeout);
+      if (!ws._opened) { tryNext(); }
+      else { _btcConnected = false; if (d) d.classList.remove('on'); if (l) l.textContent = 'BTC: disconnected'; setTimeout(() => _btcConnectWithFallback(0), 3000); }
+    };
+  } catch { tryNext(); }
+}
+
+function _btcCall(method, params) {
+  return new Promise((resolve, reject) => {
+    const id = _btcReqId++;
+    _btcCbs[id] = (result, err) => err ? reject(err) : resolve(result);
+    _btcWs.send(JSON.stringify({ jsonrpc: '2.0', id, method, params }));
+  });
+}
+
+async function _refreshBtcBalance() {
+  if (!_btcConnected || !_btcAddr) return;
+  try {
+    const sh = btcAddrScriptHash(_btcAddr);
+    const utxos = await _btcCall('blockchain.scripthash.listunspent', [sh]);
+    _btcUtxos = utxos.map(u => ({ txid: u.tx_hash, vout: u.tx_pos, value: u.value }));
+    _btcBalance = _btcUtxos.reduce((s, u) => s + u.value, 0);
+    if (_activeChain === 'btc') renderChainBalance();
+    try { localStorage.setItem('00_balances', JSON.stringify({ bch: _balance, btc: _btcBalance, eth: _ethBalance, ts: Date.now() })); } catch(e){}
+  } catch (e) { console.error('[WALLET] BTC balance:', e); }
+}
+
+async function _loadBtcHistory() {
+  if (!_btcConnected || !_btcAddr) return;
+  try {
+    const sh = btcAddrScriptHash(_btcAddr);
+    const hist = await _btcCall('blockchain.scripthash.get_history', [sh]);
+    if (!hist || !hist.length) return;
+    const btcHash160 = ripemd160(sha256(_btcPub33));
+    const btcScript = b2h(p2pkhScript(btcHash160));
+    const btcTxs = [];
+    for (const h of hist.slice(0, 20)) {
+      try {
+        const hex = await _btcCall('blockchain.transaction.get', [h.tx_hash]);
+        if (!hex) continue;
+        const outputs = parseTxHex(hex);
+        if (!outputs) continue;
+        const myOut = outputs.filter(o => o.script === btcScript);
+        const myVal = myOut.reduce((s, o) => s + o.value, 0);
+        const dir = myVal > 0 ? 'in' : 'out';
+        btcTxs.push({ txid: h.tx_hash, chain: 'btc', dir, amount: myVal, height: h.height || 0, timestamp: Math.floor(Date.now() / 1000) });
+      } catch {}
+    }
+    if (btcTxs.length) {
+      let existing = [];
+      try { existing = JSON.parse(localStorage.getItem('00_tx_history') || '[]'); } catch {}
+      const nonBtc = existing.filter(tx => tx.chain !== 'btc');
+      const merged = nonBtc.concat(btcTxs);
+      try { localStorage.setItem('00_tx_history', JSON.stringify(merged)); } catch {}
+      if (window.cdRefreshTx) window.cdRefreshTx();
+    }
+  } catch (e) { console.error('[WALLET] BTC history:', e); }
+}
+
+// ── ETH RPC ──────────────────────────────────────
+async function _ethCall(method, params = []) {
+  const rpc = window._00ep?.eth_rpc || 'https://ethereum-rpc.publicnode.com';
+  const res = await fetch(rpc, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+  });
+  const j = await res.json();
+  if (j.error) throw new Error(j.error.message);
+  return j.result;
+}
+
+async function _refreshEthBalance() {
+  if (!_ethAddr) return;
+  try {
+    const hex = await _ethCall('eth_getBalance', [_ethAddr, 'latest']);
+    _ethBalance = BigInt(hex).toString();
+    if (_activeChain === 'eth') renderChainBalance();
+    try { localStorage.setItem('00_balances', JSON.stringify({ bch: _balance, btc: _btcBalance, eth: _ethBalance, ts: Date.now() })); } catch(e){}
+    const d = $('eth-dot'); if (d) d.classList.add('on');
+    const l = $('eth-label'); if (l) l.textContent = 'ETH: ' + new URL(window._00ep?.eth_rpc || 'https://ethereum-rpc.publicnode.com').hostname;
+  } catch (e) {
+    console.error('[WALLET] ETH balance:', e);
+    const d = $('eth-dot'); if (d) { d.classList.remove('on'); d.classList.add('err'); }
+    const l = $('eth-label'); if (l) l.textContent = 'ETH: error';
+  }
+}
+
 // ── Refresh Balance ────────────────────────────────
+let _refreshing = false;
 async function refreshBalance() {
+  if (_refreshing) return;
+  _refreshing = true;
+  // Re-load stealth UTXOs (fusion may have added new ones in another tab)
+  _loadStealthUtxos();
+  _registerStealthAddresses();
   const btn = document.getElementById('refresh-btn');
   const icon = document.getElementById('refresh-icon');
   if (btn) btn.classList.add('spinning');
@@ -1288,29 +2979,59 @@ async function refreshBalance() {
   } catch(e) {
     _fulcrumStatus('ERROR: ' + e.message, false);
   } finally {
+    _refreshing = false;
     if (btn) btn.classList.remove('spinning');
     if (icon) icon.style.animation = '';
   }
+  // Multi-chain refresh
+  if (_btcConnected) _refreshBtcBalance().then(() => _loadBtcHistory());
+  if (_ethAddr) _refreshEthBalance();
+  renderChainBalance();
+  // Persist balances for desktop dashboard
+  try { localStorage.setItem('00_balances', JSON.stringify({ bch: _balance, btc: _btcBalance, eth: _ethBalance, ts: Date.now() })); } catch(e){}
+}
+
+function _utxoTimeLabel(u, stealthMatch) {
+  if (u.height <= 0) return 'JUST NOW';
+  // Stealth UTXO with timestamp
+  if (stealthMatch && stealthMatch.ts) {
+    const d = new Date(stealthMatch.ts * 1000);
+    return d.toLocaleDateString(undefined, {day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString(undefined, {hour:'2-digit',minute:'2-digit'});
+  }
+  // Estimate time from block height (~10 min/block, BCH tip ~890000)
+  return 'BLOCK ' + u.height.toLocaleString();
 }
 
 function renderUTXOs() {
   const list = document.getElementById('utxo-list');
   if (!_utxos.length) { list.innerHTML = ''; return; }
-  list.innerHTML = _utxos.map(u => {
-    const addrShort = u._addr ? u._addr.replace('bitcoincash:','').slice(0,8) + '…' : '';
-    const pathLabel = u._path ? `m/…/${u._path[3]?1:0}/${u._path[4]}` : '';
-    const addrInfo  = addrShort || pathLabel ? `<div style="font-size:8px;color:rgba(0,255,65,.35);margin-top:1px">${addrShort}${pathLabel}</div>` : '';
-    const isStealth = _stealthUtxos.some(s => s.txid === u.txid && s.vout === u.vout);
-    const confLabel = isStealth ? '<span class="utxo-conf stealth">STEALTH</span>' :
-      `<span class="utxo-conf ${u.height > 0 ? 'conf' : 'unconf'}">${u.height > 0 ? u.height : 'UNCONF'}</span>`;
+  // Sort: unconfirmed first, then by height descending (most recent on top)
+  const sorted = [..._utxos].sort((a, b) => {
+    if (a.height <= 0 && b.height > 0) return -1;
+    if (a.height > 0 && b.height <= 0) return 1;
+    if (a.height <= 0 && b.height <= 0) return b.value - a.value;
+    return b.height - a.height;
+  });
+  list.innerHTML = sorted.map(u => {
+    const stealthMatch = _stealthUtxos.find(s => (s.txid && s.txid === u.txid && s.vout === u.vout) || (s.addr && s.addr === u._addr));
+    const isStealth = !!stealthMatch;
+    const isFusion = isStealth && stealthMatch.from === 'fusion';
+    const badge = isStealth
+      ? `<span class="utxo-conf stealth">STEALTH</span>`
+      : u.height > 0
+        ? `<span class="utxo-conf conf">CONFIRMED</span>`
+        : `<span class="utxo-conf unconf">PENDING</span>`;
+    const fusionTag = isFusion ? '<span style="font-size:7px;color:#a855f7;margin-left:2px">FUSION</span>' : '';
+    const timeLabel = _utxoTimeLabel(u, stealthMatch);
+    const txShort = u.txid.slice(0, 8) + '…' + u.txid.slice(-4);
     return `<div class="utxo-item">
-      <div>
-        <div class="utxo-txid">${u.txid.slice(0,12)}...${u.txid.slice(-8)}:${u.vout}</div>
-        ${addrInfo}
+      <div class="utxo-left">
+        <div class="utxo-val">${(u.value/1e8).toFixed(8)} BCH</div>
+        <div class="utxo-meta"><span>${txShort}:${u.vout}</span>${fusionTag}</div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div class="utxo-val">${(u.value/1e8).toFixed(8)}</div>
-        ${confLabel}
+      <div class="utxo-right">
+        ${badge}
+        <div class="utxo-time">${timeLabel}</div>
       </div>
     </div>`;
   }).join('');
@@ -1400,10 +3121,13 @@ async function renderHistory() {
   // Render basic view first, then enrich with tx data
   list.innerHTML = _history.map(h => {
     const isFusion = fusionTxids.has(h.tx_hash);
+    const stealthAddrs = new Set(_stealthUtxos.map(s => s.addr));
+    const isStealthTx = _history.length && _stealthUtxos.some(s => s.txid === h.tx_hash);
     const fusionTag = isFusion ? '<span style="font-size:8px;color:#a855f7;border:1px solid rgba(168,85,247,.35);border-radius:3px;padding:1px 5px;margin-left:6px">FUSION</span>' : '';
+    const stealthTag = isStealthTx ? '<span style="font-size:8px;color:#bf5af2;border:1px solid rgba(191,90,242,.35);border-radius:3px;padding:1px 5px;margin-left:6px">STEALTH</span>' : '';
     return `<div class="tx-item" onclick="openExplorer('${h.tx_hash}')">
       <div class="tx-top">
-        <span class="tx-dir unknown" id="txdir-${h.tx_hash.slice(0,8)}">— TX</span>${fusionTag}
+        <span class="tx-dir unknown" id="txdir-${h.tx_hash.slice(0,8)}">— TX</span>${fusionTag}${stealthTag}
         <span class="tx-height">${h.height > 0 ? '⬛ ' + h.height : '<span class="tx-unconf">UNCONFIRMED</span>'}</span>
       </div>
       <div class="tx-hash">${h.tx_hash.slice(0,16)}...${h.tx_hash.slice(-8)}</div>
@@ -1412,6 +3136,7 @@ async function renderHistory() {
   }).join('');
 
   // Async enrich with amounts
+  const _txPersist = [];
   for (const h of _history.slice(0, 10)) {
     const key = h.tx_hash.slice(0,8);
     try {
@@ -1430,17 +3155,34 @@ async function renderHistory() {
       // Check if tx is fusion, received, or sent
       const isMyOutput = myVal > 0;
       const isFusionTx = fusionTxids.has(h.tx_hash);
+      const isStealthTx = _stealthUtxos.some(s => s.txid === h.tx_hash);
+      let txDir = 'out';
       if (isFusionTx) {
+        txDir = 'fusion';
         if (dirEl) { dirEl.textContent = '↓ MIXED'; dirEl.className = 'tx-dir fusion'; dirEl.style.color = '#a855f7'; }
         if (amtEl) amtEl.textContent = myVal > 0 ? '+' + (myVal/1e8).toFixed(8) + ' BCH' : '';
+      } else if (isStealthTx) {
+        txDir = 'stealth';
+        if (dirEl) { dirEl.textContent = '↓ STEALTH'; dirEl.className = 'tx-dir stealth'; dirEl.style.color = '#bf5af2'; }
+        if (amtEl) amtEl.textContent = myVal > 0 ? '+' + (myVal/1e8).toFixed(8) + ' BCH' : '';
       } else if (isMyOutput) {
+        txDir = 'in';
         if (dirEl) { dirEl.textContent = '↓ RECEIVED'; dirEl.className = 'tx-dir in'; }
         if (amtEl) amtEl.textContent = '+' + (myVal/1e8).toFixed(8) + ' BCH';
       } else {
         if (dirEl) { dirEl.textContent = '↑ SENT'; dirEl.className = 'tx-dir out'; }
         if (amtEl) amtEl.textContent = '';
       }
+      _txPersist.push({ txid: h.tx_hash, chain: 'bch', dir: txDir, amount: myVal, height: h.height || 0, ts: Date.now() });
     } catch {}
+  }
+  // Persist enriched tx history for dashboard
+  if (_txPersist.length) {
+    let existing = [];
+    try { existing = JSON.parse(localStorage.getItem('00_tx_history') || '[]'); } catch {}
+    const nonBch = existing.filter(tx => tx.chain !== 'bch');
+    const merged = nonBch.concat(_txPersist);
+    try { localStorage.setItem('00_tx_history', JSON.stringify(merged)); } catch(e){}
   }
 }
 
@@ -1479,13 +3221,13 @@ function toggleCoinControl() {
 function _renderCcList() {
   const list = document.getElementById('cc-list');
   if (!list) return;
-  if (!_utxos.length) { list.innerHTML = '<div style="padding:12px 14px;font-size:10px;color:rgba(0,255,65,.3)">// no UTXOs loaded — refresh first</div>'; return; }
+  if (!_utxos.length) { list.innerHTML = '<div style="padding:12px 14px;font-size:10px;color:rgba(var(--accent-rgb),.3)">// no UTXOs loaded — refresh first</div>'; return; }
   list.innerHTML = _utxos.map(u => {
     const id  = _ccId(u);
     const sel = _ccSel.has(id);
     const addrShort = u._addr ? u._addr.replace('bitcoincash:','').slice(0,8) + '…' + u._addr.slice(-6) : '';
     const pathLabel = u._path ? `m/…/${u._path[3] ? 1 : 0}/${u._path[4]}` : '';
-    const isStealth = _stealthUtxos.some(s => s.txid === u.txid && s.vout === u.vout);
+    const isStealth = _stealthUtxos.some(s => (s.txid && s.txid === u.txid && s.vout === u.vout) || (s.addr && s.addr === u._addr));
     const ccConf = isStealth ? '<div class="cc-conf utxo-conf stealth">STEALTH</div>' :
       `<div class="cc-conf ${u.height > 0 ? 'conf utxo-conf' : 'unconf utxo-conf'}">${u.height > 0 ? '✓ conf' : 'unconf'}</div>`;
     return `<div class="cc-utxo${sel ? ' sel' : ''}" onclick="_ccToggle('${id}')">
@@ -1550,7 +3292,10 @@ function updateSendSummary() {
   const pool = ccUtxos || _utxos;
   const poolBal = pool.reduce((s,u) => s+u.value, 0);
   const nIn = ccUtxos ? ccUtxos.length : (pool.length > 0 ? Math.min(pool.length, Math.ceil(amtSats / ((poolBal || 1) / pool.length))) : 1);
-  const feeSats = Math.ceil(estimateTxSize(nIn, 2) * _feeRate);
+  const feeNoChange = Math.ceil(estimateTxSize(nIn, 1) * _feeRate);
+  const isMax = amtSats >= poolBal - feeNoChange;
+  const nOut = isMax ? 1 : 2;
+  const feeSats = Math.ceil(estimateTxSize(nIn, nOut) * _feeRate);
   const total = amtSats + feeSats;
   const ccLabel = ccUtxos ? `<br>INPUTS&nbsp;&nbsp;&nbsp;&nbsp; <span>${ccUtxos.length} UTXO${ccUtxos.length > 1 ? 'S' : ''}</span>` : '';
   summary.style.display = 'block';
@@ -1593,8 +3338,8 @@ async function sendBCH() {
   if (ccUtxos) {
     selected = ccUtxos;
     total = selected.reduce((s,u) => s+u.value, 0);
-    const fee = Math.ceil(estimateTxSize(selected.length, 2) * _feeRate);
-    if (total < amtSats + fee) { errEl.textContent = `// selected UTXOs insufficient (${(total/1e8).toFixed(8)} BCH) — add more or reduce amount`; return; }
+    const feeCheck = Math.ceil(estimateTxSize(selected.length, 1) * _feeRate);
+    if (total < amtSats + feeCheck) { errEl.textContent = `// selected UTXOs insufficient (${(total/1e8).toFixed(8)} BCH) — add more or reduce amount`; return; }
   } else {
     const sorted = [..._utxos].sort((a,b) => b.value - a.value);
     selected = []; total = 0;
@@ -1604,7 +3349,10 @@ async function sendBCH() {
       if (total >= amtSats + fee) break;
     }
   }
-  const fee = Math.ceil(estimateTxSize(selected.length, 2) * _feeRate);
+  const feeNoChg = Math.ceil(estimateTxSize(selected.length, 1) * _feeRate);
+  const fee2Out  = Math.ceil(estimateTxSize(selected.length, 2) * _feeRate);
+  const changeWith2 = total - amtSats - fee2Out;
+  const fee = changeWith2 >= 546 ? fee2Out : feeNoChg;
   if (total < amtSats + fee) { errEl.textContent = '// insufficient balance (need ' + ((amtSats+fee)/1e8).toFixed(8) + ' BCH)'; return; }
 
   const btn = document.getElementById('broadcast-btn');
@@ -1702,23 +3450,112 @@ function closeSendSuccess() {
 
 // ── Receive ────────────────────────────────────────
 async function renderReceive() {
-  document.getElementById('receive-addr').textContent = _bchAddr;
+  let addr, label, pathInfo;
+  if (_activeChain === 'btc') {
+    addr = _btcAddr; label = 'YOUR BTC ADDRESS'; pathInfo = "// m/44'/145'/0'/3/0";
+  } else if (_activeChain === 'eth') {
+    addr = _ethAddr; label = 'YOUR ETH ADDRESS'; pathInfo = "// m/44'/145'/0'/4/0";
+  } else {
+    addr = _bchAddr; label = 'YOUR BCH ADDRESS'; pathInfo = "// SAME SEED AS 00 CHAT & 00 MESH<br>// m/44'/145'/0'/0/0";
+  }
+  const lbl = $('receive-chain-label'); if (lbl) lbl.textContent = label;
+  const addrEl = $('receive-addr'); if (addrEl) addrEl.textContent = addr || '—';
+  const pi = $('receive-path-info'); if (pi) pi.innerHTML = pathInfo;
   try {
-    const canvas = document.getElementById('qr-canvas');
-    await QRCode.toCanvas(canvas, _bchAddr, {
-      width: 180, margin: 1,
-      errorCorrectionLevel: 'M',
-      color: { dark: '#00ff41', light: '#000000' },
-    });
+    const canvas = $('qr-canvas');
+    const qrColor = (CHAIN_THEME[_activeChain] || CHAIN_THEME.bch).color;
+    if (addr) await QRCode.toCanvas(canvas, addr, { width: 180, margin: 1, errorCorrectionLevel: 'M', color: { dark: qrColor, light: '#000000' } });
   } catch {}
 }
 
 function copyAddr(short) {
-  const addr = short ? _bchAddr.replace('bitcoincash:','') : _bchAddr;
+  let addr;
+  if (_activeChain === 'btc') addr = _btcAddr;
+  else if (_activeChain === 'eth') addr = _ethAddr;
+  else addr = short ? _bchAddr.replace('bitcoincash:','') : _bchAddr;
   navigator.clipboard.writeText(addr).then(() => {
     const btns = document.querySelectorAll('.copy-btn');
-    btns.forEach(b => { b.textContent = 'COPIED ✓'; setTimeout(()=>b.textContent=b.dataset.orig||b.textContent,1500); if(!b.dataset.orig)b.dataset.orig=b.textContent; });
+    btns.forEach(b => { const orig = b.textContent; b.textContent = 'COPIED ✓'; setTimeout(()=>b.textContent=orig,1500); });
   });
+}
+
+// ── Multi-Chain Rendering ────────────────────────
+function renderChainBalance() {
+  const bal = $('bal-bch'), unit = $('bal-unit'), sats = $('bal-sats');
+  const unconf = $('bal-unconf');
+  if (!bal) return;
+  if (_activeChain === 'bch') {
+    bal.textContent = (_balance / 1e8).toFixed(8);
+    unit.textContent = 'BCH';
+    sats.textContent = _balance.toLocaleString() + ' sats';
+    const confirmed = _utxos.filter(u => u.height > 0).reduce((s,u) => s+u.value, 0);
+    const unc = _balance - confirmed;
+    if (unc > 0) { unconf.style.display='block'; unconf.textContent = '⏳ +' + (unc/1e8).toFixed(8) + ' BCH UNCONFIRMED'; }
+    else unconf.style.display = 'none';
+    $('utxo-count').textContent = _utxos.length;
+    const ui = document.querySelector('.utxo-info'); if (ui) ui.style.display = '';
+    const ul = $('utxo-list'); if (ul) ul.style.display = '';
+  } else if (_activeChain === 'btc') {
+    bal.textContent = (_btcBalance / 1e8).toFixed(8);
+    unit.textContent = 'BTC';
+    sats.textContent = _btcBalance.toLocaleString() + ' sats';
+    unconf.style.display = 'none';
+    const ui = document.querySelector('.utxo-info'); if (ui) ui.style.display = 'none';
+    const ul = $('utxo-list'); if (ul) ul.style.display = 'none';
+  } else {
+    const wei = BigInt(_ethBalance || '0');
+    bal.textContent = (Number(wei) / 1e18).toFixed(8);
+    unit.textContent = 'ETH';
+    sats.textContent = wei.toString() + ' wei';
+    unconf.style.display = 'none';
+    const ui = document.querySelector('.utxo-info'); if (ui) ui.style.display = 'none';
+    const ul = $('utxo-list'); if (ul) ul.style.display = 'none';
+  }
+}
+
+const CHAIN_THEME = {
+  bch: { color: '#00ff41', dim: '#00c832', dark: '#003d0f', rgb: '0,255,65' },
+  btc: { color: '#f0a500', dim: '#c88600', dark: '#3d2800', rgb: '240,165,0' },
+  eth: { color: '#589df6', dim: '#4080d0', dark: '#0d2a56', rgb: '88,157,246' },
+};
+
+function selectChain(chain) {
+  _activeChain = chain;
+
+  // ── Theme colors ──
+  const t = CHAIN_THEME[chain] || CHAIN_THEME.bch;
+  const r = document.documentElement.style;
+  r.setProperty('--green', t.color);
+  r.setProperty('--green-dim', t.dim);
+  r.setProperty('--green-dark', t.dark);
+  r.setProperty('--accent-rgb', t.rgb);
+
+  document.querySelectorAll('.chain-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.chain === chain));
+
+  // Status bars — show only the active chain's bar
+  const bchBar = $('bch-bar'); if (bchBar) bchBar.style.display = chain === 'bch' ? 'flex' : 'none';
+  const btcBar = $('btc-bar'); if (btcBar) btcBar.style.display = chain === 'btc' ? 'flex' : 'none';
+  const ethBar = $('eth-bar'); if (ethBar) ethBar.style.display = chain === 'eth' ? 'flex' : 'none';
+
+  // Header subtitle
+  const sub = $('wallet-subtitle');
+  if (sub) sub.textContent = chain === 'bch' ? '// BCH SELF-CUSTODY' : chain === 'btc' ? '// BTC SELF-CUSTODY' : '// ETH SELF-CUSTODY';
+
+  // Tabs BCH-only: SEND, TXS, UTXO, STEALTH
+  ['send','txs','addrs','stealth'].forEach(t => {
+    const el = $('tab-' + t);
+    if (el) { el.style.opacity = chain === 'bch' ? '' : '.2'; el.style.pointerEvents = chain === 'bch' ? '' : 'none'; }
+  });
+
+  // If on BCH-only tab, switch to wallet
+  const bchOnly = ['pane-send','pane-txs','pane-addrs','pane-stealth'];
+  if (chain !== 'bch' && bchOnly.some(id => { const el = $(id); return el && el.classList.contains('active'); })) {
+    switchTab('wallet');
+  }
+
+  renderChainBalance();
+  if ($('pane-receive') && $('pane-receive').classList.contains('active')) renderReceive();
 }
 
 // ── Tabs ───────────────────────────────────────────
@@ -1728,6 +3565,7 @@ function switchTab(tab) {
     document.getElementById('pane-'+t).classList.toggle('active', t===tab);
   });
   if (tab === 'receive') renderReceive();
+  if (tab === 'wallet') renderChainBalance();
   if (tab === 'addrs') renderAddresses();
   if (tab === 'stealth') renderStealth();
 }
@@ -1748,11 +3586,14 @@ async function walletImport() {
     else seed64 = await mnemonicToSeed(seed);
     const derived = deriveBchPriv(seed64);
     const profile = {
+      seedHex: b2h(seed64),
       bchPrivHex: b2h(derived.priv),
       acctPrivHex: b2h(derived.acctPriv),
       acctChainHex: b2h(derived.acctChain),
     };
     localStorage.setItem('00wallet_vault', await encryptVault(profile, pass));
+    // Share session across pages (30 min TTL)
+    localStorage.setItem('00_session_auth', JSON.stringify({ p: btoa(pass), ts: Date.now() }));
     await bootApp(profile, pass);
   } catch(e) { err.textContent = '// error: ' + e.message; }
 }
@@ -1762,6 +3603,8 @@ async function walletUnlock() {
   const err = document.getElementById('unlock-error');
   try {
     const profile = await decryptVault(localStorage.getItem('00wallet_vault'), pass);
+    // Share session across pages (30 min TTL)
+    localStorage.setItem('00_session_auth', JSON.stringify({ p: btoa(pass), ts: Date.now() }));
     await bootApp(profile, pass);
   } catch { err.textContent = '// wrong password'; }
 }
@@ -1879,10 +3722,34 @@ async function bootApp(profile, pass) {
     _loadStealthUtxos();
   }
 
+  // Derive BTC key: m/44'/145'/0'/3/0
+  if (profile.acctPrivHex && profile.acctChainHex) {
+    const btcChain = _bip32Child(h2b(profile.acctPrivHex), h2b(profile.acctChainHex), 3, false);
+    const btcNode = _bip32Child(btcChain.priv, btcChain.chain, 0, false);
+    _btcPriv = btcNode.priv;
+    _btcPub33 = secp256k1.getPublicKey(_btcPriv, true);
+    _btcAddr = btcP2pkhAddr(_btcPub33);
+
+    // Derive ETH key: m/44'/145'/0'/4/0
+    const ethChain = _bip32Child(h2b(profile.acctPrivHex), h2b(profile.acctChainHex), 4, false);
+    const ethNode = _bip32Child(ethChain.priv, ethChain.chain, 0, false);
+    _ethPriv = ethNode.priv;
+    const ethPub33 = secp256k1.getPublicKey(ethNode.priv, true);
+    _ethAddr = ethAddr(ethPub33);
+
+    console.log('[WALLET] BTC addr:', _btcAddr);
+    console.log('[WALLET] ETH addr:', _ethAddr);
+  }
+
   document.getElementById('auth-import').style.display = 'none';
   document.getElementById('auth-unlock').style.display = 'none';
   const main = document.getElementById('main-view');
   main.style.display = 'flex';
+
+  // Show chain selector if multi-chain keys available
+  if (_btcAddr || _ethAddr) {
+    const cs = $('chain-selector'); if (cs) cs.style.display = 'flex';
+  }
 
   setInterval(updateClock, 1000); updateClock();
   try {
@@ -1896,6 +3763,9 @@ async function bootApp(profile, pass) {
   } catch(e) {
     _fulcrumStatus('CONNECT FAILED', false);
   }
+  // Connect BTC Electrum + fetch ETH balance
+  if (_btcAddr) _btcConnectWithFallback();
+  if (_ethAddr) _refreshEthBalance();
   // Connect Nostr for stealth notifications
   if (_stealthNostrPub) nostrConnect();
 }
@@ -1956,7 +3826,10 @@ async function scanHdAddresses(acctPriv, acctChain) {
     _hdAddresses.push({ priv: chgChild.priv, pubKey: chgPub, addr: chgAddr, path: '1/' + nextIdx });
   }
 
-  console.log('[HD] scanned', _hdAddresses.length, 'addresses');
+  // Persist discovered HD paths so other apps (swap, vault) can re-derive
+  const hdPaths = _hdAddresses.map(a => a.path);
+  localStorage.setItem('00_hd_paths', JSON.stringify(hdPaths));
+  console.log('[HD] scanned', _hdAddresses.length, 'addresses, paths saved');
   _fulcrumStatus('CONNECTED', true);
 }
 
@@ -1972,7 +3845,20 @@ window._walletBoot = async function() {
     const ok = await _restoreWcSession();
     if (ok) return;
   }
-  if (localStorage.getItem('00wallet_vault')) {
+  // Auto-unlock from shared session (cross-page, 30 min TTL)
+  const vault = localStorage.getItem('00wallet_vault');
+  if (vault) {
+    try {
+      const sess = JSON.parse(localStorage.getItem('00_session_auth') || '{}');
+      if (sess.p && sess.ts && Date.now() - sess.ts < 30 * 60 * 1000) {
+        const pass = atob(sess.p);
+        const profile = await decryptVault(vault, pass);
+        // Refresh TTL
+        localStorage.setItem('00_session_auth', JSON.stringify({ p: sess.p, ts: Date.now() }));
+        await bootApp(profile, pass);
+        return;
+      }
+    } catch { /* session expired or invalid — show password prompt */ }
     document.getElementById('auth-unlock').style.display = 'flex';
   } else {
     document.getElementById('auth-import').style.display = 'flex';
@@ -1986,7 +3872,50 @@ Object.assign(window, {
   switchTab, refreshBalance, sendBCH, setFeeRate, setMaxAmount,
   toggleCoinControl, ccSelectAll, ccClearAll, _ccToggle, _renderCcList,
   updateSendSummary, copyAddr, closeSendSuccess, openExplorer,
-  sendStealth, copyStealthCode, stealthScanChain,
+  sendStealth, stealthMax, copyStealthCode, stealthScanChain,
+  selectChain, renderChainBalance,
+  _QRCode: QRCode,
+  _bcBroadcast: bcBroadcast,
+  _p2pkhScript: p2pkhScript,
+  _estimateTxSize: estimateTxSize,
+  _cashAddrToHash20: cashAddrToHash20,
+  _btcCallFn: (m, p) => _btcCall(m, p),
+  _ethCallFn: (m, p) => _ethCall(m, p),
+  _b2h: b2h, _h2b: h2b, _concat: concat,
+  _secp256k1: secp256k1,
+  _sha256: sha256,
+  _ripemd160: ripemd160,
+  _stealthDerive: stealthDerive,
+  _nostrPublish: nostrPublish,
+  _nip04Encrypt: nip04Encrypt,
+  _makeNostrEvent: makeNostrEvent,
+  _schnorr: schnorr,
+  _rand: rand,
+  _N_SECP: N_SECP,
+  _pubHashToCashAddr: pubHashToCashAddr,
+});
+// ── Desktop bridge: expose wallet state via getters ──
+Object.defineProperties(window, {
+  cdBchAddr:    { get(){ return _bchAddr; } },
+  cdBtcAddr:    { get(){ return _btcAddr; } },
+  cdEthAddr:    { get(){ return _ethAddr; } },
+  cdUtxos:      { get(){ return _utxos; } },
+  cdBtcUtxos:   { get(){ return _btcUtxos; } },
+  cdBchPriv:    { get(){ return _bchPriv32; } },
+  cdBtcPriv:    { get(){ return _btcPriv; } },
+  cdEthPriv:    { get(){ return _ethPriv; } },
+  cdBchHash160: { get(){ return _bchHash160; } },
+  cdBchPub33:   { get(){ return _bchPub33; } },
+  cdBtcPub33:   { get(){ return _btcPub33; } },
+  cdFeeRate:    { get(){ return _feeRate; } },
+  cdBtcConnected: { get(){ return _btcConnected; } },
+  cdBalance:    { get(){ return _balance; } },
+  cdBtcBalance: { get(){ return _btcBalance; } },
+  cdEthBalance: { get(){ return _ethBalance; } },
+  cdStealthScanPriv:  { get(){ return _stealthScanPriv; } },
+  cdStealthScanPub:   { get(){ return _stealthScanPub; } },
+  cdStealthSpendPub:  { get(){ return _stealthSpendPub; } },
+  cdStealthUtxos:     { get(){ return _stealthUtxos; } },
 });
 
 // ── Matrix Rain ────────────────────────────────────
@@ -2000,7 +3929,7 @@ function drawRain() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drops.forEach(d => {
     ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x-1,d.y+d.len);
-    ctx.strokeStyle=`rgba(0,255,65,${d.op})`; ctx.lineWidth=d.w; ctx.stroke();
+    ctx.strokeStyle=`rgba(var(--accent-rgb),${d.op})`; ctx.lineWidth=d.w; ctx.stroke();
     d.y+=d.speed; if(d.y>canvas.height){d.y=-d.len;d.x=Math.random()*canvas.width;}
   });
   requestAnimationFrame(drawRain);

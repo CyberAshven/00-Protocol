@@ -266,6 +266,11 @@
 
     /* Fix: main-view must not grow beyond phone height */
     #main-view { min-height:0; }
+    /* Desktop: skip loading, hide phone overlays */
+    @media (min-width: 900px) {
+      #loading { display: none !important; }
+      #rain, .scanlines, .vignette { display: none !important; }
+    }
 
     /* Global tag chips */
     .gtag { font-size:9px; letter-spacing:1px; padding:3px 8px; border-radius:12px; border:1px solid rgba(0,255,65,.2); color:rgba(0,255,65,.4); cursor:pointer; transition:.15s; }
@@ -291,6 +296,7 @@
     #auth-unlock { display:none; flex:1; flex-direction:column; align-items:center; justify-content:center; padding:30px 24px; gap:16px; }
     .unlock-logo { font-family:'Orbitron',monospace; font-size:28px; font-weight:900; color:var(--green); text-shadow:0 0 20px rgba(0,255,65,.5); }
   </style>
+  <link rel="stylesheet" href="desktop.css">
 </head>
 <body>
 <canvas id="rain"></canvas>
@@ -303,6 +309,473 @@
   <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
   <div class="loader-status" id="loader-status"></div>
 </div>
+
+<!-- ── Desktop Mesh View (hidden on mobile) ── -->
+<div id="mesh-desktop" style="display:none">
+  <div class="dt-inner">
+    <div class="dt-page-header">
+      <div class="dt-page-title-wrap">
+        <div class="dt-page-icon">◈</div>
+        <div>
+          <div class="dt-page-title">Mesh</div>
+          <div class="dt-page-sub">Nostr Social Network</div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="dt-status-bar" id="dt-mesh-status-bar">
+      <div class="dt-status-chip" id="dt-status-mesh-nostr">
+        <div class="dt-status-dot" id="dt-mesh-dot-nostr"></div>
+        <span class="dt-status-label">Nostr</span>
+        <span class="dt-status-server" id="dt-status-mesh-nostr-server">—</span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div class="dt-tabs" id="dt-mesh-tabs" style="margin-bottom:0">
+        <button class="dt-tab active" onclick="dtMeshTab('feed')">Feed</button>
+        <button class="dt-tab" onclick="dtMeshTab('dms')">DMs</button>
+        <button class="dt-tab" onclick="dtMeshTab('global')">Global</button>
+        <button class="dt-tab" onclick="dtMeshTab('relays')">Relays</button>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="dt-tab" onclick="dtMeshOpenProfile()">◈ Identity</button>
+        <button class="dt-tab" onclick="dtMeshOpenAdd()">+ Contact</button>
+      </div>
+    </div>
+
+    <!-- FEED pane -->
+    <div class="dt-pane active" id="dt-mesh-p-feed">
+      <div style="margin-bottom:16px">
+        <button class="dt-action-btn" onclick="dtMeshOpenCompose()">✎ New Post</button>
+      </div>
+      <div id="dt-feed-list"></div>
+    </div>
+
+    <!-- DMs pane -->
+    <div class="dt-pane" id="dt-mesh-p-dms">
+      <div class="dt-split">
+        <div class="dt-split-left">
+          <div class="dt-split-header">
+            <span style="font-weight:600;color:var(--dt-text)">Conversations</span>
+          </div>
+          <div class="dt-split-list" id="dt-mesh-dm-list"></div>
+        </div>
+        <div class="dt-split-right">
+          <div id="dt-mesh-conv-empty" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--dt-text-secondary);font-size:14px">Select a conversation</div>
+          <div id="dt-mesh-conv" style="display:none;flex-direction:column;height:100%">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--dt-border);display:flex;align-items:center;gap:12px">
+              <div class="dt-avatar" id="dt-mesh-conv-avatar"></div>
+              <div>
+                <div style="font-weight:600;color:var(--dt-text)" id="dt-mesh-conv-name">—</div>
+                <div style="font-size:11px;color:var(--dt-text-secondary)" id="dt-mesh-conv-npub"></div>
+              </div>
+            </div>
+            <div class="dt-msg-list" id="dt-mesh-messages"></div>
+            <div class="dt-msg-input">
+              <input class="dt-form-input" id="dt-mesh-dm-input" placeholder="Encrypted message..." style="flex:1;margin:0" onkeydown="if(event.key==='Enter')dtMeshSendDm()">
+              <button class="dt-msg-send" onclick="dtMeshSendDm()">↑</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GLOBAL pane -->
+    <div class="dt-pane" id="dt-mesh-p-global">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <div class="dt-chips" id="dt-mesh-tags" style="margin-bottom:0;flex:1;min-width:0">
+          <span class="dt-chip active" onclick="dtMeshGlobalTag('bitcoincash')">#bitcoincash</span>
+          <span class="dt-chip" onclick="dtMeshGlobalTag('bch')">#bch</span>
+          <span class="dt-chip" onclick="dtMeshGlobalTag('privacy')">#privacy</span>
+          <span class="dt-chip" onclick="dtMeshGlobalTag('cypherpunk')">#cypherpunk</span>
+          <span class="dt-chip" onclick="dtMeshGlobalTag('nostr')">#nostr</span>
+          <span class="dt-chip" onclick="dtMeshGlobalTag('freedom')">#freedom</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+          <input class="dt-form-input" id="dt-mesh-custom-tag" type="text" placeholder="# custom tag…" style="width:140px;padding:6px 10px;font-size:11px;border-radius:20px" onkeydown="if(event.key==='Enter'){dtMeshSearchTag();event.preventDefault();}">
+          <button class="dt-action-btn" onclick="dtMeshSearchTag()" style="width:auto;padding:6px 14px;font-size:11px;border-radius:20px">Search</button>
+        </div>
+      </div>
+      <div id="dt-global-list"></div>
+    </div>
+
+    <!-- RELAYS pane -->
+    <div class="dt-pane" id="dt-mesh-p-relays">
+      <div id="dt-relay-list"></div>
+    </div>
+
+    <!-- Desktop Compose overlay -->
+    <div class="dt-overlay" id="dt-mesh-compose-overlay">
+      <div class="dt-card" style="max-width:520px;margin:60px auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:16px;font-weight:700;color:var(--dt-text)">New Post</div>
+          <button class="dt-action-btn-outline" onclick="dtMeshCloseCompose()" style="width:auto;padding:4px 12px;font-size:13px;flex-shrink:0">×</button>
+        </div>
+        <textarea class="dt-form-input" id="dt-compose-text" placeholder="Broadcast to the mesh..." style="min-height:120px;resize:vertical;font-size:13px;line-height:1.6" oninput="dtMeshCharCount()"></textarea>
+        <div style="text-align:right;font-size:11px;color:var(--dt-text-secondary);margin:4px 0 12px"><span id="dt-char-count">0</span>/280</div>
+        <div style="display:flex;gap:10px">
+          <button class="dt-action-btn" onclick="dtMeshPublishPost()" id="dt-compose-btn" style="flex:1">⚡ Broadcast</button>
+          <button class="dt-action-btn-outline" onclick="dtMeshCloseCompose()" style="width:auto;flex-shrink:0;padding:10px 20px">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Profile overlay -->
+    <div class="dt-overlay" id="dt-mesh-profile-overlay">
+      <div class="dt-card" style="max-width:520px;margin:60px auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div style="font-size:16px;font-weight:700;color:var(--dt-text)">My Identity</div>
+          <button class="dt-action-btn-outline" onclick="dtMeshCloseProfile()" style="width:auto;padding:4px 12px;font-size:13px;flex-shrink:0">×</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div>
+            <div class="dt-form-lbl" style="margin-bottom:6px">Npub (Nostr Public Key)</div>
+            <div id="dt-my-npub" style="font-size:11px;color:var(--dt-text-secondary);word-break:break-all;font-family:'SF Mono','Fira Code','Consolas',monospace;padding:12px 14px;background:var(--dt-input-bg);border:1px solid var(--dt-border);border-radius:10px;line-height:1.6"></div>
+            <button class="dt-action-btn-outline" onclick="dtMeshCopy('dt-my-npub')" style="width:auto;margin-top:8px;padding:6px 20px;font-size:11px;display:inline-flex;align-items:center;gap:5px">📋 Copy Npub</button>
+          </div>
+          <div>
+            <div class="dt-form-lbl" style="margin-bottom:6px">BCH Address (Same Seed)</div>
+            <div id="dt-my-bch-addr" style="font-size:11px;color:var(--dt-text-secondary);word-break:break-all;font-family:'SF Mono','Fira Code','Consolas',monospace;padding:12px 14px;background:var(--dt-input-bg);border:1px solid var(--dt-border);border-radius:10px;line-height:1.6"></div>
+          </div>
+          <div>
+            <div class="dt-form-lbl" style="margin-bottom:6px">Hex Pubkey (32 bytes)</div>
+            <div id="dt-my-pubhex" style="font-size:11px;color:var(--dt-text-secondary);word-break:break-all;font-family:'SF Mono','Fira Code','Consolas',monospace;padding:12px 14px;background:var(--dt-input-bg);border:1px solid var(--dt-border);border-radius:10px;line-height:1.6"></div>
+          </div>
+          <button class="dt-action-btn-outline" onclick="dtMeshCloseProfile()" style="width:auto;padding:8px 24px;align-self:flex-start">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Add Contact overlay -->
+    <div class="dt-overlay" id="dt-mesh-add-overlay">
+      <div class="dt-card" style="max-width:480px;margin:60px auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div style="font-size:16px;font-weight:700;color:var(--dt-text)">Add Contact</div>
+          <button class="dt-action-btn-outline" onclick="dtMeshCloseAdd()" style="width:auto;padding:4px 12px;font-size:13px;flex-shrink:0">×</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="dt-form-group" style="margin:0">
+            <div class="dt-form-lbl">Npub or Hex Pubkey</div>
+            <input class="dt-form-input" type="text" id="dt-mesh-ac-npub" placeholder="npub1... or 64-char hex" style="font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:12px">
+          </div>
+          <div class="dt-form-group" style="margin:0">
+            <div class="dt-form-lbl">Name (optional)</div>
+            <input class="dt-form-input" type="text" id="dt-mesh-ac-name" placeholder="anon">
+          </div>
+          <div id="dt-mesh-ac-error" style="font-size:11px;color:var(--dt-danger);min-height:16px"></div>
+          <div style="display:flex;gap:10px">
+            <button class="dt-action-btn" onclick="dtMeshSaveContact()" style="width:auto;flex:0 0 auto;padding:10px 24px">+ Add Contact</button>
+            <button class="dt-action-btn-outline" onclick="dtMeshCloseAdd()" style="width:auto;flex-shrink:0;padding:10px 20px">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  if(!window.matchMedia('(min-width:900px)').matches) return;
+  var el=document.getElementById('mesh-desktop');if(!el)return;
+  el.style.display='';
+
+  /* ── Tab switching ─── */
+  var _tabs=['feed','dms','global','relays'];
+  window.dtMeshTab=function(t){
+    _tabs.forEach(function(x){
+      var p=document.getElementById('dt-mesh-p-'+x);
+      if(p)p.classList.toggle('active',x===t);
+    });
+    var btns=document.querySelectorAll('#dt-mesh-tabs .dt-tab');
+    btns.forEach(function(b){b.classList.toggle('active',b.textContent.toLowerCase()===t);});
+  };
+
+  /* ── Global tag ─── */
+  window.dtMeshGlobalTag=function(tag){
+    var chips=document.querySelectorAll('#dt-mesh-tags .dt-chip');
+    chips.forEach(function(c){c.classList.toggle('active',c.textContent==='#'+tag);});
+    document.getElementById('dt-mesh-custom-tag').value='';
+    if(window.setGlobalTag) window.setGlobalTag(tag);
+  };
+  window.dtMeshSearchTag=function(){
+    var input=document.getElementById('dt-mesh-custom-tag');
+    var tag=input.value.trim().replace(/^#/,'').toLowerCase();
+    if(!tag)return;
+    // Deselect all preset chips
+    var chips=document.querySelectorAll('#dt-mesh-tags .dt-chip');
+    chips.forEach(function(c){c.classList.remove('active');});
+    if(window.setGlobalTag) window.setGlobalTag(tag);
+  };
+
+  /* ── Open DM conversation ─── */
+  var _activeDmPub='';
+  window.dtMeshOpenDm=function(pub){
+    _activeDmPub=pub;
+    if(window.openDmConv) window.openDmConv(pub);
+    document.getElementById('dt-mesh-conv-empty').style.display='none';
+    var cv=document.getElementById('dt-mesh-conv');
+    cv.style.display='flex';
+  };
+
+  /* ── Send DM ─── */
+  window.dtMeshSendDm=function(){
+    var inp=document.getElementById('dt-mesh-dm-input');
+    if(!inp||!inp.value.trim()) return;
+    var mi=document.getElementById('dm-input');
+    if(mi) mi.value=inp.value;
+    if(window.sendDm) window.sendDm();
+    inp.value='';
+  };
+
+  /* ── Desktop Compose ─── */
+  window.dtMeshOpenCompose=function(){
+    document.getElementById('dt-compose-text').value='';
+    document.getElementById('dt-char-count').textContent='0';
+    document.getElementById('dt-mesh-compose-overlay').classList.add('active');
+    setTimeout(function(){document.getElementById('dt-compose-text').focus();},100);
+  };
+  window.dtMeshCloseCompose=function(){
+    document.getElementById('dt-mesh-compose-overlay').classList.remove('active');
+    document.getElementById('dt-compose-text').value='';
+  };
+  window.dtMeshCharCount=function(){
+    document.getElementById('dt-char-count').textContent=document.getElementById('dt-compose-text').value.length;
+  };
+  window.dtMeshPublishPost=function(){
+    var text=document.getElementById('dt-compose-text').value.trim();
+    if(!text||text.length>280) return;
+    // Sync to mobile compose and call publishPost
+    var mi=document.getElementById('compose-text');
+    if(mi) mi.value=text;
+    if(window.publishPost) window.publishPost();
+    dtMeshCloseCompose();
+  };
+
+  /* ── Desktop Profile ─── */
+  window.dtMeshOpenProfile=function(){
+    // Trigger mobile openProfile to populate data, then mirror it
+    if(window.openProfile) window.openProfile();
+    setTimeout(function(){
+      var npub=document.getElementById('my-npub');
+      var bch=document.getElementById('my-bch-addr');
+      var hex=document.getElementById('my-pubhex');
+      if(npub) document.getElementById('dt-my-npub').textContent=npub.textContent;
+      if(bch) document.getElementById('dt-my-bch-addr').textContent=bch.textContent;
+      if(hex) document.getElementById('dt-my-pubhex').textContent=hex.textContent;
+      if(window.closeProfile) window.closeProfile();
+    },100);
+    document.getElementById('dt-mesh-profile-overlay').classList.add('active');
+  };
+  window.dtMeshCloseProfile=function(){
+    document.getElementById('dt-mesh-profile-overlay').classList.remove('active');
+  };
+  window.dtMeshCopy=function(id){
+    var el=document.getElementById(id);
+    if(el&&navigator.clipboard) navigator.clipboard.writeText(el.textContent);
+  };
+
+  /* ── Desktop Add Contact ─── */
+  window.dtMeshOpenAdd=function(){
+    document.getElementById('dt-mesh-ac-npub').value='';
+    document.getElementById('dt-mesh-ac-name').value='';
+    document.getElementById('dt-mesh-ac-error').textContent='';
+    document.getElementById('dt-mesh-add-overlay').classList.add('active');
+  };
+  window.dtMeshCloseAdd=function(){
+    document.getElementById('dt-mesh-add-overlay').classList.remove('active');
+  };
+  window.dtMeshSaveContact=function(){
+    var npub=document.getElementById('dt-mesh-ac-npub').value.trim();
+    var name=document.getElementById('dt-mesh-ac-name').value.trim()||'anon';
+    if(!npub){document.getElementById('dt-mesh-ac-error').textContent='Npub or hex pubkey required';return;}
+    // Sync to mobile form and call mobile saveContact
+    var mi=document.getElementById('ac-npub');if(mi)mi.value=npub;
+    mi=document.getElementById('ac-name');if(mi)mi.value=name;
+    if(window.saveContact) window.saveContact();
+    // Check for error
+    var err=document.getElementById('ac-error');
+    if(err&&err.textContent){
+      document.getElementById('dt-mesh-ac-error').textContent=err.textContent;
+      return;
+    }
+    dtMeshCloseAdd();
+  };
+
+  /* ── Render feed items ─── */
+  function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function formatPostText(raw){
+    var esc=escHtml(raw);
+    // Highlight hashtags
+    esc=esc.replace(/(#\w+)/g,'<span style="color:var(--dt-accent);font-weight:600">$1</span>');
+    // Linkify URLs
+    esc=esc.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener" style="color:var(--dt-accent);text-decoration:none;word-break:break-all;opacity:.8;font-size:11px">$1</a>');
+    // Line breaks
+    esc=esc.replace(/\n/g,'<br>');
+    return esc;
+  }
+  function renderFeedItems(mobileList, desktopEl){
+    if(!mobileList||!desktopEl) return;
+    var items=mobileList.querySelectorAll('.feed-item,.post-item');
+    if(!items.length){
+      desktopEl.innerHTML='<div class="dt-empty"><div class="dt-empty-text">No posts yet</div></div>';
+      return;
+    }
+    var html='';
+    items.forEach(function(it){
+      var author=it.querySelector('.feed-author,.post-author,.post-name');
+      var avatar=it.querySelector('.feed-avatar');
+      var text=it.querySelector('.feed-content,.post-text,.post-content');
+      var time=it.querySelector('.feed-time,.post-time,.post-date');
+      var avatarInit=avatar?avatar.textContent.trim().substring(0,2).toUpperCase():(author?author.textContent.charAt(0).toUpperCase():'?');
+      var rawText=text?text.textContent:'';
+      var formatted=formatPostText(rawText);
+      html+='<div style="display:flex;gap:14px;padding:16px 20px;border-bottom:1px solid var(--dt-border);transition:background .15s"'
+        +' onmouseenter="this.style.background=\'var(--dt-sidebar-hover)\'" onmouseleave="this.style.background=\'\'">'
+        +'<div style="width:40px;height:40px;border-radius:12px;background:var(--dt-input-bg);border:1px solid var(--dt-border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--dt-text-secondary);flex-shrink:0;font-family:monospace">'+avatarInit+'</div>'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+        +'<span style="font-size:13px;font-weight:700;color:var(--dt-text)">'+(author?author.textContent:'Anon')+'</span>'
+        +(time?'<span style="font-size:11px;color:var(--dt-text-secondary);opacity:.6">· '+time.textContent+'</span>':'')
+        +'</div>'
+        +'<div style="font-size:13px;line-height:1.6;color:var(--dt-text);word-break:break-word">'+formatted+'</div>'
+        +'</div></div>';
+    });
+    desktopEl.innerHTML=html;
+  }
+
+  /* ── Poll mobile DOM ─── */
+  setInterval(function(){
+    // Mirror feed
+    var ml=document.getElementById('feed-list');
+    var dl=document.getElementById('dt-feed-list');
+    renderFeedItems(ml,dl);
+
+    // Mirror global feed
+    var gl=document.getElementById('global-list');
+    var dgl=document.getElementById('dt-global-list');
+    renderFeedItems(gl,dgl);
+
+    // Mirror DM list
+    var dml=document.getElementById('dm-list');
+    var ddml=document.getElementById('dt-mesh-dm-list');
+    if(dml&&ddml){
+      var contacts=dml.querySelectorAll('.dm-item,.dm-contact');
+      if(!contacts.length){
+        ddml.innerHTML='<div style="padding:20px;text-align:center;color:var(--dt-text-secondary);font-size:12px">No conversations</div>';
+      } else {
+        var html='';
+        contacts.forEach(function(c){
+          var name=c.querySelector('.dm-name,.dm-contact-name');
+          var preview=c.querySelector('.dm-preview,.dm-last');
+          var time=c.querySelector('.dm-time,.dm-date');
+          var badge=c.querySelector('.badge,.dm-badge');
+          var oc=c.getAttribute('onclick')||'';
+          var pubMatch=oc.match(/'([^']+)'/);
+          var pub=pubMatch?pubMatch[1]:'';
+          html+='<div class="dt-contact-row'+(pub===_activeDmPub?' active':'')+'" onclick="dtMeshOpenDm(\''+pub+'\')">'
+            +'<div class="dt-avatar">'+((name?name.textContent:'?').charAt(0).toUpperCase())+'</div>'
+            +'<div class="dt-contact-info"><div class="dt-contact-name">'+(name?name.textContent:'Anon')+'</div>'
+            +'<div class="dt-contact-preview">'+(preview?preview.textContent:'')+'</div></div>'
+            +'<div class="dt-contact-meta">'
+            +(time?'<div class="dt-contact-time">'+time.textContent+'</div>':'')
+            +(badge&&badge.style.display!=='none'?'<div class="dt-contact-badge">'+badge.textContent+'</div>':'')
+            +'</div></div>';
+        });
+        ddml.innerHTML=html;
+      }
+    }
+
+    // Mirror active DM conversation
+    var cv=document.getElementById('dt-mesh-conv');
+    if(cv&&cv.style.display!=='none'){
+      var cn=document.getElementById('conv-name');
+      var dcn=document.getElementById('dt-mesh-conv-name');
+      if(cn&&dcn) dcn.textContent=cn.textContent;
+
+      var cnp=document.getElementById('conv-npub');
+      var dcnp=document.getElementById('dt-mesh-conv-npub');
+      if(cnp&&dcnp) dcnp.textContent=cnp.textContent;
+
+      // Mirror messages
+      var msgs=document.getElementById('messages');
+      var dmsgs=document.getElementById('dt-mesh-messages');
+      if(msgs&&dmsgs){
+        var mobMsgs=msgs.querySelectorAll('.msg');
+        var html='';
+        mobMsgs.forEach(function(m){
+          var isMe=m.classList.contains('me');
+          var bubble=m.querySelector('.msg-bubble');
+          var time=m.querySelector('.msg-time');
+          html+='<div class="dt-msg '+(isMe?'me':'them')+'">'
+            +'<div class="dt-msg-bubble">'+(bubble?bubble.textContent:'')+'</div>'
+            +(time?'<div class="dt-msg-time">'+time.textContent+'</div>':'')
+            +'</div>';
+        });
+        dmsgs.innerHTML=html;
+      }
+    }
+
+    // Mirror relay list
+    var rl=document.getElementById('relay-list');
+    var drl=document.getElementById('dt-relay-list');
+    if(rl&&drl){
+      var relays=rl.querySelectorAll('.relay-item');
+      if(!relays.length){
+        drl.innerHTML='<div class="dt-empty"><div class="dt-empty-text">No relay data</div></div>';
+      } else {
+        var html='';
+        relays.forEach(function(r){
+          var url=r.querySelector('.relay-url');
+          var dot=r.querySelector('.relay-status-dot');
+          var label=r.querySelector('.relay-label');
+          var isConn=dot&&dot.classList.contains('connected');
+          var isConnecting=dot&&dot.classList.contains('connecting');
+          html+='<div class="dt-row" style="cursor:default">'
+            +'<div class="dt-row-left"><div class="dt-row-title" style="font-family:monospace;font-size:12px">'+(url?url.textContent:'')+'</div></div>'
+            +'<div class="dt-row-right"><span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;border:1px solid;'
+            +(isConn?'color:var(--dt-accent)':isConnecting?'color:var(--dt-warning)':'color:var(--dt-danger)')+'">'
+            +(label?label.textContent:(isConn?'Connected':'Disconnected'))+'</span></div>'
+            +'</div>';
+        });
+        drl.innerHTML=html;
+      }
+    }
+
+    // Connection status chip
+    var rd=document.querySelectorAll('.relay-dot');
+    var dnd=document.getElementById('dt-mesh-dot-nostr');
+    var dnChip=document.getElementById('dt-status-mesh-nostr');
+    var dnServer=document.getElementById('dt-status-mesh-nostr-server');
+    if(dnd&&rd.length){
+      var anyOn=false;var connNames=[];
+      rd.forEach(function(d){if(d.classList.contains('on')){anyOn=true;}});
+      dnd.classList.toggle('on',anyOn);
+      dnd.classList.toggle('err',!anyOn);
+      if(dnChip){dnChip.classList.toggle('on',anyOn);dnChip.classList.toggle('err',!anyOn);}
+      // Get relay names from mobile relay list
+      if(dnServer&&relays&&relays.length){
+        var names=[];
+        relays.forEach(function(r){
+          var dot=r.querySelector('.relay-status-dot');
+          var url=r.querySelector('.relay-url');
+          if(dot&&dot.classList.contains('connected')&&url)try{names.push(new URL(url.textContent).hostname);}catch{names.push(url.textContent);}
+        });
+        if(names.length)dnServer.textContent=names.join(', ');
+        else dnServer.textContent=anyOn?'connected':'disconnected';
+      }
+    } else if(dnd){
+      dnd.classList.remove('on');dnd.classList.add('err');
+      if(dnChip){dnChip.classList.remove('on');dnChip.classList.add('err');}
+      if(dnServer)dnServer.textContent='disconnected';
+    }
+  },800);
+})();
+</script>
 
 <div class="phone-wrap">
   <div class="phone">
@@ -455,6 +928,7 @@
 </div><!-- /phone-wrap -->
 
 <!-- Boot -->
+<script>if(sessionStorage.getItem('00_gate')!=='1'){window.location.href='/';}else if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
 <script>
 (function() {
   const statuses = ['BOOT 0penw0rld OS...','SCANNING NOSTR RELAYS...','LOADING CCSH PROTOCOL...','MESH READY'];
@@ -1095,6 +1569,8 @@ async function meshUnlock() {
   const err = document.getElementById('unlock-error');
   try {
     const profile = await decryptVault(localStorage.getItem('00mesh_vault'), pass);
+    // Shared session — all apps auto-unlock
+    localStorage.setItem('00_session_auth', JSON.stringify({ p: btoa(pass), ts: Date.now() }));
     await bootApp(profile, pass);
   } catch { err.textContent = '// wrong password'; }
 }
@@ -1132,10 +1608,44 @@ function updateClock() {
 }
 
 // ── Boot ──────────────────────────────────────────
-window._meshBoot = function() {
-  if (localStorage.getItem('00mesh_vault')) {
+window._meshBoot = async function() {
+  const vault = localStorage.getItem('00mesh_vault');
+  if (vault) {
+    // Auto-unlock from shared session (cross-app, 30 min TTL)
+    try {
+      const sess = JSON.parse(localStorage.getItem('00_session_auth') || '{}');
+      if (sess.p && sess.ts && Date.now() - sess.ts < 30 * 60 * 1000) {
+        const pass = atob(sess.p);
+        const profile = await decryptVault(vault, pass);
+        localStorage.setItem('00_session_auth', JSON.stringify({ p: sess.p, ts: Date.now() }));
+        await bootApp(profile, pass);
+        return;
+      }
+    } catch {}
     document.getElementById('auth-unlock').style.display = 'flex';
   } else {
+    // No mesh vault — try auto-create from wallet vault + session
+    try {
+      const sess = JSON.parse(localStorage.getItem('00_session_auth') || '{}');
+      const wv = localStorage.getItem('00wallet_vault');
+      if (sess.p && sess.ts && Date.now() - sess.ts < 30 * 60 * 1000 && wv) {
+        const pass = atob(sess.p);
+        const wp = await decryptVault(wv, pass);
+        const seed64 = wp.seedHex ? h2b(wp.seedHex) : await mnemonicToSeed(wp.bchPrivHex);
+        const nostrPriv = deriveNostrPriv(seed64);
+        const nostrPub = secp256k1.getPublicKey(nostrPriv, true).slice(1);
+        const profile = {
+          nostrPrivHex: b2h(nostrPriv),
+          nostrPubHex: b2h(nostrPub),
+          npub: npubEncode(nostrPub),
+          bchPrivRef: true,
+        };
+        localStorage.setItem('00mesh_vault', await encryptVault(profile, pass));
+        localStorage.setItem('00_session_auth', JSON.stringify({ p: sess.p, ts: Date.now() }));
+        await bootApp(profile, pass);
+        return;
+      }
+    } catch { /* wallet decrypt failed */ }
     document.getElementById('auth-import').style.display = 'flex';
   }
 };

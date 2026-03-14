@@ -1,23 +1,34 @@
 // 0penw0rld Service Worker
-const CACHE = '0penw0rld-v51';
+const CACHE = '0penw0rld-v162';
 
 const APP_SHELL = [
   '/',
   '/index.html',
   '/docs.html',
   '/shell.js',
+  '/desktop.css',
   '/chat.html',
   '/mesh.html',
   '/wallet.html',
+  '/fusion.html',
   '/id.html',
   '/pay.html',
   '/dex.html',
   '/loan.html',
+  '/swap.html',
+  '/onion.html',
+  '/vault.html',
+  '/config.html',
   '/ledger.js',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-180.png',
+  '/icons/bch.png',
+  '/icons/btc.png',
+  '/icons/eth.png',
+  '/icons/usdc.png',
+  '/icons/usdt.png',
 ];
 
 // External APIs — always network-first
@@ -42,7 +53,11 @@ const NETWORK_FIRST = [
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll(APP_SHELL))
+      .then(c => Promise.all(
+        APP_SHELL.map(url =>
+          fetch(url, { cache: 'no-store' }).then(r => c.put(url, r))
+        )
+      ))
       .then(() => self.skipWaiting())
   );
 });

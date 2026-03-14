@@ -578,7 +578,13 @@
       font-size:9px; color:rgba(0,255,65,.7);
       word-break:break-all; line-height:1.6;
     }
+    /* Desktop: skip loading, hide phone overlays */
+    @media (min-width: 900px) {
+      #loading { display: none !important; }
+      #rain, .scanlines, .vignette { display: none !important; }
+    }
   </style>
+  <link rel="stylesheet" href="desktop.css">
 </head>
 <body>
 
@@ -593,6 +599,425 @@
   <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
   <div class="loader-text" id="loader-text">0penw0rld // 00 Chat</div>
 </div>
+
+<!-- ── Desktop Chat View (hidden on mobile) ── -->
+<div id="chat-desktop" style="display:none">
+  <div class="dt-inner">
+    <div class="dt-page-header">
+      <div class="dt-page-title-wrap">
+        <div class="dt-page-icon">💬</div>
+        <div>
+          <div class="dt-page-title">Chat</div>
+          <div class="dt-page-sub" id="dt-chat-sub">Split-Knowledge · BCH + Nostr</div>
+        </div>
+      </div>
+      <div class="dt-page-actions"></div>
+    </div>
+
+    <div class="dt-status-bar" id="dt-chat-status-bar">
+      <div class="dt-status-chip connecting" id="dt-status-chat-bch">
+        <div class="dt-status-dot connecting" id="dt-chat-dot-bch"></div>
+        <span class="dt-status-label">BCH</span>
+        <span class="dt-status-server" id="dt-status-chat-bch-val">loading…</span>
+      </div>
+      <div class="dt-status-chip" id="dt-status-chat-nostr">
+        <div class="dt-status-dot" id="dt-chat-dot-nostr"></div>
+        <span class="dt-status-label">Nostr</span>
+        <span class="dt-status-server" id="dt-status-chat-nostr-server">—</span>
+      </div>
+      <!-- TX cost info -->
+      <div style="margin-left:auto;display:flex;gap:14px;align-items:center;font-size:11px;color:var(--dt-text-secondary)">
+        <span>✉ msg <strong id="dt-cost-msg-sat" style="color:var(--dt-text)">~2046</strong> sat <span id="dt-cost-msg-usd" style="opacity:.6"></span></span>
+        <span>⟳ identity <strong id="dt-cost-ci-sat" style="color:var(--dt-text)">~2046</strong> sat/contact <span id="dt-cost-ci-usd" style="opacity:.6"></span></span>
+      </div>
+    </div>
+
+    <div class="dt-split" style="height:calc(100vh - 170px)">
+      <!-- Left panel: contact/group list -->
+      <div class="dt-split-left">
+        <div class="dt-split-header" style="flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+            <span style="font-weight:600;color:var(--dt-text)">Contacts</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="dt-action-btn-outline" style="padding:5px 12px;font-size:11px;width:auto" onclick="dtChatOpenShare()">◈ Your Identity</button>
+            <button class="dt-action-btn-outline" style="padding:5px 12px;font-size:11px;width:auto" onclick="dtChatOpenAdd()">+ Add Contact</button>
+            <button class="dt-action-btn-outline" style="padding:5px 12px;font-size:11px;width:auto" onclick="dtChatChangeIdentity()">⟳ Change Identity</button>
+          </div>
+          <div class="dt-tabs" id="dt-chat-list-tabs" style="margin-bottom:0;gap:6px">
+            <button class="dt-tab active" onclick="dtChatListTab('contacts')" style="padding:6px 14px;font-size:11px">Contacts</button>
+            <button class="dt-tab" onclick="dtChatListTab('groups')" style="padding:6px 14px;font-size:11px">Groups</button>
+          </div>
+        </div>
+        <div class="dt-split-list" id="dt-chat-contact-list"></div>
+      </div>
+      <!-- Right panel: conversation -->
+      <div class="dt-split-right">
+        <div id="dt-chat-conv-empty" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--dt-text-secondary);font-size:14px">Select a contact to start chatting</div>
+        <div id="dt-chat-conv" style="display:none;flex-direction:column;height:100%">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--dt-border);display:flex;align-items:center;gap:12px">
+            <div class="dt-avatar" id="dt-chat-conv-avatar"></div>
+            <div style="flex:1">
+              <div style="font-weight:600;color:var(--dt-text)" id="dt-chat-conv-name">—</div>
+              <div style="font-size:11px;color:var(--dt-text-secondary)" id="dt-chat-conv-status">—</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="dt-action-btn-outline" style="padding:4px 10px;font-size:11px" onclick="dtChatDeleteContact()" title="Delete">×</button>
+            </div>
+          </div>
+          <div class="dt-msg-list" id="dt-chat-messages"></div>
+          <div class="dt-msg-input">
+            <input class="dt-form-input" id="dt-chat-msg-input" placeholder="Type a message..." style="flex:1;margin:0" onkeydown="if(event.key==='Enter')dtChatSendMsg()">
+            <button class="dt-msg-send" onclick="dtChatSendMsg()">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Add Contact overlay -->
+    <div class="dt-overlay" id="dt-chat-add-overlay">
+      <div class="dt-card" style="max-width:480px;margin:60px auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:16px;font-weight:700;color:var(--dt-text)">Add Contact</div>
+          <button class="dt-action-btn-outline" onclick="dtChatCloseAdd()" style="padding:4px 12px;font-size:13px">×</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">Contact Card URL (chatcash:...)</div>
+            <div style="display:flex;gap:8px">
+              <input class="dt-form-input" type="text" id="dt-ac-url" placeholder="chatcash:bitcoincash:q...?pub=...&name=..." style="flex:1;font-size:11px">
+              <button class="dt-action-btn" onclick="dtChatParseCard()" style="flex:0 0 auto;padding:8px 16px;font-size:11px">Parse</button>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">Name</div>
+            <input class="dt-form-input" type="text" id="dt-ac-name" placeholder="Contact name...">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">X25519 Pub (64 hex)</div>
+            <input class="dt-form-input" type="text" id="dt-ac-pub" placeholder="64 hex chars..." style="font-size:11px">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">BCH Address</div>
+            <input class="dt-form-input" type="text" id="dt-ac-bch" placeholder="bitcoincash:q..." style="font-size:11px">
+          </div>
+          <div id="dt-ac-error" style="font-size:11px;color:var(--dt-danger);min-height:16px"></div>
+          <div style="display:flex;gap:10px">
+            <button class="dt-action-btn" onclick="dtChatSaveContact()" style="flex:1">+ Add Contact</button>
+            <button class="dt-action-btn-outline" onclick="dtChatCloseAdd()" style="flex:0 0 auto;padding:10px 20px">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Share Card overlay -->
+    <div class="dt-overlay" id="dt-chat-share-overlay">
+      <div class="dt-card" style="max-width:480px;margin:60px auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:16px;font-weight:700;color:var(--dt-text)">My Contact Card</div>
+          <button class="dt-action-btn-outline" onclick="dtChatCloseShare()" style="padding:4px 12px;font-size:13px">×</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">Display Name</div>
+            <input class="dt-form-input" id="dt-sc-name" placeholder="anon" oninput="dtChatUpdateShare()" style="font-size:13px">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">Share URL</div>
+            <div id="dt-sc-url" style="font-size:10px;color:var(--dt-text-secondary);word-break:break-all;line-height:1.6;padding:10px;background:var(--dt-bg);border:1px solid var(--dt-border);border-radius:8px;font-family:monospace"></div>
+            <div style="display:flex;justify-content:center;margin:12px 0">
+              <canvas id="dt-sc-qr" style="border-radius:8px;image-rendering:pixelated"></canvas>
+            </div>
+            <button class="dt-action-btn-outline" onclick="dtChatCopyUrl()" style="width:100%;font-size:11px">Copy URL</button>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">BCH Address</div>
+            <div id="dt-sc-bch" style="font-size:11px;color:var(--dt-text-secondary);word-break:break-all;font-family:monospace"></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">X25519 Pub</div>
+            <div id="dt-sc-pub" style="font-size:11px;color:var(--dt-text-secondary);word-break:break-all;font-family:monospace"></div>
+          </div>
+          <button class="dt-action-btn-outline" onclick="dtChatCloseShare()">Close</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  if(!window.matchMedia('(min-width:900px)').matches) return;
+  var el=document.getElementById('chat-desktop');if(!el)return;
+  el.style.display='';
+
+  var _activeContact='';
+  var _listMode='contacts';
+  var _bchPriceUsd=0;
+
+  /* ── Fetch BCH price from CoinGecko ─── */
+  (function fetchBchPrice(){
+    fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash&vs_currencies=usd')
+      .then(function(r){return r.json();})
+      .then(function(d){
+        _bchPriceUsd=d['bitcoin-cash']?.usd||0;
+        if(_bchPriceUsd>0){
+          var MSG_SATS=2046;
+          var CI_SATS=2046;
+          var msgUsd=(MSG_SATS/1e8*_bchPriceUsd);
+          var ciUsd=(CI_SATS/1e8*_bchPriceUsd);
+          var fmt=function(v){return v<0.01?'< $0.01':'$'+v.toFixed(4);};
+          var mu=document.getElementById('dt-cost-msg-usd');
+          var cu=document.getElementById('dt-cost-ci-usd');
+          if(mu) mu.textContent='≈ '+fmt(msgUsd);
+          if(cu) cu.textContent='≈ '+fmt(ciUsd);
+        }
+      })
+      .catch(function(){});
+  })();
+
+  /* ── Change Identity ─── */
+  window.dtChatChangeIdentity=function(){
+    if(window.openChangeIdentity) window.openChangeIdentity();
+  };
+
+  /* ── List tab switching ─── */
+  window.dtChatListTab=function(t){
+    _listMode=t;
+    var btns=document.querySelectorAll('#dt-chat-list-tabs .dt-tab');
+    btns.forEach(function(b){b.classList.toggle('active',b.textContent.toLowerCase()===t);});
+  };
+
+  /* ── Open conversation ─── */
+  window.dtChatOpenConv=function(idx){
+    _activeContact=idx;
+    if(window.openConv) window.openConv(idx);
+    document.getElementById('dt-chat-conv-empty').style.display='none';
+    document.getElementById('dt-chat-conv').style.display='flex';
+  };
+
+  /* ── Send message ─── */
+  window.dtChatSendMsg=function(){
+    var inp=document.getElementById('dt-chat-msg-input');
+    if(!inp||!inp.value.trim()) return;
+    var mi=document.getElementById('msg-input');
+    if(mi) mi.value=inp.value;
+    if(window.sendMsg) window.sendMsg();
+    inp.value='';
+  };
+
+  /* ── Delete contact ─── */
+  window.dtChatDeleteContact=function(){
+    if(window.deleteCurrentContact) window.deleteCurrentContact();
+  };
+
+  /* ── Desktop Add Contact ─── */
+  window.dtChatOpenAdd=function(){
+    ['dt-ac-url','dt-ac-name','dt-ac-pub','dt-ac-bch'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('dt-ac-error').textContent='';
+    document.getElementById('dt-chat-add-overlay').classList.add('active');
+  };
+  window.dtChatCloseAdd=function(){
+    document.getElementById('dt-chat-add-overlay').classList.remove('active');
+  };
+  window.dtChatParseCard=function(){
+    var url=document.getElementById('dt-ac-url').value.trim();
+    if(!url.startsWith('chatcash:')){document.getElementById('dt-ac-error').textContent='Not a chatcash: URL';return;}
+    var rest=url.slice(9);
+    var parts=rest.split('?');
+    var bchAddr=parts[0];var query=parts[1]||'';
+    var params={};
+    query.split('&').forEach(function(p){
+      if(p.indexOf('=')>=0){var kv=p.split('=');params[kv[0]]=decodeURIComponent((kv[1]||'').replace(/\+/g,' '));}
+    });
+    var pubHex=params.pub||'';var name=params.name||bchAddr.slice(0,16);
+    if(!pubHex||pubHex.length!==64){document.getElementById('dt-ac-error').textContent='Invalid pub_hex (64 hex chars required)';return;}
+    document.getElementById('dt-ac-name').value=name;
+    document.getElementById('dt-ac-pub').value=pubHex;
+    document.getElementById('dt-ac-bch').value=bchAddr;
+    document.getElementById('dt-ac-error').textContent='';
+  };
+  window.dtChatSaveContact=function(){
+    // Sync to mobile inputs and call mobile saveContact
+    var name=document.getElementById('dt-ac-name').value.trim();
+    var pub=document.getElementById('dt-ac-pub').value.trim();
+    var bch=document.getElementById('dt-ac-bch').value.trim();
+    var errEl=document.getElementById('dt-ac-error');
+    if(!name){errEl.textContent='Name required';return;}
+    if(!pub||pub.length!==64){errEl.textContent='Invalid pub_hex';return;}
+    if(!bch.startsWith('bitcoincash:')){errEl.textContent='Invalid BCH address';return;}
+    // Sync to mobile form
+    var mi=document.getElementById('ac-name');if(mi)mi.value=name;
+    mi=document.getElementById('ac-pub');if(mi){mi.value=pub;mi.readOnly=false;mi.style.opacity='';}
+    mi=document.getElementById('ac-bch');if(mi)mi.value=bch;
+    if(window.saveContact) window.saveContact();
+    dtChatCloseAdd();
+  };
+
+  /* ── Desktop Share Card ─── */
+  window.dtChatOpenShare=function(){
+    // Read profile data from mobile share card elements
+    var bch=document.getElementById('sc-bch');
+    var pub=document.getElementById('sc-pub');
+    if(bch) document.getElementById('dt-sc-bch').textContent=bch.textContent;
+    if(pub) document.getElementById('dt-sc-pub').textContent=pub.textContent;
+    // Trigger mobile openShareCard to populate data
+    if(window.openShareCard) window.openShareCard();
+    // Copy populated data
+    setTimeout(function(){
+      var bch2=document.getElementById('sc-bch');
+      var pub2=document.getElementById('sc-pub');
+      var url2=document.getElementById('sc-url');
+      if(bch2) document.getElementById('dt-sc-bch').textContent=bch2.textContent;
+      if(pub2) document.getElementById('dt-sc-pub').textContent=pub2.textContent;
+      if(url2) document.getElementById('dt-sc-url').textContent=url2.textContent;
+      // Mirror QR
+      var srcQ=document.getElementById('sc-qr');
+      var dstQ=document.getElementById('dt-sc-qr');
+      if(srcQ&&dstQ){
+        dstQ.width=srcQ.width;dstQ.height=srcQ.height;
+        var ctx=dstQ.getContext('2d');
+        try{ctx.drawImage(srcQ,0,0);}catch(e){}
+      }
+      // Close mobile overlay since it's hidden anyway
+      if(window.closeShareCard) window.closeShareCard();
+    },200);
+    document.getElementById('dt-chat-share-overlay').classList.add('active');
+  };
+  window.dtChatCloseShare=function(){
+    document.getElementById('dt-chat-share-overlay').classList.remove('active');
+  };
+  window.dtChatUpdateShare=function(){
+    var nameInp=document.getElementById('dt-sc-name');
+    var mi=document.getElementById('sc-name');
+    if(mi&&nameInp) mi.value=nameInp.value;
+    if(window.updateShareCard) window.updateShareCard();
+    setTimeout(function(){
+      var url2=document.getElementById('sc-url');
+      if(url2) document.getElementById('dt-sc-url').textContent=url2.textContent;
+      var srcQ=document.getElementById('sc-qr');
+      var dstQ=document.getElementById('dt-sc-qr');
+      if(srcQ&&dstQ){
+        dstQ.width=srcQ.width;dstQ.height=srcQ.height;
+        var ctx=dstQ.getContext('2d');
+        try{ctx.drawImage(srcQ,0,0);}catch(e){}
+      }
+    },200);
+  };
+  window.dtChatCopyUrl=function(){
+    var url=document.getElementById('dt-sc-url');
+    if(url&&navigator.clipboard) navigator.clipboard.writeText(url.textContent);
+  };
+
+  /* ── Poll mobile DOM ─── */
+  setInterval(function(){
+    // Mirror BCH balance chip
+    var mb=document.getElementById('balance-val');
+    var bchChip=document.getElementById('dt-status-chat-bch');
+    var bchDot=document.getElementById('dt-chat-dot-bch');
+    var bchVal=document.getElementById('dt-status-chat-bch-val');
+    if(mb&&bchChip){
+      var bal=mb.textContent||'';
+      var isLoading=!bal||bal.indexOf('--')>=0||bal.indexOf('loading')>=0||bal==='…';
+      var num=parseFloat(bal);
+      var isZero=!isLoading&&(isNaN(num)||num===0);
+      var hasBalance=!isLoading&&!isNaN(num)&&num>0;
+      bchChip.classList.toggle('connecting',isLoading);
+      bchChip.classList.toggle('err',isZero);
+      bchChip.classList.toggle('on',hasBalance);
+      if(bchDot){bchDot.classList.toggle('connecting',isLoading);bchDot.classList.toggle('err',isZero);bchDot.classList.toggle('on',hasBalance);}
+      if(bchVal){var clean=bal.replace(/\s*BCH\s*/i,'').trim();bchVal.textContent=hasBalance?clean:(isLoading?'loading…':'0');}
+    }
+
+    // Mirror Nostr status chip — use mobile .balance-dot as proxy
+    var nChip=document.getElementById('dt-status-chat-nostr');
+    var nDot=document.getElementById('dt-chat-dot-nostr');
+    var nSrv=document.getElementById('dt-status-chat-nostr-server');
+    if(nChip){
+      var bDot=document.querySelector('.balance-dot');
+      var anyOn=false;
+      if(bDot){var bg=getComputedStyle(bDot).backgroundColor;anyOn=bg.indexOf('29, 217, 165')>=0||bg.indexOf('0, 255, 65')>=0;}
+      nChip.classList.toggle('on',anyOn);
+      nChip.classList.toggle('err',!anyOn);
+      if(nDot){nDot.classList.toggle('on',anyOn);nDot.classList.toggle('err',!anyOn);}
+      if(nSrv) nSrv.textContent=anyOn?'connected':'—';
+    }
+
+    // Mirror contact list
+    var ml=document.getElementById('list-'+_listMode);
+    var dl=document.getElementById('dt-chat-contact-list');
+    if(ml&&dl){
+      var items=ml.querySelectorAll('.list-item');
+      if(!items.length){
+        dl.innerHTML='<div style="padding:20px;text-align:center;color:var(--dt-text-secondary);font-size:12px">No '+_listMode+' yet</div>';
+      } else {
+        var html='';
+        items.forEach(function(it,i){
+          var name=it.querySelector('.item-name');
+          var preview=it.querySelector('.item-preview');
+          var time=it.querySelector('.item-time');
+          var badge=it.querySelector('.badge');
+          var avatar=it.querySelector('.avatar');
+          var oc=it.getAttribute('onclick')||'';
+          var idxMatch=oc.match(/openConv\((\d+)\)/);
+          var idx=idxMatch?idxMatch[1]:i;
+          html+='<div class="dt-contact-row'+(''+idx===_activeContact?' active':'')+'" onclick="dtChatOpenConv(\''+idx+'\')">'
+            +'<div class="dt-avatar">'+(avatar?avatar.textContent.trim().charAt(0):(name?name.textContent.charAt(0).toUpperCase():'?'))+'</div>'
+            +'<div class="dt-contact-info"><div class="dt-contact-name">'+(name?name.textContent:'Anon')+'</div>'
+            +'<div class="dt-contact-preview">'+(preview?preview.textContent:'')+'</div></div>'
+            +'<div class="dt-contact-meta">'
+            +(time?'<div class="dt-contact-time">'+time.textContent+'</div>':'')
+            +(badge?'<div class="dt-contact-badge">'+badge.textContent+'</div>':'')
+            +'</div></div>';
+        });
+        dl.innerHTML=html;
+      }
+    }
+
+    // Mirror active conversation
+    var cv=document.getElementById('dt-chat-conv');
+    if(cv&&cv.style.display!=='none'){
+      var cn=document.getElementById('conv-name');
+      var dcn=document.getElementById('dt-chat-conv-name');
+      if(cn&&dcn) dcn.textContent=cn.textContent;
+
+      var cs=document.getElementById('conv-status');
+      var dcs=document.getElementById('dt-chat-conv-status');
+      if(cs&&dcs) dcs.textContent=cs.textContent;
+
+      var ca=document.getElementById('conv-avatar');
+      var dca=document.getElementById('dt-chat-conv-avatar');
+      if(ca&&dca) dca.textContent=ca.textContent.trim().charAt(0);
+
+      // Mirror messages
+      var msgs=document.getElementById('messages');
+      var dmsgs=document.getElementById('dt-chat-messages');
+      if(msgs&&dmsgs){
+        var mobMsgs=msgs.querySelectorAll('.msg,.sys-msg,.enc-badge');
+        var html='';
+        mobMsgs.forEach(function(m){
+          if(m.classList.contains('sys-msg')||m.classList.contains('enc-badge')){
+            html+='<div style="text-align:center;font-size:11px;color:var(--dt-text-secondary);padding:8px;opacity:.6">'+m.textContent+'</div>';
+            return;
+          }
+          var isMe=m.classList.contains('me');
+          var bubble=m.querySelector('.msg-bubble');
+          var time=m.querySelector('.msg-time');
+          var sender=m.querySelector('.msg-sender');
+          html+='<div class="dt-msg '+(isMe?'me':'them')+'">'
+            +(sender?'<div style="font-size:10px;color:var(--dt-text-secondary);margin-bottom:2px">'+sender.textContent+'</div>':'')
+            +'<div class="dt-msg-bubble">'+(bubble?bubble.textContent:'')+'</div>'
+            +(time?'<div class="dt-msg-time">'+time.textContent+'</div>':'')
+            +'</div>';
+        });
+        dmsgs.innerHTML=html;
+      }
+    }
+  },800);
+})();
+</script>
 
 <!-- ── PHONE ── -->
 <div class="phone-wrap">
@@ -616,7 +1041,7 @@
     <div class="app-header">
       <div class="app-title">
         00 Chat
-        <span>end-to-end encrypted · BCH</span>
+        <span>split-knowledge · BCH + Nostr</span>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
         <div style="display:flex;gap:14px">
@@ -780,7 +1205,7 @@
     </div>
 
     <!-- ── AUTH: IMPORT KEY (first time) ── -->
-    <div class="auth-screen" id="auth-import">
+    <div class="auth-screen" id="auth-import" style="display:none">
       <div class="auth-logo">00</div>
       <div class="auth-subtitle">// 00 CHAT · SETUP</div>
       <button class="auth-btn auth-btn-gen" onclick="openKeygen()">⚡ GÉNÉRER UNE NOUVELLE CLÉ</button>
@@ -895,6 +1320,7 @@
   </div>
 </div>
 
+<script>if(sessionStorage.getItem('00_gate')!=='1'){window.location.href='/';}else if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
 <script>
 // ── Boot sequence (regular script — runs even if module fails) ────────────
 (function() {
@@ -906,18 +1332,20 @@
     else clearInterval(loaderIv);
   }, 480);
   setTimeout(() => {
-    document.getElementById('loading').style.transition = 'opacity .5s';
-    document.getElementById('loading').style.opacity    = '0';
-    setTimeout(() => {
-      document.getElementById('loading').style.display = 'none';
-      if (typeof window._appBoot === 'function') {
-        window._appBoot();
-      } else {
+    // Don't hide loading yet — let _appBoot decide
+    if (typeof window._appBoot === 'function') {
+      window._appBoot();
+    } else {
+      // Module failed — hide loading, show import
+      document.getElementById('loading').style.transition = 'opacity .5s';
+      document.getElementById('loading').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
         document.getElementById('auth-import').style.display = 'flex';
         const e = document.getElementById('import-error');
         if (e) e.textContent = '// Servir via HTTP : python3 -m http.server 8080';
-      }
-    }, 500);
+      }, 500);
+    }
   }, 2200);
 })();
 </script>
@@ -927,7 +1355,7 @@
 // ════════════════════════════════════════════════════
 
 // ── Noble crypto imports ──────────────────────────
-import { secp256k1 } from 'https://esm.sh/@noble/curves@1.8.1/secp256k1';
+import { secp256k1, schnorr } from 'https://esm.sh/@noble/curves@1.8.1/secp256k1';
 import { x25519    } from 'https://esm.sh/@noble/curves@1.8.1/ed25519';
 import { hmac      } from 'https://esm.sh/@noble/hashes@1.7.1/hmac';
 import { sha256    } from 'https://esm.sh/@noble/hashes@1.7.1/sha256';
@@ -1101,6 +1529,370 @@ async function ccshDecryptPacket(raw, myPriv32) {
   return { text: new TextDecoder().decode(pt), senderPubHex: b2h(pkt.sender_pub), msgType: pkt.msg_type };
 }
 
+// ══════════════════════════════════════════════════
+// CCSH v2 — Split-Knowledge Protocol
+// XOR One-Time Pad: chain (OP_RETURN) + relay (Nostr)
+// ══════════════════════════════════════════════════
+const CCSH_V2 = 0x02;
+const MSG_SPLIT_CHAIN = 0x10;
+const MSG_SPLIT_RELAY = 0x11;
+const FLAG_SPLIT = 0x01;
+const NOSTR_KIND_CCSH = 21059; // ephemeral encrypted DM
+
+// ── v2 XOR One-Time Pad ──────────────────────────
+function xorSplit(data) {
+  const pad = crypto.getRandomValues(new Uint8Array(data.length));
+  const shard = new Uint8Array(data.length);
+  for (let i = 0; i < data.length; i++) shard[i] = data[i] ^ pad[i];
+  return [shard, pad];
+}
+function xorMerge(shard, pad) {
+  if (shard.length !== pad.length) throw new Error('XOR length mismatch');
+  const out = new Uint8Array(shard.length);
+  for (let i = 0; i < shard.length; i++) out[i] = shard[i] ^ pad[i];
+  return out;
+}
+
+// ── v2 Dual-channel KDF ──────────────────────────
+function deriveKeyChain(shared) { return sha256(concat(shared, new TextEncoder().encode('ccsh-chain'))); }
+function deriveKeyRelay(shared) { return sha256(concat(shared, new TextEncoder().encode('ccsh-relay'))); }
+
+// ── v2 AES wrap/unwrap ───────────────────────────
+async function aesWrap(data, key) {
+  const nonce = crypto.getRandomValues(new Uint8Array(12));
+  const ck = await crypto.subtle.importKey('raw', key, { name: 'AES-GCM' }, false, ['encrypt']);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce, tagLength: 128 }, ck, data));
+  return concat(nonce, ct);
+}
+async function aesUnwrap(blob, key) {
+  if (blob.length < 12) throw new Error('blob too short');
+  const ck = await crypto.subtle.importKey('raw', key, { name: 'AES-GCM' }, false, ['decrypt']);
+  return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: blob.slice(0, 12), tagLength: 128 }, ck, blob.slice(12)));
+}
+
+// ── v2 Split encrypt/decrypt ─────────────────────
+async function splitEncrypt(plaintext, recipientPubHex) {
+  const recipientPub = h2b(recipientPubHex);
+  // 1. Ephemeral ECDH
+  const ephPriv = crypto.getRandomValues(new Uint8Array(32));
+  const ephPub = x25519.getPublicKey(ephPriv);
+  const shared = x25519.getSharedSecret(ephPriv, recipientPub);
+  // 2. Inner AES (same as v1)
+  const innerKey = sha256(shared);
+  const innerNonce = crypto.getRandomValues(new Uint8Array(12));
+  const ck = await crypto.subtle.importKey('raw', innerKey, { name: 'AES-GCM' }, false, ['encrypt']);
+  const innerCt = concat(innerNonce, new Uint8Array(await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv: innerNonce, tagLength: 128 }, ck, new TextEncoder().encode(plaintext))));
+  // 3. XOR split (One-Time Pad)
+  const [shard, pad] = xorSplit(innerCt);
+  // 4. Dual-channel wrap
+  const chainBlob = await aesWrap(shard, deriveKeyChain(shared));
+  const relayBlob = await aesWrap(pad, deriveKeyRelay(shared));
+  return { chainBlob, relayBlob, ephPub };
+}
+
+async function splitDecrypt(chainBlob, relayBlob, ephPub, myPriv32) {
+  // 1. ECDH
+  const shared = x25519.getSharedSecret(myPriv32, ephPub);
+  // 2. Unwrap both channels
+  const shard = await aesUnwrap(chainBlob, deriveKeyChain(shared));
+  const pad = await aesUnwrap(relayBlob, deriveKeyRelay(shared));
+  // 3. XOR merge
+  const innerCt = xorMerge(shard, pad);
+  // 4. Decrypt inner
+  const innerKey = sha256(shared);
+  const ck = await crypto.subtle.importKey('raw', innerKey, { name: 'AES-GCM' }, false, ['decrypt']);
+  const pt = new Uint8Array(await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: innerCt.slice(0, 12), tagLength: 128 }, ck, innerCt.slice(12)));
+  return new TextDecoder().decode(pt);
+}
+
+// ── v2 Packet pack/unpack ────────────────────────
+function packV2(pkt) {
+  const c = pkt.ciphertext_chunk;
+  return concat(
+    CCSH_MAGIC,
+    new Uint8Array([CCSH_V2, pkt.msg_type, pkt.flags || FLAG_SPLIT]),
+    pkt.msg_id, pkt.sender_pub,
+    new Uint8Array([(pkt.chunk_index >> 8) & 0xff, pkt.chunk_index & 0xff]),
+    new Uint8Array([(pkt.chunk_total >> 8) & 0xff, pkt.chunk_total & 0xff]),
+    new Uint8Array([(c.length >> 8) & 0xff, c.length & 0xff]),
+    c
+  );
+}
+function unpackAny(raw) {
+  if (raw.length < 61) throw new Error('packet too short');
+  if (raw[0] !== 0x43 || raw[1] !== 0x43 || raw[2] !== 0x53 || raw[3] !== 0x48) throw new Error('bad magic');
+  let pos = 7;
+  const msg_id = raw.slice(pos, pos + 16); pos += 16;
+  const sender_pub = raw.slice(pos, pos + 32); pos += 32;
+  const chunk_index = (raw[pos] << 8) | raw[pos + 1]; pos += 2;
+  const chunk_total = (raw[pos] << 8) | raw[pos + 1]; pos += 2;
+  const clen = (raw[pos] << 8) | raw[pos + 1]; pos += 2;
+  return { version: raw[4], msg_type: raw[5], flags: raw[6], msg_id, sender_pub,
+           chunk_index, chunk_total, ciphertext_chunk: raw.slice(pos, pos + clen) };
+}
+
+// ── Nostr relay manager ──────────────────────────
+const _NOSTR_RELAYS = JSON.parse(localStorage.getItem('00_ep_relays') || 'null') || [
+  'wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.nostr.band', 'wss://relay.snort.social'
+];
+let _nostrSockets = [], _nostrConnected = false, _seenNostrEvents = new Set();
+let _pendingChainParts = new Map(); // msg_id_hex → { chunks, sender_pub, txid, senderBchAddr, ts }
+let _pendingRelayParts = new Map(); // msg_id_hex → { chunks, ts }
+
+function _deriveNostrPriv(x25519PrivHex) {
+  return sha256(concat(h2b(x25519PrivHex), new TextEncoder().encode('ccsh-nostr')));
+}
+function _nostrPubFromPriv(privBytes) {
+  return b2h(secp256k1.getPublicKey(privBytes, true).slice(1)); // x-only
+}
+
+async function _makeNostrEvent(privBytes, kind, content, tags) {
+  const pub = _nostrPubFromPriv(privBytes);
+  const created_at = Math.floor(Date.now() / 1000);
+  const idHash = sha256(new TextEncoder().encode(JSON.stringify([0, pub, created_at, kind, tags, content])));
+  const sig = b2h(schnorr.sign(idHash, privBytes));
+  return { id: b2h(idHash), pubkey: pub, created_at, kind, tags, content, sig };
+}
+
+function _connectNostrRelay(url) {
+  const entry = { url, ws: null, connected: false };
+  _nostrSockets.push(entry);
+  const ws = new WebSocket(url);
+  entry.ws = ws;
+  ws.onopen = () => {
+    entry.connected = true; _nostrConnected = true;
+    console.log('[nostr] connected', new URL(url).hostname);
+    _subscribeNostrInbox(ws);
+  };
+  ws.onmessage = e => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg[0] === 'EVENT' && msg[2]) {
+        if (_seenNostrEvents.has(msg[2].id)) return;
+        _seenNostrEvents.add(msg[2].id);
+        if (_seenNostrEvents.size > 5000) {
+          const arr = [..._seenNostrEvents]; _seenNostrEvents = new Set(arr.slice(-2500));
+        }
+        _handleNostrCcshEvent(msg[2]);
+      }
+    } catch {}
+  };
+  ws.onclose = () => {
+    entry.connected = false;
+    _nostrConnected = _nostrSockets.some(s => s.connected);
+    const idx = _nostrSockets.indexOf(entry);
+    if (idx !== -1) _nostrSockets.splice(idx, 1);
+    setTimeout(() => _connectNostrRelay(url), 5000);
+  };
+  ws.onerror = () => ws.close();
+}
+
+function _subscribeNostrInbox(ws) {
+  if (!ws || ws.readyState !== 1 || !profile) return;
+  const now = Math.floor(Date.now() / 1000);
+  ws.send(JSON.stringify(['REQ', 'ccsh-inbox', {
+    kinds: [NOSTR_KIND_CCSH],
+    '#p': [profile.x25519_pub_hex],
+    since: now - 3600,
+  }]));
+}
+
+function _nostrPublish(event) {
+  let sent = 0;
+  for (const s of _nostrSockets) {
+    if (s.ws && s.ws.readyState === 1) {
+      s.ws.send(JSON.stringify(['EVENT', event]));
+      sent++;
+    }
+  }
+  console.log('[nostr] published to', sent, 'relays');
+}
+
+function _handleNostrCcshEvent(ev) {
+  if (ev.kind !== NOSTR_KIND_CCSH) return;
+  try {
+    const ccshTag = ev.tags.find(t => t[0] === 'ccsh');
+    if (!ccshTag) return;
+    const msgIdHex = ccshTag[1];
+    // Parse relay packets: 2-byte length prefix (BE) + packet
+    const payload = h2b(ev.content);
+    const packets = [];
+    let pos = 0;
+    while (pos < payload.length) {
+      if (pos + 2 > payload.length) break;
+      const pktLen = (payload[pos] << 8) | payload[pos + 1]; pos += 2;
+      if (pos + pktLen > payload.length) break;
+      packets.push(payload.slice(pos, pos + pktLen)); pos += pktLen;
+    }
+    if (!_pendingRelayParts.has(msgIdHex)) {
+      _pendingRelayParts.set(msgIdHex, { chunks: [], ts: Date.now() });
+    }
+    const entry = _pendingRelayParts.get(msgIdHex);
+    for (const pktBytes of packets) {
+      try {
+        const p = unpackAny(pktBytes);
+        if (p.msg_type === MSG_SPLIT_RELAY) {
+          entry.chunks.push({ idx: p.chunk_index, total: p.chunk_total, data: p.ciphertext_chunk });
+        }
+      } catch {}
+    }
+    entry.ts = Date.now();
+    console.log('[nostr] relay chunks for msg_id=' + msgIdHex.slice(0, 12) + '... n=' + entry.chunks.length);
+    _tryDecryptV2(msgIdHex);
+    // Cleanup stale entries
+    const now = Date.now();
+    for (const [k, v] of _pendingRelayParts) { if (now - v.ts > 3600_000) _pendingRelayParts.delete(k); }
+  } catch (e) { console.debug('[nostr] bad CCSH event:', e.message); }
+}
+
+async function _tryDecryptV2(msgIdHex) {
+  const chain = _pendingChainParts.get(msgIdHex);
+  const relay = _pendingRelayParts.get(msgIdHex);
+  if (!chain || !relay) return;
+  if (!chain.chunks.length || !relay.chunks.length) return;
+  if (chain.chunks.length !== chain.chunks[0].total) return;
+  if (relay.chunks.length !== relay.chunks[0].total) return;
+  // Reassemble
+  const chainSorted = [...chain.chunks].sort((a, b) => a.idx - b.idx);
+  const relaySorted = [...relay.chunks].sort((a, b) => a.idx - b.idx);
+  const chainData = chainSorted.length === 1 ? chainSorted[0].data : concat(...chainSorted.map(c => c.data));
+  const relayData = relaySorted.length === 1 ? relaySorted[0].data : concat(...relaySorted.map(c => c.data));
+  if (chainData.length < 32) return;
+  const ephPub = chainData.slice(0, 32);
+  const chainBlob = chainData.slice(32);
+  const myPriv32 = h2b(profile.x25519_priv_hex);
+  try {
+    const text = await splitDecrypt(chainBlob, relayData, ephPub, myPriv32);
+    const senderPubHex = b2h(chain.sender_pub);
+    console.log('[v2] ✓ decrypted msg_id=' + msgIdHex.slice(0, 12) + '... from=' + senderPubHex.slice(0, 16));
+    let contact = findContactByPub(senderPubHex);
+    const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    if (!contact) {
+      contact = { name: 'Unknown ' + senderPubHex.slice(0, 8), pub_hex: senderPubHex,
+        bch_address: chain.senderBchAddr || '', avatar: '??', msgs: [], pending: true };
+      contacts.push(contact);
+      saveContacts(); renderContacts();
+    }
+    contact.msgs = contact.msgs || [];
+    if (contact.msgs.some(m => m.txid === chain.txid)) { _pendingChainParts.delete(msgIdHex); _pendingRelayParts.delete(msgIdHex); return; }
+    const msg = { from: 'them', text, time, txid: chain.txid, v2: true };
+    contact.msgs.push(msg);
+    saveContacts(); renderContacts();
+    if (currentConvIdx !== null && contacts[currentConvIdx]?.pub_hex === senderPubHex) appendMsg(msg);
+    _pendingChainParts.delete(msgIdHex);
+    _pendingRelayParts.delete(msgIdHex);
+  } catch (e) { console.debug('[v2] decrypt failed:', e.message); }
+}
+
+function startNostrRelays() {
+  _nostrSockets.forEach(s => { try { s.ws?.close(); } catch {} });
+  _nostrSockets = [];
+  for (const url of _NOSTR_RELAYS) _connectNostrRelay(url);
+}
+
+// ── v2 Send (chain TX + Nostr relay) ─────────────
+async function sendCcshMsgV2(contact, text) {
+  const prof = profile;
+  const myPriv32 = h2b(prof.x25519_priv_hex);
+  const myPub32 = h2b(prof.x25519_pub_hex);
+  // 1. Split encrypt
+  const { chainBlob, relayBlob, ephPub } = await splitEncrypt(text, contact.pub_hex);
+  // 2. Build chain packet (eph_pub prepended to chain_blob)
+  const chainData = concat(ephPub, chainBlob);
+  const msgId = crypto.getRandomValues(new Uint8Array(16));
+  const chainPkt = packV2({
+    msg_id: msgId, sender_pub: myPub32,
+    chunk_index: 0, chunk_total: 1,
+    ciphertext_chunk: chainData,
+    msg_type: MSG_SPLIT_CHAIN, flags: FLAG_SPLIT
+  });
+  // 3. Build BCH TX with chain packet in OP_RETURN
+  let spendPrivHex = prof.bch_priv_hex;
+  let spendAddr = _wcMode ? (_wcBchAddr || prof.bch_address) : prof.bch_address;
+  let addrData = await bcGetAddr(spendAddr);
+  let usingPrev = false;
+  if (!_wcMode && !addrData?.utxo?.length && prof.bch_priv_hex_prev) {
+    spendPrivHex = prof.bch_priv_hex_prev;
+    addrData = await bcGetAddr(prof.bch_address_prev);
+    usingPrev = true;
+  }
+  if (!addrData?.utxo?.length) throw new Error('No UTXOs — fund: ' + spendAddr);
+  const myHash160 = _wcMode ? cashAddrToHash20(prof.bch_address) : ripemd160(sha256(secp256k1.getPublicKey(h2b(spendPrivHex), true)));
+  const myScript = p2pkhScript(myHash160);
+  const changeScript = usingPrev ? p2pkhAddrScript(prof.bch_address) : myScript;
+  // Dynamic fee: ~1.5 sat/byte
+  const estSize = 180 + chainPkt.length;
+  const FEE = BigInt(Math.max(1500, Math.ceil(estSize * 1.5)));
+  const DUST = 546n;
+  let total = 0n; const chosenUtxos = [];
+  for (const u of addrData.utxo) {
+    total += BigInt(u.value); chosenUtxos.push(u);
+    if (total >= DUST + FEE) break;
+  }
+  if (total < DUST + FEE) throw new Error(`Insufficient funds (${total} sats)`);
+  const change = total - DUST - FEE;
+  const outputs = [
+    { value: Number(DUST), script: p2pkhAddrScript(contact.bch_address) },
+    { value: 0, script: opReturnScript(chainPkt) },
+  ];
+  if (change >= DUST) outputs.push({ value: Number(change), script: changeScript });
+  const inputs = chosenUtxos.map(u => ({
+    txidLE: h2b(u.transaction_hash).reverse(),
+    vout: u.index, sequence: 0xffffffff, value: u.value
+  }));
+  let txid;
+  if (_wcMode && _wcClient && _wcSession) {
+    const unsignedHex = b2h(serializeTx(1, 0, inputs.map(inp => ({...inp, scriptSig: new Uint8Array(0)})), outputs));
+    const sourceOutputs = chosenUtxos.map(u => ({
+      outpointIndex: u.index,
+      outpointTransactionHash: '<Uint8Array: 0x' + b2h(h2b(u.transaction_hash).reverse()) + '>',
+      sequenceNumber: 4294967295, unlockingBytecode: '<Uint8Array: 0x>',
+      lockingBytecode: '<Uint8Array: 0x' + b2h(myScript) + '>',
+      valueSatoshis: '<bigint: ' + u.value + 'n>',
+    }));
+    const wcResult = await _wcClient.request({
+      chainId: 'bch:bitcoincash', topic: _wcSession.topic,
+      request: { method: 'bch_signTransaction', params: { transaction: unsignedHex, sourceOutputs, broadcast: false, userPrompt: 'Send split-knowledge message' } },
+    });
+    if (!wcResult || !wcResult.signedTransaction) throw new Error('signing rejected');
+    txid = await bcBroadcast(wcResult.signedTransaction);
+  } else {
+    const bchPriv32 = h2b(spendPrivHex);
+    const bchPub33 = secp256k1.getPublicKey(bchPriv32, true);
+    const signedInputs = [];
+    for (let i = 0; i < inputs.length; i++) {
+      const sighash = bchSighash(1, 0, inputs, outputs, i, myScript, inputs[i].value);
+      const sig = secp256k1.sign(sighash, bchPriv32, { lowS: true });
+      const derSig = concat(sig.toDERRawBytes(), new Uint8Array([0x41]));
+      const scriptSig = concat(new Uint8Array([derSig.length]), derSig, new Uint8Array([bchPub33.length]), bchPub33);
+      signedInputs.push({ ...inputs[i], scriptSig });
+    }
+    txid = await bcBroadcast(b2h(serializeTx(1, 0, signedInputs, outputs)));
+  }
+  // 4. Publish relay half to Nostr
+  const relayPkt = packV2({
+    msg_id: msgId, sender_pub: myPub32,
+    chunk_index: 0, chunk_total: 1,
+    ciphertext_chunk: relayBlob,
+    msg_type: MSG_SPLIT_RELAY, flags: FLAG_SPLIT
+  });
+  const payloadBuf = concat(
+    new Uint8Array([(relayPkt.length >> 8) & 0xff, relayPkt.length & 0xff]),
+    relayPkt
+  );
+  const nostrPriv = _deriveNostrPriv(prof.x25519_priv_hex);
+  const nostrEvent = await _makeNostrEvent(nostrPriv, NOSTR_KIND_CCSH, b2h(payloadBuf), [
+    ['p', contact.pub_hex],
+    ['ccsh', b2h(msgId)],
+    ['expiration', String(Math.floor(Date.now() / 1000) + 3600)],
+  ]);
+  _nostrPublish(nostrEvent);
+  console.log('[v2] ✓ chain TX=' + txid.slice(0, 12) + '... relay=' + nostrEvent.id.slice(0, 12));
+  return txid;
+}
+
 // ── Fulcrum/Electrum WebSocket (BCH) ──────────────
 const _FV = JSON.parse(localStorage.getItem('00_ep_fulcrum') || 'null') || [
   'wss://bch.imaginary.cash:50004',
@@ -1209,9 +2001,9 @@ function p2pkhScript(hash20) {
 }
 function p2pkhAddrScript(cashAddr) { return p2pkhScript(cashAddrToHash20(cashAddr)); }
 function opReturnScript(data) {
-  return data.length <= 75
-    ? concat(new Uint8Array([0x6a, data.length]), data)
-    : concat(new Uint8Array([0x6a, 0x4c, data.length]), data);
+  if (data.length <= 75) return concat(new Uint8Array([0x6a, data.length]), data);
+  if (data.length <= 255) return concat(new Uint8Array([0x6a, 0x4c, data.length]), data);
+  return concat(new Uint8Array([0x6a, 0x4d, data.length & 0xff, (data.length >> 8) & 0xff]), data);
 }
 function bchSighash(version, locktime, inputs, outputs, i, utxoScript, utxoValue) {
   const prevouts = concat(...inputs.map(x => concat(x.txidLE, u32LE(x.vout))));
@@ -1361,6 +2153,7 @@ function parseTxOpReturns(rawHex) {
         let pay = null;
         if (script[1] <= 75) pay = script.slice(2, 2 + script[1]);
         else if (script[1] === 0x4c) pay = script.slice(3, 3 + script[2]);
+        else if (script[1] === 0x4d) { const dlen = script[2] | (script[3] << 8); pay = script.slice(4, 4 + dlen); }
         if (pay?.length) opReturns.push(pay);
       }
     }
@@ -1494,9 +2287,32 @@ async function scanInbox() {
       if (!rawHex) { seenTxids.delete(txid); continue; }
       for (const payload of parseTxOpReturns(rawHex)) {
         if (payload[0] !== 0x43 || payload[1] !== 0x43 || payload[2] !== 0x53 || payload[3] !== 0x48) continue;
+        const pktVersion = payload[4];
+
+        // ── v2 SPLIT_CHAIN: store chain half, try match with relay ──
+        if (pktVersion === CCSH_V2) {
+          try {
+            const pkt = unpackAny(payload);
+            if (pkt.msg_type !== MSG_SPLIT_CHAIN) continue;
+            const msgIdHex = b2h(pkt.msg_id);
+            if (!_pendingChainParts.has(msgIdHex)) {
+              _pendingChainParts.set(msgIdHex, {
+                chunks: [], sender_pub: pkt.sender_pub, txid,
+                senderBchAddr: extractSenderBchAddr(rawHex) || '', ts: Date.now()
+              });
+            }
+            const entry = _pendingChainParts.get(msgIdHex);
+            entry.chunks.push({ idx: pkt.chunk_index, total: pkt.chunk_total, data: pkt.ciphertext_chunk });
+            console.log('[v2] chain chunk for msg_id=' + msgIdHex.slice(0, 12) + '... idx=' + pkt.chunk_index + '/' + pkt.chunk_total);
+            await _tryDecryptV2(msgIdHex);
+          } catch (e) { console.debug('[v2] chain parse error:', e.message); }
+          continue;
+        }
+
+        // ── v1 handling ──
         try {
           const { text, senderPubHex, msgType } = await ccshDecryptPacket(payload, myPriv32);
-          console.log('[00chat] CCSH decrypted msgType=' + msgType + ' sender=' + senderPubHex.slice(0,16) + '...');
+          console.log('[00chat] CCSH v1 decrypted msgType=' + msgType + ' sender=' + senderPubHex.slice(0,16) + '...');
           let contact = findContactByPub(senderPubHex);
           const time  = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
@@ -1566,6 +2382,9 @@ async function scanInbox() {
         }
       }
     }
+    // Cleanup stale pending chain parts
+    const now = Date.now();
+    for (const [k, v] of _pendingChainParts) { if (now - v.ts > 3600_000) _pendingChainParts.delete(k); }
   } catch (e) { console.warn('[00chat] scan error:', e); }
 }
 function startScanner() { scanInbox(); return setInterval(scanInbox, 10_000); }
@@ -1634,7 +2453,7 @@ function openConv(idx) {
     : '● ccsh encrypted';
   document.getElementById('pending-banner').style.display = c.pending ? 'flex' : 'none';
   const msgsEl = document.getElementById('messages');
-  msgsEl.innerHTML = `<div class="enc-badge">🔒 END-TO-END ENCRYPTED · X25519 + AES-256-GCM</div>`;
+  msgsEl.innerHTML = `<div class="enc-badge">🔒 SPLIT-KNOWLEDGE · XOR-OTP + AES-256-GCM · BCH + NOSTR</div>`;
   (c.msgs || []).forEach(m => appendMsg(m, false));
   document.getElementById('conv-view').style.display = 'flex';
   setTimeout(() => msgsEl.scrollTop = msgsEl.scrollHeight, 50);
@@ -1660,14 +2479,14 @@ async function sendMsg() {
   const text    = input.value.trim();
   if (!text) return;
   if (!contact.bch_address || !contact.pub_hex) { alert('Contact missing BCH address or pub key'); return; }
-  if (new TextEncoder().encode(text).length > 100) { alert('Message too long — max ~100 bytes per TX'); return; }
+  if (new TextEncoder().encode(text).length > 500) { alert('Message too long — max 500 bytes'); return; }
   input.value = '';
   const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-  const msg  = { from: 'me', text, time: time + ' · sending...' };
+  const msg  = { from: 'me', text, time: time + ' · sending...', v2: true };
   appendMsg(msg);
   try {
-    const txid = await sendCcshMsg(contact, text);
-    msg.time   = time + ' · ✓ ' + txid.slice(0, 8) + '...';
+    const txid = await sendCcshMsgV2(contact, text);
+    msg.time   = time + ' · ✓ v2 ' + txid.slice(0, 8) + '...';
     const bubbles = document.querySelectorAll('#messages .msg.me .msg-time');
     if (bubbles.length) bubbles[bubbles.length - 1].textContent = msg.time;
     contact.msgs = contact.msgs || []; contact.msgs.push(msg); saveContacts();
@@ -1738,6 +2557,10 @@ async function importKey() {
 function showUnlock() {
   _attempts = parseInt(localStorage.getItem('00chat_attempts') || '0');
   updateAttemptDots();
+  // Hide loading screen before showing unlock
+  const loading = document.getElementById('loading');
+  loading.style.transition = 'opacity .4s'; loading.style.opacity = '0';
+  setTimeout(() => { loading.style.display = 'none'; }, 400);
   document.getElementById('auth-unlock').style.display = 'flex';
   setTimeout(() => document.getElementById('unlock-password').focus(), 100);
 }
@@ -1749,6 +2572,8 @@ async function tryUnlock() {
   try {
     profile = await decryptVault(stored, pass);
     _sessionPass = pass;
+    // Shared session — all apps auto-unlock (30 min TTL)
+    localStorage.setItem('00_session_auth', JSON.stringify({ p: btoa(pass), ts: Date.now() }));
     if (profile.wc_mode) {
       _wcMode = true;
       await _restoreChatWcSession();
@@ -1768,14 +2593,15 @@ async function tryUnlock() {
 function bootIntoChat() {
   loadContacts();
   const loading = document.getElementById('loading');
-  loading.style.display = 'flex'; loading.style.opacity = '0';
+  // Loading screen is still visible from boot sequence — just update text
+  loading.style.display = 'flex'; loading.style.opacity = '1';
   document.getElementById('loader-status').innerHTML = 'DECRYPTING INBOX...<span class="blink">_</span>';
   const bar = document.querySelector('.loader-bar');
   bar.style.animation = 'none'; void bar.offsetHeight; bar.style.animation = 'loadBar .8s ease forwards';
-  loading.style.transition = 'opacity .2s'; loading.style.opacity = '1';
   setTimeout(() => {
+    loading.style.transition = 'opacity .5s';
     loading.style.opacity = '0';
-    setTimeout(() => { loading.style.display = 'none'; renderContacts(); renderGroups(); startScanner(); startBalanceRefresh(); }, 400);
+    setTimeout(() => { loading.style.display = 'none'; renderContacts(); renderGroups(); startScanner(); startBalanceRefresh(); startNostrRelays(); }, 500);
   }, 900);
 }
 
@@ -2181,18 +3007,94 @@ function cancelChatWc() {
 
 // ── Boot callback (called by regular script after loading screen) ─────────
 window._appBoot = async function() {
-  if (localStorage.getItem('00chat_vault')) {
-    // If WC session flag exists, try to restore it after unlock
+  const vault = localStorage.getItem('00chat_vault');
+  if (vault) {
+    // Auto-unlock from shared session (cross-app, 30 min TTL)
+    try {
+      const sess = JSON.parse(localStorage.getItem('00_session_auth') || '{}');
+      if (sess.p && sess.ts && Date.now() - sess.ts < 30 * 60 * 1000) {
+        const pass = atob(sess.p);
+        profile = await decryptVault(vault, pass);
+        _sessionPass = pass;
+        localStorage.setItem('00_session_auth', JSON.stringify({ p: sess.p, ts: Date.now() }));
+        if (profile.wc_mode) { _wcMode = true; await _restoreChatWcSession(); }
+        _attempts = 0;
+        bootIntoChat();
+        return;
+      }
+    } catch { /* wrong password for this vault — show prompt */ }
     if (localStorage.getItem('00_wc_session_chat')) {
-      _restoreChatWcSession(); // fire and forget, profile still needs password unlock
+      _restoreChatWcSession();
     }
     showUnlock();
   } else {
+    // No chat vault — try auto-create from wallet vault + session
+    try {
+      const sess = JSON.parse(localStorage.getItem('00_session_auth') || '{}');
+      const walletVault = localStorage.getItem('00wallet_vault');
+      if (sess.p && sess.ts && Date.now() - sess.ts < 30 * 60 * 1000 && walletVault) {
+        const pass = atob(sess.p);
+        const walletProfile = await decryptVault(walletVault, pass);
+        const seed64 = walletProfile.seedHex
+          ? h2b(walletProfile.seedHex)
+          : concat(h2b(walletProfile.bchPrivHex), new Uint8Array(32));
+        profile = deriveProfileFromSeed(seed64);
+        _sessionPass = pass;
+        localStorage.setItem('00chat_vault', await encryptVault(profile, pass));
+        localStorage.setItem('00chat_attempts', '0');
+        localStorage.setItem('00_session_auth', JSON.stringify({ p: sess.p, ts: Date.now() }));
+        _attempts = 0;
+        bootIntoChat();
+        return;
+      }
+    } catch { /* wallet decrypt failed — show import */ }
+    // Hide loading screen before showing import
+    const ld = document.getElementById('loading');
+    ld.style.transition = 'opacity .4s'; ld.style.opacity = '0';
+    setTimeout(() => { ld.style.display = 'none'; }, 400);
     document.getElementById('auth-import').style.display = 'flex';
   }
 };
 
 // ── Expose to onclick handlers ────────────────────
+// ── v2 self-test (dev) ────────────────────────────
+window._testV2 = async function() {
+  try {
+    const testMsg = 'Hello split-knowledge v2!';
+    // Generate test keys
+    const privA = crypto.getRandomValues(new Uint8Array(32));
+    const pubA  = x25519.getPublicKey(privA);
+    const privB = crypto.getRandomValues(new Uint8Array(32));
+    const pubB  = x25519.getPublicKey(privB);
+    // Encrypt from A → B
+    const { chainBlob, relayBlob, ephPub } = await splitEncrypt(testMsg, b2h(pubB));
+    console.log('[test] chainBlob=' + chainBlob.length + 'B relayBlob=' + relayBlob.length + 'B');
+    // Decrypt as B
+    const decrypted = await splitDecrypt(chainBlob, relayBlob, ephPub, privB);
+    const ok = decrypted === testMsg;
+    console.log('[test] v2 round-trip ' + (ok ? '✓ PASS' : '✗ FAIL') + ' → "' + decrypted + '"');
+    // Test XOR split independently
+    const data = new Uint8Array([1,2,3,4,5,6,7,8]);
+    const [shard, pad] = xorSplit(data);
+    const merged = xorMerge(shard, pad);
+    const xorOk = data.every((v, i) => v === merged[i]);
+    console.log('[test] XOR round-trip ' + (xorOk ? '✓ PASS' : '✗ FAIL'));
+    // Test packet pack/unpack
+    const msgId = crypto.getRandomValues(new Uint8Array(16));
+    const pkt = packV2({ msg_id: msgId, sender_pub: pubA, chunk_index: 0, chunk_total: 1,
+      ciphertext_chunk: chainBlob, msg_type: MSG_SPLIT_CHAIN, flags: FLAG_SPLIT });
+    const unpacked = unpackAny(pkt);
+    const pktOk = unpacked.version === CCSH_V2 && unpacked.msg_type === MSG_SPLIT_CHAIN;
+    console.log('[test] packet pack/unpack ' + (pktOk ? '✓ PASS' : '✗ FAIL') + ' ver=' + unpacked.version + ' type=0x' + unpacked.msg_type.toString(16));
+    // Test Nostr event creation
+    const nostrPriv = _deriveNostrPriv(b2h(privA));
+    const ev = await _makeNostrEvent(nostrPriv, NOSTR_KIND_CCSH, 'test', [['p', b2h(pubB)]]);
+    const evOk = ev.id.length === 64 && ev.sig.length === 128;
+    console.log('[test] Nostr event ' + (evOk ? '✓ PASS' : '✗ FAIL') + ' id=' + ev.id.slice(0, 16) + '...');
+    return { crypto: ok, xor: xorOk, packet: pktOk, nostr: evOk, all: ok && xorOk && pktOk && evOk };
+  } catch (e) { console.error('[test] ✗ ERROR:', e); return { error: e.message }; }
+};
+
 Object.assign(window, {
   importKey, tryUnlock, toggleSave, showImport, resetToImport,
   openKeygen, closeKeygen, kgUseKey, kgCopy, kgCopyWords,

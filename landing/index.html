@@ -13,591 +13,999 @@
   <title>0penw0rld</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--green:#00ff41;--green-dim:#00c832;--green-dark:#003d0f;--black:#020a03;--panel:#060e06}
+    html,body{width:100%;height:100%;background:var(--black);color:var(--green);font-family:'Share Tech Mono',monospace;display:flex;align-items:center;justify-content:center;overflow:hidden}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ── Overlays ── */
+    #rain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.15}
+    .scanlines{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.12) 2px,rgba(0,0,0,.12) 4px)}
+    .vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.9) 100%)}
 
-    :root {
-      --green: #00ff41;
-      --green-dim: #00c832;
-      --green-dark: #003d0f;
-      --black: #020a03;
-      --grey: #0d1a0e;
+    /* ── Phone frame ── */
+    .phone-wrap{position:relative;z-index:10;display:flex;align-items:center;justify-content:center}
+    .phone{
+      width:375px;height:812px;
+      background:var(--panel);border-radius:42px;
+      border:2px solid rgba(0,255,65,.18);
+      box-shadow:0 0 0 1px rgba(0,255,65,.04),0 0 40px rgba(0,255,65,.06),0 0 80px rgba(0,255,65,.03),inset 0 0 30px rgba(0,0,0,.5);
+      display:flex;flex-direction:column;overflow:hidden;position:relative
     }
+    .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:28px;background:var(--black);border-radius:0 0 18px 18px;z-index:50;display:flex;align-items:center;justify-content:center;gap:8px}
+    .notch-cam{width:8px;height:8px;border-radius:50%;background:#0a1a0a;border:1px solid #1a3a1a}
+    .notch-speaker{width:40px;height:4px;border-radius:2px;background:#0a1a0a}
 
-    html, body {
-      width: 100%; height: 100%;
-      background: var(--black);
-      color: var(--green);
-      font-family: 'Share Tech Mono', monospace;
-      overflow-x: hidden;
-    }
+    /* ── Status bar ── */
+    .status-bar{padding:10px 20px 2px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:rgba(0,255,65,.45);flex-shrink:0;margin-top:16px}
 
-    /* ── Rain canvas ── */
-    #rain {
-      position: fixed; inset: 0; z-index: 0;
-      pointer-events: none; opacity: .18;
+    /* ── Logo header ── */
+    .home-header{text-align:center;padding:16px 0 6px;flex-shrink:0}
+    .home-logo{
+      font-family:'Orbitron',monospace;font-size:32px;font-weight:900;
+      color:var(--green);letter-spacing:3px;
+      text-shadow:0 0 12px var(--green),0 0 36px rgba(0,255,65,.3);
+      animation:logoPulse 3s ease-in-out infinite
     }
+    @keyframes logoPulse{0%,100%{text-shadow:0 0 12px var(--green),0 0 36px rgba(0,255,65,.3)}50%{text-shadow:0 0 18px var(--green),0 0 50px rgba(0,255,65,.5)}}
+    @keyframes walletPulse{0%,100%{border-color:rgba(0,255,65,.6);box-shadow:0 0 16px rgba(0,255,65,.2)}50%{border-color:var(--green);box-shadow:0 0 24px rgba(0,255,65,.35)}}
+    .home-sub{font-size:8px;color:rgba(0,255,65,.25);letter-spacing:5px;text-transform:uppercase;margin-top:4px}
 
-    /* ── Road scene ── */
-    .road-wrap {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      height: 55vh; z-index: 1; pointer-events: none;
-      overflow: hidden;
-    }
+    /* ── Session badge ── */
+    .session-badge{text-align:center;padding:8px 0 4px;font-size:8px;color:rgba(0,255,65,.2);letter-spacing:2px;flex-shrink:0}
+    .session-badge.active{color:rgba(0,255,65,.55)}
+    .session-badge.active::before{content:'\25CF  ';color:var(--green);font-size:6px;vertical-align:middle}
 
-    .road {
-      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-      width: 100%; height: 100%;
+    /* ── App grid (iOS style) ── */
+    .app-grid{
+      display:grid;grid-template-columns:repeat(3,1fr);
+      gap:20px 0;padding:20px 20px 10px;
+      flex:1;align-content:start
     }
+    .app-icon{
+      display:flex;flex-direction:column;align-items:center;gap:7px;
+      text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent;
+      transition:transform .15s
+    }
+    .app-icon:active{transform:scale(.92)}
+    .app-icon-box{
+      width:60px;height:60px;border-radius:15px;
+      border:1px solid rgba(0,255,65,.15);
+      background:rgba(0,255,65,.025);
+      display:flex;align-items:center;justify-content:center;
+      transition:.2s;position:relative;overflow:hidden
+    }
+    .app-icon-box::after{
+      content:'';position:absolute;inset:0;
+      background:linear-gradient(145deg,rgba(0,255,65,.06) 0%,transparent 60%);
+      pointer-events:none
+    }
+    .app-icon:hover .app-icon-box{
+      border-color:rgba(0,255,65,.5);
+      background:rgba(0,255,65,.06);
+      box-shadow:0 0 18px rgba(0,255,65,.12)
+    }
+    .app-icon-char{
+      font-family:'Orbitron',monospace;font-size:22px;font-weight:700;
+      color:var(--green);text-shadow:0 0 8px rgba(0,255,65,.35);
+      position:relative;z-index:1
+    }
+    .app-icon-label{font-size:9px;color:rgba(0,255,65,.45);letter-spacing:.5px;text-align:center}
 
-    /* SVG road via CSS perspective */
-    .road-svg {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      width: 100%; height: 100%;
+    /* ── Dock ── */
+    .dock-sep{height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,65,.12),transparent);margin:0 30px;flex-shrink:0}
+    .dock{
+      padding:10px 16px 24px;
+      background:rgba(0,255,65,.015);backdrop-filter:blur(8px);
+      display:flex;justify-content:space-around;
+      flex-shrink:0
     }
+    .dock .app-icon-box{width:52px;height:52px;border-radius:13px}
+    .dock .app-icon-char{font-size:19px}
+    .dock .app-icon-label{font-size:8px}
 
-    /* Fog overlay on road */
-    .road-fog {
-      position: absolute; inset: 0;
-      background: linear-gradient(to bottom, var(--black) 0%, transparent 40%, transparent 70%, rgba(0,20,5,.7) 100%);
+    /* ── Gate overlay ── */
+    #gate{
+      display:none;position:fixed;inset:0;z-index:9999;
+      background:var(--black);
+      align-items:center;justify-content:center;flex-direction:column
     }
+    .gate-box{text-align:center;max-width:400px;padding:20px}
+    .gate-title{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:5px;color:var(--green);margin-bottom:6px}
+    .gate-sub{font-size:10px;color:rgba(0,255,65,.35);letter-spacing:3px;margin-bottom:32px;text-transform:uppercase}
+    .gate-logo{font-family:'Orbitron',monospace;font-size:48px;font-weight:900;color:var(--green);text-shadow:0 0 20px var(--green),0 0 60px rgba(0,255,65,.4);margin-bottom:32px;letter-spacing:4px}
+    #gate input{
+      width:100%;background:rgba(0,255,65,.03);border:1px solid rgba(0,255,65,.25);
+      color:var(--green);font-family:'Share Tech Mono',monospace;
+      font-size:13px;letter-spacing:2px;padding:14px 18px;
+      outline:none;caret-color:var(--green)
+    }
+    #gate input:focus{border-color:rgba(0,255,65,.5);box-shadow:0 0 12px rgba(0,255,65,.1)}
+    #gate-err{font-size:10px;color:#ff003c;letter-spacing:2px;min-height:16px;margin:12px 0}
+    #gate button{
+      width:100%;background:var(--green);color:var(--black);
+      font-family:'Orbitron',monospace;font-size:11px;font-weight:700;
+      letter-spacing:3px;padding:12px;border:none;cursor:pointer;
+      text-transform:uppercase;transition:.2s
+    }
+    #gate button:hover{box-shadow:0 0 24px rgba(0,255,65,.5)}
 
-    /* Wet road reflection */
-    .road-reflection {
-      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-      width: 100%; height: 40%;
-      background: linear-gradient(to top, rgba(0,255,65,.04) 0%, transparent 100%);
+    /* ── Responsive: on real mobile, fill screen ── */
+    @media(max-width:420px){
+      .phone{width:100%;height:100vh;border-radius:0;border:none;box-shadow:none}
+      .notch{display:none}
+      .status-bar{margin-top:0;padding-top:env(safe-area-inset-top,10px)}
+      .dock{padding-bottom:env(safe-area-inset-bottom,20px)}
     }
-
-    /* Green crash light on road */
-    .crash-light {
-      position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
-      width: 300px; height: 60px;
-      background: radial-gradient(ellipse, rgba(0,255,65,.25) 0%, transparent 70%);
-      animation: crashPulse 1.8s ease-in-out infinite;
+    @media(max-height:750px){
+      .home-header{padding:10px 0 2px}
+      .home-logo{font-size:26px}
+      .app-grid{gap:14px 0;padding:14px 20px 6px}
+      .app-icon-box{width:54px;height:54px}
     }
-
-    @keyframes crashPulse {
-      0%,100% { opacity:1; transform:translateX(-50%) scaleX(1); }
-      50% { opacity:.3; transform:translateX(-50%) scaleX(.7); }
-    }
-
-    /* ── Scan lines ── */
-    .scanlines {
-      position: fixed; inset: 0; z-index: 2; pointer-events: none;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,.15) 2px,
-        rgba(0,0,0,.15) 4px
-      );
-    }
-
-    /* ── Vignette ── */
-    .vignette {
-      position: fixed; inset: 0; z-index: 2; pointer-events: none;
-      background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.85) 100%);
-    }
-
-    /* ── Main content ── */
-    .content {
-      position: relative; z-index: 10;
-      min-height: 100vh;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 40px 20px;
-    }
-
-    /* ── Terminal header ── */
-    .terminal-bar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 20;
-      padding: 10px 24px;
-      display: flex; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid rgba(0,255,65,.1);
-      background: rgba(2,10,3,.8);
-      backdrop-filter: blur(4px);
-      font-size: 11px; color: rgba(0,255,65,.5);
-    }
-    .terminal-bar .blink { animation: blink .8s step-end infinite; }
-    @keyframes blink { 50% { opacity:0; } }
-
-    /* ── Logo ── */
-    .logo-wrap {
-      text-align: center; margin-bottom: 24px;
-      position: relative;
-    }
-
-    .logo {
-      font-family: 'Orbitron', monospace;
-      font-size: clamp(52px, 10vw, 110px);
-      font-weight: 900;
-      color: var(--green);
-      text-shadow:
-        0 0 10px var(--green),
-        0 0 30px var(--green),
-        0 0 60px var(--green),
-        0 0 120px rgba(0,255,65,.4);
-      letter-spacing: 4px;
-      position: relative;
-      animation: glitchMain 4s infinite;
-      user-select: none;
-    }
-
-    /* Glitch layers */
-    .logo::before, .logo::after {
-      content: '0penw0rld';
-      position: absolute; top: 0; left: 0; right: 0;
-      font-family: 'Orbitron', monospace;
-      font-weight: 900;
-    }
-    .logo::before {
-      color: #ff003c;
-      text-shadow: 2px 0 #ff003c;
-      animation: glitchBefore 4s infinite;
-      clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
-    }
-    .logo::after {
-      color: #00ffff;
-      text-shadow: -2px 0 #00ffff;
-      animation: glitchAfter 4s infinite;
-      clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
-    }
-
-    @keyframes glitchMain {
-      0%,90%,100% { transform: none; filter: none; }
-      91% { transform: skewX(-2deg); }
-      92% { transform: skewX(2deg) scaleX(1.02); filter: blur(1px); }
-      93% { transform: none; filter: none; }
-      96% { transform: skewX(1deg); opacity:.9; }
-      97% { transform: none; opacity:1; }
-    }
-
-    @keyframes glitchBefore {
-      0%,89%,100% { opacity:0; transform:none; }
-      90% { opacity:.8; transform:translate(-3px, 1px); }
-      91% { opacity:.6; transform:translate(3px,-1px); }
-      92% { opacity:0; }
-    }
-
-    @keyframes glitchAfter {
-      0%,92%,100% { opacity:0; transform:none; }
-      93% { opacity:.7; transform:translate(3px, 2px); }
-      94% { opacity:.5; transform:translate(-3px,-2px); }
-      95% { opacity:0; }
-    }
-
-    /* ── Tagline ── */
-    .tagline {
-      font-size: clamp(13px, 2vw, 17px);
-      color: rgba(0,255,65,.7);
-      letter-spacing: 6px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      animation: flicker 6s infinite;
-    }
-
-    .tagline-sub {
-      font-size: clamp(11px, 1.5vw, 14px);
-      color: rgba(0,255,65,.35);
-      letter-spacing: 3px;
-      margin-bottom: 50px;
-    }
-
-    @keyframes flicker {
-      0%,19%,21%,23%,100% { opacity:1; }
-      20%,22% { opacity:.4; }
-      60%,62% { opacity:.8; }
-      61% { opacity:.3; }
-    }
-
-    /* ── Apps grid ── */
-    .apps-grid {
-      display: flex; flex-wrap: wrap; gap: 12px;
-      justify-content: center; margin-bottom: 50px;
-      max-width: 600px;
-    }
-
-    .app-chip {
-      border: 1px solid rgba(0,255,65,.3);
-      padding: 8px 20px;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 13px; color: rgba(0,255,65,.7);
-      border-radius: 2px;
-      background: rgba(0,255,65,.03);
-      cursor: pointer; transition: .2s;
-      position: relative; overflow: hidden;
-      text-decoration: none;
-    }
-    .app-chip::before {
-      content:''; position:absolute; inset:0;
-      background: linear-gradient(90deg, transparent, rgba(0,255,65,.08), transparent);
-      transform: translateX(-100%);
-      transition: .4s;
-    }
-    .app-chip:hover { border-color:var(--green); color:var(--green); box-shadow:0 0 12px rgba(0,255,65,.2); }
-    .app-chip:hover::before { transform:translateX(100%); }
-
-    /* ── CTA ── */
-    .cta-row { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:60px; }
-
-    .btn-primary {
-      font-family: 'Orbitron', monospace;
-      font-size: 13px; font-weight: 700; letter-spacing: 2px;
-      padding: 14px 32px;
-      background: var(--green);
-      color: var(--black);
-      border: none; cursor: pointer; border-radius: 2px;
-      text-transform: uppercase;
-      box-shadow: 0 0 20px rgba(0,255,65,.4), 0 0 40px rgba(0,255,65,.15);
-      transition: .2s;
-      animation: btnPulse 3s ease-in-out infinite;
-    }
-    .btn-primary:hover { box-shadow:0 0 30px rgba(0,255,65,.7), 0 0 60px rgba(0,255,65,.3); transform:scale(1.02); }
-    @keyframes btnPulse { 0%,100%{box-shadow:0 0 20px rgba(0,255,65,.4),0 0 40px rgba(0,255,65,.15)} 50%{box-shadow:0 0 25px rgba(0,255,65,.6),0 0 50px rgba(0,255,65,.25)} }
-
-    .btn-secondary {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 13px; letter-spacing: 2px;
-      padding: 14px 32px;
-      background: transparent;
-      color: var(--green);
-      border: 1px solid rgba(0,255,65,.4);
-      cursor: pointer; border-radius: 2px;
-      text-transform: uppercase; transition: .2s;
-    }
-    .btn-secondary:hover { border-color:var(--green); background:rgba(0,255,65,.05); }
-
-    /* ── Stats ── */
-    .stats { display:flex; gap:40px; flex-wrap:wrap; justify-content:center; }
-    .stat { text-align:center; }
-    .stat-val { font-family:'Orbitron',monospace; font-size:28px; font-weight:700; color:var(--green); text-shadow:0 0 10px var(--green); }
-    .stat-label { font-size:10px; color:rgba(0,255,65,.4); letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
-
-    /* ── Bottom terminal ── */
-    .terminal-bottom {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
-      padding: 8px 24px;
-      border-top: 1px solid rgba(0,255,65,.1);
-      background: rgba(2,10,3,.85);
-      font-size: 10px; color: rgba(0,255,65,.3);
-      display: flex; gap: 20px; overflow: hidden;
-    }
-    .scroll-text {
-      white-space: nowrap;
-      animation: scrollLeft 30s linear infinite;
-    }
-    @keyframes scrollLeft { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-
-    /* ── Hardware badge ── */
-    .hw-badge {
-      font-size: 10px; letter-spacing: 3px;
-      color: rgba(0,212,255,.55);
-      border: 1px solid rgba(0,212,255,.22);
-      padding: 5px 14px; border-radius: 2px;
-      background: rgba(0,212,255,.04);
-      white-space: nowrap;
-      animation: hwPulse 2.8s ease-in-out infinite;
-    }
-    @keyframes hwPulse {
-      0%,100% { border-color:rgba(0,212,255,.22); color:rgba(0,212,255,.55); box-shadow:none; }
-      50% { border-color:rgba(0,212,255,.45); color:rgba(0,212,255,.9); box-shadow:0 0 10px rgba(0,212,255,.15); }
-    }
-
-    /* ── Noise overlay ── */
-    .noise {
-      position: fixed; inset: 0; z-index: 3; pointer-events: none;
-      opacity: .025;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-      animation: noiseAnim .15s steps(1) infinite;
-    }
-    @keyframes noiseAnim { 0%{opacity:.025} 50%{opacity:.04} 100%{opacity:.025} }
-
-    /* ── Onboarding Modal ── */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0; z-index: 100;
-      background: rgba(2,10,3,.93); backdrop-filter: blur(10px);
-      align-items: center; justify-content: center;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-box {
-      max-width: 500px; width: 92%;
-      border: 1px solid rgba(0,255,65,.28);
-      padding: 40px 36px;
-      background: rgba(1,8,2,.95);
-      position: relative;
-      box-shadow: 0 0 80px rgba(0,255,65,.06), inset 0 0 60px rgba(0,255,65,.02);
-    }
-    .modal-box::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0;
-      height: 1px; background: linear-gradient(90deg, transparent, rgba(0,255,65,.7), transparent);
-    }
-    .modal-title {
-      font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700;
-      letter-spacing: 5px; color: var(--green); margin-bottom: 6px; text-align: center;
-    }
-    .modal-sub {
-      font-size: 10px; color: rgba(0,255,65,.38); letter-spacing: 3px;
-      text-align: center; margin-bottom: 32px; text-transform: uppercase;
-    }
-    .modal-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
-    .modal-card {
-      display: flex; align-items: center; gap: 18px;
-      border: 1px solid rgba(0,255,65,.18); padding: 16px 20px;
-      background: rgba(0,255,65,.015); cursor: pointer;
-      text-decoration: none; transition: .2s; border-radius: 2px; position: relative; overflow: hidden;
-    }
-    .modal-card::after {
-      content: '→'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-      color: rgba(0,255,65,.25); font-size: 14px; transition: .2s;
-    }
-    .modal-card:hover { border-color: var(--green); background: rgba(0,255,65,.05); box-shadow: 0 0 18px rgba(0,255,65,.1); }
-    .modal-card:hover::after { color: var(--green); right: 14px; }
-    .modal-icon { font-size: 20px; flex-shrink: 0; width: 32px; text-align: center; }
-    .modal-card-title {
-      font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700;
-      letter-spacing: 2px; color: var(--green); margin-bottom: 3px;
-    }
-    .modal-card-desc { font-size: 10px; color: rgba(0,255,65,.38); letter-spacing: 1px; line-height: 1.4; }
-    .modal-close {
-      display: block; width: 100%; background: transparent;
-      border: 1px solid rgba(0,255,65,.12); color: rgba(0,255,65,.35);
-      font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 3px;
-      padding: 10px; cursor: pointer; transition: .2s; text-transform: uppercase;
-    }
-    .modal-close:hover { border-color: rgba(0,255,65,.35); color: rgba(0,255,65,.65); }
   </style>
+  <link rel="stylesheet" href="desktop.css">
 </head>
 <body>
+
+<!-- ═══ Gate ═══ -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-logo">0penw0rld</div>
+    <div class="gate-title">// ACCESS RESTRICTED //</div>
+    <div class="gate-sub">AUTHORIZED TESTERS ONLY</div>
+    <input id="gate-pass" type="password" autocomplete="off" spellcheck="false"
+      placeholder="ENTER ACCESS CODE" onkeydown="if(event.key==='Enter')gateCheck()">
+    <div id="gate-err"></div>
+    <button onclick="gateCheck()">AUTHENTICATE →</button>
+  </div>
+</div>
 
 <canvas id="rain"></canvas>
 <div class="scanlines"></div>
 <div class="vignette"></div>
-<div class="noise"></div>
 
-<!-- Road scene -->
-<div class="road-wrap">
-  <svg class="road-svg" viewBox="0 0 1440 500" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="roadGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#010801"/>
-        <stop offset="100%" stop-color="#030f04"/>
-      </linearGradient>
-      <radialGradient id="glowCenter" cx="50%" cy="100%" r="60%">
-        <stop offset="0%" stop-color="rgba(0,255,65,0.12)"/>
-        <stop offset="100%" stop-color="transparent"/>
-      </radialGradient>
-      <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="rgba(0,255,65,0)"/>
-        <stop offset="50%" stop-color="rgba(0,255,65,0.6)"/>
-        <stop offset="100%" stop-color="rgba(0,255,65,0.1)"/>
-      </linearGradient>
-    </defs>
-    <!-- Road surface -->
-    <polygon points="0,500 1440,500 900,120 540,120" fill="url(#roadGrad)"/>
-    <!-- Wet reflection -->
-    <polygon points="0,500 1440,500 900,120 540,120" fill="url(#glowCenter)" opacity="0.6"/>
-    <!-- Center dashed line -->
-    <line x1="720" y1="500" x2="720" y2="120" stroke="url(#lineGrad)" stroke-width="3" stroke-dasharray="30,20"/>
-    <!-- Left lane line -->
-    <line x1="330" y1="500" x2="610" y2="120" stroke="rgba(0,255,65,0.15)" stroke-width="1.5" stroke-dasharray="20,15"/>
-    <!-- Right lane line -->
-    <line x1="1110" y1="500" x2="830" y2="120" stroke="rgba(0,255,65,0.15)" stroke-width="1.5" stroke-dasharray="20,15"/>
-    <!-- Horizon glow -->
-    <ellipse cx="720" cy="120" rx="200" ry="30" fill="rgba(0,255,65,0.08)"/>
-  </svg>
-  <div class="road-fog"></div>
-  <div class="road-reflection"></div>
-  <div class="crash-light"></div>
-</div>
+<!-- ═══ Phone launcher ═══ -->
+<div class="phone-wrap">
+  <div class="phone">
+    <div class="notch">
+      <div class="notch-cam"></div>
+      <div class="notch-speaker"></div>
+      <div class="notch-cam"></div>
+    </div>
 
-<!-- Terminal top bar -->
-<div class="terminal-bar">
-  <span>0penw0rld // SYSTEM ONLINE <span class="blink">█</span></span>
-  <span style="display:flex;gap:24px">
-    <span>BCH_NET: ACTIVE</span>
-    <span id="mesh-stat">MESH: SCANNING</span>
-    <span id="clock"></span>
-  </span>
-</div>
+    <div class="status-bar">
+      <span id="clock">--:--</span>
+      <span>⚡ ▮▮▮</span>
+    </div>
 
-<!-- Main content -->
-<div class="content">
-  <div style="height:60px"></div>
+    <div class="home-header">
+      <div class="home-logo">0penw0rld</div>
+      <div class="home-sub">no servers · no borders · no limits</div>
+    </div>
 
-  <div class="logo-wrap">
-    <div class="tagline">// decentralized ecosystem //</div>
-    <div class="logo">0penw0rld</div>
-    <div class="tagline-sub">no servers &nbsp;·&nbsp; no borders &nbsp;·&nbsp; no limits</div>
-  </div>
+    <div class="session-badge" id="session-badge">NO SESSION</div>
 
-  <div class="apps-grid">
-    <a class="app-chip" href="chat.html">00 Chat</a>
-    <a class="app-chip" href="pay.html">00 Pay</a>
-    <a class="app-chip" href="dex.html">00 DEX</a>
-    <a class="app-chip" href="loan.html">00 Loan</a>
-    <a class="app-chip" href="id.html">00 ID</a>
-    <a class="app-chip" href="mesh.html">00 Mesh</a>
-    <a class="app-chip" href="wallet.html">00 Wallet</a>
-  </div>
-
-  <div style="display:flex;gap:10px;justify-content:center;align-items:center;margin:16px 0 36px;flex-wrap:wrap">
-    <span class="hw-badge">🔑 LEDGER SUPPORTED</span>
-    <span class="hw-badge" style="color:rgba(0,255,65,.4);border-color:rgba(0,255,65,.18);animation-delay:.9s">⬡ WEBHID</span>
-    <span class="hw-badge" style="color:rgba(0,255,65,.4);border-color:rgba(0,255,65,.18);animation-delay:1.8s">◈ NON-CUSTODIAL</span>
-  </div>
-
-  <div class="cta-row">
-    <button class="btn-primary" onclick="openStartModal()">Get Started →</button>
-    <a class="btn-secondary" href="docs.html">Read the Docs</a>
-  </div>
-
-  <div class="stats">
-    <div class="stat"><div class="stat-val">0</div><div class="stat-label">Servers</div></div>
-    <div class="stat"><div class="stat-val">∞</div><div class="stat-label">Freedom</div></div>
-    <div class="stat"><div class="stat-val">BCH</div><div class="stat-label">Powered by</div></div>
-    <div class="stat"><div class="stat-val">E2E</div><div class="stat-label">Encrypted</div></div>
-  </div>
-
-  <div style="height:120px"></div>
-</div>
-
-<!-- Terminal bottom scroll -->
-<div class="terminal-bottom">
-  <div class="scroll-text">
-    CCSH_PROTOCOL_V1 &nbsp;·&nbsp; X25519_ECDH &nbsp;·&nbsp; AES256_GCM &nbsp;·&nbsp; OP_RETURN &nbsp;·&nbsp; BCH_MAINNET &nbsp;·&nbsp; LORA_MESH &nbsp;·&nbsp; ZERO_SERVERS &nbsp;·&nbsp; ZERO_TRUST &nbsp;·&nbsp; CASHFUSION_READY &nbsp;·&nbsp; END_TO_END &nbsp;·&nbsp; <span style="color:rgba(0,212,255,.6)">LEDGER_HW_READY</span> &nbsp;·&nbsp; WEBHID_TRANSPORT &nbsp;·&nbsp; BIP44_SCAN &nbsp;·&nbsp; CCSH_PROTOCOL_V1 &nbsp;·&nbsp; X25519_ECDH &nbsp;·&nbsp; AES256_GCM &nbsp;·&nbsp; OP_RETURN &nbsp;·&nbsp; BCH_MAINNET &nbsp;·&nbsp; LORA_MESH &nbsp;·&nbsp; ZERO_SERVERS &nbsp;·&nbsp; ZERO_TRUST &nbsp;·&nbsp; CASHFUSION_READY &nbsp;·&nbsp; END_TO_END &nbsp;·&nbsp; <span style="color:rgba(0,212,255,.6)">LEDGER_HW_READY</span> &nbsp;·&nbsp; WEBHID_TRANSPORT &nbsp;·&nbsp; BIP44_SCAN &nbsp;·&nbsp;
-  </div>
-</div>
-
-<script>
-// ── Clock ──
-function updateClock() {
-  const now = new Date();
-  document.getElementById('clock').textContent =
-    now.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-}
-setInterval(updateClock, 1000); updateClock();
-
-// ── Mesh status ──
-function updateMeshStat() {
-  const el = document.getElementById('mesh-stat');
-  if (!el) return;
-  try {
-    const raw = localStorage.getItem('00mesh_net');
-    if (!raw) { el.textContent = 'MESH: SCANNING'; return; }
-    const {peers, ts} = JSON.parse(raw);
-    const age = Date.now() - ts;
-    if (age > 60000) { el.textContent = 'MESH: OFFLINE'; return; }
-    el.textContent = peers > 0 ? `MESH: ${peers}/4 ACTIVE` : 'MESH: CONNECTING';
-    el.style.color = peers > 0 ? 'var(--green)' : '#ffaa00';
-  } catch(e) { el.textContent = 'MESH: SCANNING'; }
-}
-setInterval(updateMeshStat, 3000); updateMeshStat();
-
-// ── Rain ──
-const canvas = document.getElementById('rain');
-const ctx = canvas.getContext('2d');
-let drops = [];
-
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-for (let i = 0; i < 180; i++) {
-  drops.push({
-    x: Math.random() * window.innerWidth,
-    y: Math.random() * window.innerHeight,
-    len: Math.random() * 20 + 8,
-    speed: Math.random() * 8 + 6,
-    opacity: Math.random() * 0.5 + 0.1,
-    width: Math.random() * 1 + 0.3,
-  });
-}
-
-function drawRain() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drops.forEach(d => {
-    ctx.beginPath();
-    ctx.moveTo(d.x, d.y);
-    ctx.lineTo(d.x - 1, d.y + d.len);
-    ctx.strokeStyle = `rgba(0,255,65,${d.opacity})`;
-    ctx.lineWidth = d.width;
-    ctx.stroke();
-    d.y += d.speed;
-    if (d.y > canvas.height) {
-      d.y = -d.len;
-      d.x = Math.random() * canvas.width;
-    }
-  });
-  requestAnimationFrame(drawRain);
-}
-drawRain();
-
-// ── Random glitch flashes ──
-function randomGlitch() {
-  const logo = document.querySelector('.logo');
-  if (Math.random() < 0.3) {
-    logo.style.filter = `blur(${Math.random()*2}px) brightness(${1+Math.random()*0.5})`;
-    setTimeout(() => logo.style.filter = '', 80 + Math.random()*120);
-  }
-  setTimeout(randomGlitch, 2000 + Math.random() * 4000);
-}
-randomGlitch();
-</script>
-<!-- Onboarding Modal -->
-<div id="start-modal" class="modal-overlay" onclick="if(event.target===this)closeStartModal()">
-  <div class="modal-box">
-    <div class="modal-title">// INITIALISATION //</div>
-    <div class="modal-sub">Choisissez votre mode d'accès</div>
-    <div class="modal-grid">
-      <a href="wallet.html" class="modal-card">
-        <div class="modal-icon">🔑</div>
+    <!-- ── Desktop Dashboard (hidden on mobile, shown by desktop.css) ── -->
+    <div id="dashboard" style="display:none">
+      <!-- Portfolio header -->
+      <div class="dash-header">
         <div>
-          <div class="modal-card-title">HARDWARE WALLET</div>
-          <div class="modal-card-desc">Ledger Nano / Stax / Flex · WebHID · BIP44 scan complet</div>
+          <div class="dash-label">Portfolio balance</div>
+          <div class="dash-total" id="dash-total">$0.00</div>
+          <div class="dash-change" id="dash-change"></div>
         </div>
+        <select class="dash-currency-sel" id="dash-currency" onchange="dashCurrencyChange(this.value)">
+          <option value="usd">USD</option>
+          <option value="eur">EUR</option>
+          <option value="gbp">GBP</option>
+        </select>
+      </div>
+
+      <!-- Chart card -->
+      <div class="dash-chart-card">
+        <div class="dash-periods" id="dash-periods">
+          <button class="dash-period" data-days="1" onclick="dashPeriod(1)">1D</button>
+          <button class="dash-period" data-days="7" onclick="dashPeriod(7)">1W</button>
+          <button class="dash-period active" data-days="30" onclick="dashPeriod(30)">1M</button>
+          <button class="dash-period" data-days="365" onclick="dashPeriod(365)">1Y</button>
+          <button class="dash-period" data-days="max" onclick="dashPeriod('max')">ALL</button>
+        </div>
+        <div class="dash-chart-container">
+          <svg id="dash-chart" viewBox="0 0 800 280" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--dt-accent,#0AC18E)" stop-opacity=".25"/>
+                <stop offset="100%" stop-color="var(--dt-accent,#0AC18E)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path id="chart-fill" fill="url(#chart-grad)" d=""/>
+            <path id="chart-line" fill="none" stroke="var(--dt-accent,#0AC18E)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d=""/>
+            <line id="chart-vline" x1="0" y1="0" x2="0" y2="280" stroke="var(--dt-border,#e2e8f0)" stroke-width="1" stroke-dasharray="4,4" opacity="0"/>
+            <circle id="chart-dot" r="5" fill="var(--dt-accent,#0AC18E)" stroke="var(--dt-surface,#fff)" stroke-width="2.5" opacity="0"/>
+          </svg>
+          <div class="dash-tooltip" id="dash-tooltip"></div>
+        </div>
+      </div>
+
+      <!-- Assets table -->
+      <div class="dash-assets-card">
+        <div class="dash-assets-head">
+          <span class="dash-col-asset">Asset</span>
+          <span class="dash-col-price">Price</span>
+          <span class="dash-col-alloc">Allocation</span>
+          <span class="dash-col-amount">Amount</span>
+          <span class="dash-col-value">Value</span>
+        </div>
+        <div class="dash-asset-row" id="dash-row-bch" onclick="window.location='wallet.html?coin=bch'">
+          <div class="dash-col-asset">
+            <img class="dash-asset-icon" src="icons/bch.png" alt="BCH">
+            <div><div class="dash-asset-name">Bitcoin Cash</div><div class="dash-asset-ticker">BCH</div></div>
+          </div>
+          <span class="dash-col-price" id="dash-price-bch">--</span>
+          <span class="dash-col-alloc"><div class="dash-alloc-bar"><div class="dash-alloc-fill" id="dash-alloc-bch" style="width:0%;background:#0AC18E"></div></div><span id="dash-alloc-pct-bch">0%</span></span>
+          <span class="dash-col-amount" id="dash-amt-bch">0 BCH</span>
+          <span class="dash-col-value" id="dash-val-bch">$0.00</span>
+        </div>
+        <div class="dash-asset-row dash-asset-stealth" id="dash-row-sbch" onclick="window.location='wallet.html?coin=sbch'">
+          <div class="dash-col-asset">
+            <div class="dash-asset-icon" style="background:#BF5AF2"><span>₿</span></div>
+            <div><div class="dash-asset-name">Stealth Bitcoin Cash</div><div class="dash-asset-ticker">sBCH</div></div>
+          </div>
+          <span class="dash-col-price" id="dash-price-sbch">--</span>
+          <span class="dash-col-alloc"><div class="dash-alloc-bar"><div class="dash-alloc-fill" id="dash-alloc-sbch" style="width:0%;background:#BF5AF2"></div></div><span id="dash-alloc-pct-sbch">0%</span></span>
+          <span class="dash-col-amount" id="dash-amt-sbch">0 BCH</span>
+          <span class="dash-col-value" id="dash-val-sbch">$0.00</span>
+        </div>
+        <div class="dash-asset-row" id="dash-row-btc" onclick="window.location='wallet.html?coin=btc'">
+          <div class="dash-col-asset">
+            <img class="dash-asset-icon" src="icons/btc.png" alt="BTC">
+            <div><div class="dash-asset-name">Bitcoin</div><div class="dash-asset-ticker">BTC</div></div>
+          </div>
+          <span class="dash-col-price" id="dash-price-btc">--</span>
+          <span class="dash-col-alloc"><div class="dash-alloc-bar"><div class="dash-alloc-fill" id="dash-alloc-btc" style="width:0%;background:#F7931A"></div></div><span id="dash-alloc-pct-btc">0%</span></span>
+          <span class="dash-col-amount" id="dash-amt-btc">0 BTC</span>
+          <span class="dash-col-value" id="dash-val-btc">$0.00</span>
+        </div>
+        <div class="dash-asset-row" id="dash-row-eth" onclick="window.location='wallet.html?coin=eth'">
+          <div class="dash-col-asset">
+            <img class="dash-asset-icon" src="icons/eth.png" alt="ETH">
+            <div><div class="dash-asset-name">Ethereum</div><div class="dash-asset-ticker">ETH</div></div>
+          </div>
+          <span class="dash-col-price" id="dash-price-eth">--</span>
+          <span class="dash-col-alloc"><div class="dash-alloc-bar"><div class="dash-alloc-fill" id="dash-alloc-eth" style="width:0%;background:#627EEA"></div></div><span id="dash-alloc-pct-eth">0%</span></span>
+          <span class="dash-col-amount" id="dash-amt-eth">0 ETH</span>
+          <span class="dash-col-value" id="dash-val-eth">$0.00</span>
+        </div>
+        <div class="dash-asset-row" id="dash-row-usdc" onclick="window.location='wallet.html?coin=usdc'">
+          <div class="dash-col-asset">
+            <img class="dash-asset-icon" src="icons/usdc.png" alt="USDC">
+            <div><div class="dash-asset-name">USD Coin</div><div class="dash-asset-ticker">USDC</div></div>
+          </div>
+          <span class="dash-col-price" id="dash-price-usdc">--</span>
+          <span class="dash-col-alloc"><div class="dash-alloc-bar"><div class="dash-alloc-fill" id="dash-alloc-usdc" style="width:0%;background:#2775CA"></div></div><span id="dash-alloc-pct-usdc">0%</span></span>
+          <span class="dash-col-amount" id="dash-amt-usdc">0 USDC</span>
+          <span class="dash-col-value" id="dash-val-usdc">$0.00</span>
+        </div>
+        <div class="dash-asset-row" id="dash-row-usdt" onclick="window.location='wallet.html?coin=usdt'">
+          <div class="dash-col-asset">
+            <img class="dash-asset-icon" src="icons/usdt.png" alt="USDT">
+            <div><div class="dash-asset-name">Tether</div><div class="dash-asset-ticker">USDT</div></div>
+          </div>
+          <span class="dash-col-price" id="dash-price-usdt">--</span>
+          <span class="dash-col-alloc"><div class="dash-alloc-bar"><div class="dash-alloc-fill" id="dash-alloc-usdt" style="width:0%;background:#26A17B"></div></div><span id="dash-alloc-pct-usdt">0%</span></span>
+          <span class="dash-col-amount" id="dash-amt-usdt">0 USDT</span>
+          <span class="dash-col-value" id="dash-val-usdt">$0.00</span>
+        </div>
+      </div>
+
+      <!-- Last Transactions -->
+      <div class="dash-tx-card" id="dash-tx-card">
+        <div class="dash-tx-head">
+          <span class="dash-tx-title">Last transactions</span>
+        </div>
+        <div id="dash-tx-list">
+          <div class="dash-tx-empty" id="dash-tx-empty">No transactions yet</div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="dash-empty" id="dash-empty" style="display:none">
+        <div class="dash-empty-icon">⬡</div>
+        <div class="dash-empty-title">Set up your wallet</div>
+        <div class="dash-empty-sub">Connect or create a wallet to view your portfolio</div>
+        <a href="wallet.html" class="dash-empty-btn">Open Wallet</a>
+      </div>
+    </div>
+
+    <!-- ── App grid ── -->
+    <div class="app-grid">
+      <a class="app-icon" href="wallet.html">
+        <div class="app-icon-box"><div class="app-icon-char">₿</div></div>
+        <div class="app-icon-label">Wallet</div>
       </a>
-      <a href="wallet.html" class="modal-card">
-        <div class="modal-icon">⬡</div>
-        <div>
-          <div class="modal-card-title">NOUVEAU WALLET</div>
-          <div class="modal-card-desc">Générer une nouvelle clé BCH · Non-custodial</div>
-        </div>
+      <a class="app-icon" href="chat.html">
+        <div class="app-icon-box"><div class="app-icon-char">✦</div></div>
+        <div class="app-icon-label">Chat</div>
       </a>
-      <a href="wallet.html" class="modal-card">
-        <div class="modal-icon">◈</div>
-        <div>
-          <div class="modal-card-title">IMPORTER</div>
-          <div class="modal-card-desc">Clé privée WIF ou phrase mnémonique BIP39</div>
-        </div>
+      <a class="app-icon" href="pay.html">
+        <div class="app-icon-box"><div class="app-icon-char">↯</div></div>
+        <div class="app-icon-label">Pay</div>
       </a>
-      <a href="chat.html" class="modal-card">
-        <div class="modal-icon">00</div>
-        <div>
-          <div class="modal-card-title">CHAT CHIFFRÉ</div>
-          <div class="modal-card-desc">Démarrer directement · Nostr + BCH messaging</div>
-        </div>
+      <a class="app-icon" href="swap.html">
+        <div class="app-icon-box"><div class="app-icon-char">⇄</div></div>
+        <div class="app-icon-label">Swap</div>
+      </a>
+      <a class="app-icon" href="dex.html">
+        <div class="app-icon-box"><div class="app-icon-char">⊗</div></div>
+        <div class="app-icon-label">DEX</div>
+      </a>
+      <a class="app-icon" href="loan.html">
+        <div class="app-icon-box"><div class="app-icon-char">◆</div></div>
+        <div class="app-icon-label">Loan</div>
+      </a>
+      <a class="app-icon" href="id.html">
+        <div class="app-icon-box"><div class="app-icon-char">⬢</div></div>
+        <div class="app-icon-label">ID</div>
+      </a>
+      <a class="app-icon" href="mesh.html">
+        <div class="app-icon-box"><div class="app-icon-char">⊛</div></div>
+        <div class="app-icon-label">Mesh</div>
+      </a>
+      <a class="app-icon" href="fusion.html">
+        <div class="app-icon-box"><div class="app-icon-char">⊕</div></div>
+        <div class="app-icon-label">Fusion</div>
+      </a>
+      <a class="app-icon" href="onion.html">
+        <div class="app-icon-box"><div class="app-icon-char">◎</div></div>
+        <div class="app-icon-label">Onion</div>
+      </a>
+      <a class="app-icon" href="vault.html">
+        <div class="app-icon-box"><div class="app-icon-char">⬡</div></div>
+        <div class="app-icon-label">Vault</div>
+      </a>
+      <a class="app-icon" href="config.html">
+        <div class="app-icon-box"><div class="app-icon-char">⚙</div></div>
+        <div class="app-icon-label">Config</div>
+      </a>
+      <a class="app-icon" href="docs.html">
+        <div class="app-icon-box"><div class="app-icon-char">☰</div></div>
+        <div class="app-icon-label">Docs</div>
       </a>
     </div>
-    <button class="modal-close" onclick="closeStartModal()">[ ESC ] Fermer</button>
+
+    <!-- ── Dock ── -->
+    <div class="dock-sep"></div>
+    <div class="dock">
+      <a class="app-icon" href="wallet.html">
+        <div class="app-icon-box"><div class="app-icon-char">₿</div></div>
+        <div class="app-icon-label">Wallet</div>
+      </a>
+      <a class="app-icon" href="chat.html">
+        <div class="app-icon-box"><div class="app-icon-char">✦</div></div>
+        <div class="app-icon-label">Chat</div>
+      </a>
+      <a class="app-icon" href="pay.html">
+        <div class="app-icon-box"><div class="app-icon-char">↯</div></div>
+        <div class="app-icon-label">Pay</div>
+      </a>
+      <a class="app-icon" href="swap.html">
+        <div class="app-icon-box"><div class="app-icon-char">⇄</div></div>
+        <div class="app-icon-label">Swap</div>
+      </a>
+    </div>
   </div>
 </div>
 
 <script src="/shell.js"></script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}</script>
 <script>
-function openStartModal() {
-  document.getElementById('start-modal').classList.add('active');
-  document.body.style.overflow = 'hidden';
+// ═══ Gate ═══
+const GATE_HASH = '4981d5f9f4e5040b4cfd668f6b91753ba7b659ce125224bfa0f943b9899a095a';
+async function sha256hex(s) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2,'0')).join('');
 }
-function closeStartModal() {
-  document.getElementById('start-modal').classList.remove('active');
-  document.body.style.overflow = '';
+async function gateCheck() {
+  const v = document.getElementById('gate-pass').value;
+  const h = await sha256hex(v);
+  if (h === GATE_HASH) {
+    sessionStorage.setItem('00_gate', '1');
+    document.getElementById('gate').style.display = 'none';
+  } else {
+    document.getElementById('gate-err').textContent = '// ACCESS DENIED';
+    document.getElementById('gate-pass').value = '';
+    document.getElementById('gate-pass').focus();
+  }
 }
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closeStartModal(); });
+if (sessionStorage.getItem('00_gate') !== '1') {
+  document.getElementById('gate').style.display = 'flex';
+  setTimeout(() => document.getElementById('gate-pass').focus(), 100);
+}
+
+// ═══ Clock ═══
+function updateClock() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ═══ Session badge + wallet check ═══
+function updateSessionBadge() {
+  const el = document.getElementById('session-badge');
+  const hasWallet = !!localStorage.getItem('00wallet_vault');
+  if (!hasWallet) {
+    el.textContent = 'SET UP WALLET TO START';
+    el.className = 'session-badge';
+    el.style.color = 'rgba(255,180,0,.6)';
+    // Pulse the wallet icon
+    const walletIcons = document.querySelectorAll('.app-icon');
+    walletIcons.forEach(icon => {
+      if (icon.href && icon.href.endsWith('wallet.html')) {
+        icon.querySelector('.app-icon-box').style.cssText +=
+          ';border-color:rgba(0,255,65,.6);box-shadow:0 0 16px rgba(0,255,65,.2);animation:walletPulse 1.5s ease-in-out infinite';
+      }
+    });
+    return;
+  }
+  try {
+    const sess = JSON.parse(localStorage.getItem('00_session_auth') || '{}');
+    if (sess.p && sess.ts && Date.now() - sess.ts < 30 * 60 * 1000) {
+      el.textContent = 'SESSION ACTIVE';
+      el.className = 'session-badge active';
+      el.style.color = '';
+    } else {
+      el.textContent = 'WALLET READY';
+      el.className = 'session-badge';
+      el.style.color = '';
+    }
+  } catch { el.textContent = 'WALLET READY'; el.className = 'session-badge'; el.style.color = ''; }
+}
+updateSessionBadge();
+setInterval(updateSessionBadge, 5000);
+
+// ═══ Rain ═══
+const canvas = document.getElementById('rain');
+const ctx = canvas.getContext('2d');
+let drops = [];
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+for (let i = 0; i < 100; i++) {
+  drops.push({
+    x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
+    len: Math.random() * 18 + 5, speed: Math.random() * 5 + 3,
+    opacity: Math.random() * .35 + .06, width: Math.random() * .7 + .2
+  });
+}
+function drawRain() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const d of drops) {
+    ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - .4, d.y + d.len);
+    ctx.strokeStyle = `rgba(0,255,65,${d.opacity})`; ctx.lineWidth = d.width; ctx.stroke();
+    d.y += d.speed;
+    if (d.y > canvas.height) { d.y = -d.len; d.x = Math.random() * canvas.width; }
+  }
+  requestAnimationFrame(drawRain);
+}
+drawRain();
+
+// ═══ Dashboard Engine ═══
+(function(){
+  const COINS = {bch:'bitcoin-cash', btc:'bitcoin', eth:'ethereum', usdc:'usd-coin', usdt:'tether'};
+  const COIN_IDS = Object.values(COINS);
+  const SYMBOLS = {usd:'$', eur:'€', gbp:'£'};
+  let _dashCurrency = 'usd';
+  let _dashDays = 30;
+  let _dashPrices = null;
+  let _dashChartData = null;
+  let _dashRefreshTimer = null;
+
+  /* ── localStorage cache helpers ── */
+  function cacheGet(key, ttlMs){
+    try {
+      const raw = localStorage.getItem(key);
+      if(!raw) return null;
+      const o = JSON.parse(raw);
+      if(Date.now() - (o._ts||0) > ttlMs) return null;
+      return o.data;
+    } catch(e){ return null; }
+  }
+  function cacheSet(key, data){
+    try { localStorage.setItem(key, JSON.stringify({data, _ts:Date.now()})); } catch(e){}
+  }
+
+  /* ── Fetch prices (5min cache) ── */
+  async function fetchPrices(cur){
+    const ck = '00_dash_prices_'+cur;
+    const cached = cacheGet(ck, 5*60*1000);
+    if(cached) return cached;
+    try {
+      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+COIN_IDS.join(',')+'&vs_currencies='+cur+'&include_24hr_change=true');
+      if(!r.ok) throw new Error(r.status);
+      const j = await r.json();
+      const out = {};
+      for(const [sym, id] of Object.entries(COINS)){
+        const d = j[id] || {};
+        out[sym] = { price: d[cur]||0, change24h: d[cur+'_24h_change']||0 };
+      }
+      cacheSet(ck, out);
+      return out;
+    } catch(e){ console.warn('Dashboard: price fetch failed', e); return null; }
+  }
+
+  /* ── Fetch chart data (15min cache) ── */
+  async function fetchChart(days, cur){
+    const ck = '00_dash_chart_'+cur+'_'+days;
+    const cached = cacheGet(ck, 15*60*1000);
+    if(cached) return cached;
+    try {
+      const results = await Promise.all(Object.values(COINS).map(id =>
+        fetch('https://api.coingecko.com/api/v3/coins/'+id+'/market_chart?vs_currency='+cur+'&days='+days)
+          .then(r => r.ok ? r.json() : null)
+      ));
+      const out = {};
+      Object.keys(COINS).forEach((sym,i) => {
+        out[sym] = results[i] && results[i].prices ? results[i].prices : [];
+      });
+      cacheSet(ck, out);
+      return out;
+    } catch(e){ console.warn('Dashboard: chart fetch failed', e); return null; }
+  }
+
+  /* ── Get balances from localStorage ── */
+  function getBalances(){
+    try {
+      const raw = localStorage.getItem('00_balances');
+      if(!raw) return null;
+      const b = JSON.parse(raw);
+      return { bch: b.bch||0, btc: b.btc||0, eth: b.eth||0, usdc: b.usdc||0, usdt: b.usdt||0 };
+    } catch(e){ return null; }
+  }
+
+  /* ── Get stealth balance from localStorage ── */
+  function getStealthBalance(){
+    try {
+      const raw = localStorage.getItem('00stealth_utxos');
+      if(!raw) return 0;
+      const utxos = JSON.parse(raw);
+      return utxos.reduce((s,u) => s + (u.value||0), 0);
+    } catch(e){ return 0; }
+  }
+
+  /* ── Compute portfolio ── */
+  function computePortfolio(balances, prices){
+    if(!prices) return null;
+    const b = balances || {bch:0, btc:0, eth:0, usdc:0, usdt:0};
+    // Convert sats to coins for BCH and BTC, wei to ETH
+    const bchCoins = (b.bch||0) / 1e8;
+    const btcCoins = (b.btc||0) / 1e8;
+    const ethCoins = (b.eth||0) / 1e18;
+    // USDC/USDT (6 decimals ERC-20)
+    const usdcRaw = b.usdc||0;
+    const usdcCoins = usdcRaw > 1e4 ? usdcRaw / 1e6 : usdcRaw;
+    const usdtRaw = b.usdt||0;
+    const usdtCoins = usdtRaw > 1e4 ? usdtRaw / 1e6 : usdtRaw;
+    // Stealth BCH (stored in sats)
+    const stealthSats = getStealthBalance();
+    const stealthCoins = stealthSats / 1e8;
+    const assets = [
+      { sym:'bch',  name:'Bitcoin Cash',         coins: bchCoins,     price: prices.bch?.price||0, change24h: prices.bch?.change24h||0, color:'#0AC18E' },
+      { sym:'sbch', name:'Stealth Bitcoin Cash',  coins: stealthCoins, price: prices.bch?.price||0, change24h: prices.bch?.change24h||0, color:'#BF5AF2' },
+      { sym:'btc',  name:'Bitcoin',               coins: btcCoins,     price: prices.btc?.price||0, change24h: prices.btc?.change24h||0, color:'#F7931A' },
+      { sym:'eth',  name:'Ethereum',              coins: ethCoins,     price: prices.eth?.price||0, change24h: prices.eth?.change24h||0, color:'#627EEA' },
+      { sym:'usdc', name:'USD Coin',              coins: usdcCoins,    price: prices.usdc?.price||1, change24h: prices.usdc?.change24h||0, color:'#2775CA' },
+      { sym:'usdt', name:'Tether',                coins: usdtCoins,    price: prices.usdt?.price||1, change24h: prices.usdt?.change24h||0, color:'#26A17B' },
+    ];
+    let total = 0;
+    assets.forEach(a => { a.value = a.coins * a.price; total += a.value; });
+    assets.forEach(a => { a.alloc = total > 0 ? (a.value / total * 100) : 0; });
+    // Weighted average 24h change
+    let wChange = 0;
+    if(total > 0) assets.forEach(a => { wChange += (a.change24h||0) * (a.value / total); });
+    const absChange = total * wChange / 100;
+    return { total, change: absChange, pct: wChange, assets };
+  }
+
+  /* ── Format currency ── */
+  function fmtCur(val, cur){
+    const s = SYMBOLS[cur]||'$';
+    if(val === 0) return s + '0.00';
+    if(Math.abs(val) >= 1e6) return s + (val/1e6).toFixed(2) + 'M';
+    if(Math.abs(val) >= 1e4) return s + val.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
+    if(Math.abs(val) >= 0.01) return s + val.toFixed(2);
+    return s + val.toFixed(4);
+  }
+  function fmtCoins(val, sym){
+    const display = sym.toLowerCase() === 'sbch' ? 'BCH' : sym.toUpperCase();
+    if(val === 0) return '0 '+display;
+    // Always show full decimal, never scientific notation
+    if(val >= 1) return val.toFixed(4)+' '+display;
+    // Small amounts: show all significant decimals (up to 8 for BCH/BTC, 18 for ETH)
+    const maxDec = (sym.toLowerCase()==='eth') ? 18 : 8;
+    const s = val.toFixed(maxDec).replace(/0+$/,'');
+    return s+' '+display;
+  }
+
+  /* ── Catmull-Rom to cubic bezier ── */
+  function catmullRomToBezier(pts, tension){
+    tension = tension || 0.5;
+    const n = pts.length;
+    if(n < 2) return '';
+    if(n === 2) return 'M'+pts[0][0]+','+pts[0][1]+' L'+pts[1][0]+','+pts[1][1];
+    let d = 'M'+pts[0][0]+','+pts[0][1];
+    for(let i = 0; i < n-1; i++){
+      const p0 = pts[Math.max(0,i-1)];
+      const p1 = pts[i];
+      const p2 = pts[Math.min(n-1,i+1)];
+      const p3 = pts[Math.min(n-1,i+2)];
+      const cp1x = p1[0] + (p2[0]-p0[0]) / (6/tension);
+      const cp1y = p1[1] + (p2[1]-p0[1]) / (6/tension);
+      const cp2x = p2[0] - (p3[0]-p1[0]) / (6/tension);
+      const cp2y = p2[1] - (p3[1]-p1[1]) / (6/tension);
+      d += ' C'+cp1x.toFixed(1)+','+cp1y.toFixed(1)+' '+cp2x.toFixed(1)+','+cp2y.toFixed(1)+' '+p2[0].toFixed(1)+','+p2[1].toFixed(1);
+    }
+    return d;
+  }
+
+  /* ── Render SVG chart ── */
+  function renderChart(chartData, balances){
+    const fillEl = document.getElementById('chart-fill');
+    const lineEl = document.getElementById('chart-line');
+    if(!chartData || !balances) { fillEl.setAttribute('d',''); lineEl.setAttribute('d',''); return; }
+
+    // Compute portfolio value at each timestamp
+    const bchCoins = (balances.bch||0)/1e8;
+    const btcCoins = (balances.btc||0)/1e8;
+    const ethCoins = (balances.eth||0)/1e18;
+    const usdcR = balances.usdc||0; const usdcCoins = usdcR>1e4?usdcR/1e6:usdcR;
+    const usdtR = balances.usdt||0; const usdtCoins = usdtR>1e4?usdtR/1e6:usdtR;
+    const stealthCoins = getStealthBalance()/1e8;
+    const totalBchCoins = bchCoins + stealthCoins;
+    const stableCoins = usdcCoins + usdtCoins;
+    const hasHoldings = totalBchCoins > 0 || btcCoins > 0 || ethCoins > 0 || stableCoins > 0;
+
+    const base = chartData.bch && chartData.bch.length ? chartData.bch : (chartData.btc||[]);
+    if(!base.length) { fillEl.setAttribute('d',''); lineEl.setAttribute('d',''); return; }
+
+    // Build price lookup maps for BTC and ETH
+    function buildMap(arr){ const m = new Map(); (arr||[]).forEach(p => m.set(p[0], p[1])); return m; }
+    const btcMap = buildMap(chartData.btc);
+    const ethMap = buildMap(chartData.eth);
+
+    // For each base timestamp, find closest price in other coins
+    function closest(map, ts){
+      if(map.has(ts)) return map.get(ts);
+      let best = null, bestD = Infinity;
+      for(const [k,v] of map){ const d = Math.abs(k-ts); if(d < bestD){ bestD=d; best=v; } }
+      return best||0;
+    }
+
+    // Downsample if too many points
+    let source = base;
+    if(source.length > 200){
+      const step = Math.ceil(source.length / 200);
+      const down = [];
+      for(let i=0; i<source.length; i+=step) down.push(source[i]);
+      if(down[down.length-1] !== source[source.length-1]) down.push(source[source.length-1]);
+      source = down;
+    }
+
+    const values = source.map(p => {
+      const ts = p[0];
+      const bchP = p[1];
+      const btcP = closest(btcMap, ts);
+      const ethP = closest(ethMap, ts);
+      // If no holdings, show combined market index (equal weight)
+      const val = hasHoldings
+        ? totalBchCoins*bchP + btcCoins*btcP + ethCoins*ethP + stableCoins
+        : (bchP + btcP + ethP) / 3;
+      return { ts, val };
+    });
+
+    // If all zero show flat line
+    const hasValue = values.some(v => v.val > 0);
+
+    const W = 800, H = 280, padT = 20, padB = 20;
+    let min = Infinity, max = -Infinity;
+    values.forEach(v => { if(v.val < min) min = v.val; if(v.val > max) max = v.val; });
+    if(!hasValue){ min=0; max=1; }
+    const range = max - min || 1;
+
+    const pts = values.map((v,i) => {
+      const x = values.length > 1 ? (i / (values.length-1)) * W : W/2;
+      const y = padT + (1 - (v.val-min)/range) * (H - padT - padB);
+      return [x, y];
+    });
+
+    // Store for hover
+    window._dashChartPts = pts;
+    window._dashChartVals = values;
+
+    const line = catmullRomToBezier(pts);
+    lineEl.setAttribute('d', line);
+
+    // Fill path = line path + close at bottom
+    const fill = line + ' L'+pts[pts.length-1][0]+','+H+' L'+pts[0][0]+','+H+' Z';
+    fillEl.setAttribute('d', fill);
+  }
+
+  /* ── Render assets table ── */
+  function renderAssets(portfolio, cur){
+    if(!portfolio) return;
+    const sym = SYMBOLS[cur]||'$';
+    portfolio.assets.forEach(a => {
+      const priceEl = document.getElementById('dash-price-'+a.sym);
+      const allocEl = document.getElementById('dash-alloc-'+a.sym);
+      const allocPctEl = document.getElementById('dash-alloc-pct-'+a.sym);
+      const amtEl = document.getElementById('dash-amt-'+a.sym);
+      const valEl = document.getElementById('dash-val-'+a.sym);
+      if(priceEl) priceEl.textContent = fmtCur(a.price, cur);
+      if(allocEl) allocEl.style.width = a.alloc.toFixed(1)+'%';
+      if(allocPctEl) allocPctEl.textContent = a.alloc.toFixed(1)+'%';
+      if(amtEl) amtEl.textContent = fmtCoins(a.coins, a.sym);
+      if(valEl) valEl.textContent = fmtCur(a.value, cur);
+    });
+  }
+
+  /* ── Render total ── */
+  function renderTotal(portfolio, cur){
+    if(!portfolio) return;
+    const totalEl = document.getElementById('dash-total');
+    const changeEl = document.getElementById('dash-change');
+    if(totalEl) totalEl.textContent = fmtCur(portfolio.total, cur);
+    if(changeEl){
+      const up = portfolio.change >= 0;
+      const arrow = up ? '↗' : '↘';
+      const sign = up ? '+' : '';
+      changeEl.textContent = arrow+' '+sign+fmtCur(portfolio.change, cur)+' ('+sign+portfolio.pct.toFixed(2)+'%)';
+      changeEl.className = 'dash-change '+(up?'up':'down');
+    }
+  }
+
+  /* ── Render transactions ── */
+  function renderTransactions(prices, cur){
+    const listEl = document.getElementById('dash-tx-list');
+    const emptyEl = document.getElementById('dash-tx-empty');
+    if(!listEl) return;
+    let txs = [];
+    try {
+      const raw = localStorage.getItem('00_tx_history');
+      if(raw) txs = JSON.parse(raw);
+    } catch(e){}
+    if(!txs.length){
+      if(emptyEl) emptyEl.style.display = 'block';
+      listEl.querySelectorAll('.dash-tx-row').forEach(r => r.remove());
+      return;
+    }
+    if(emptyEl) emptyEl.style.display = 'none';
+    // Build stealth txid set from stealth UTXOs for independent detection
+    let _stealthTxids = new Set();
+    try {
+      const su = JSON.parse(localStorage.getItem('00stealth_utxos') || '[]');
+      for(const s of su) if(s.txid) _stealthTxids.add(s.txid);
+    } catch(e){}
+    // Override dir for stealth txs (handles old cached data too)
+    for(const tx of txs){
+      if(tx.dir !== 'stealth' && tx.chain === 'bch' && _stealthTxids.has(tx.txid)) tx.dir = 'stealth';
+    }
+    const sym = SYMBOLS[cur]||'$';
+    const CHAIN_META = {
+      bch: { name:'Bitcoin Cash', ticker:'BCH', color:'#0AC18E', icon:'₿' },
+      btc: { name:'Bitcoin',      ticker:'BTC', color:'#F7931A', icon:'₿' },
+      eth: { name:'Ethereum',     ticker:'ETH', color:'#627EEA', icon:'Ξ' },
+    };
+    // Limit to 10
+    const display = txs.slice(0, 10);
+    let html = '';
+    for(const tx of display){
+      const meta = CHAIN_META[tx.chain] || CHAIN_META.bch;
+      const coins = tx.amount / 1e8;
+      const dirLabel = tx.dir === 'stealth' ? 'Stealth' : tx.dir === 'in' ? 'Received' : tx.dir === 'fusion' ? 'CashFusion' : 'Sent';
+      const dirIcon = tx.dir === 'stealth' ? '↓' : tx.dir === 'in' ? '↓' : tx.dir === 'fusion' ? '⇄' : '↑';
+      const dirClass = tx.dir === 'stealth' ? 'stealth' : tx.dir === 'in' ? 'in' : tx.dir === 'fusion' ? 'fusion' : 'out';
+      const amtSign = tx.dir === 'out' ? '-' : '+';
+      const amtStr = tx.dir === 'out' ? '' : amtSign + fmtCoins(coins, meta.ticker);
+      // Fiat value
+      let fiatStr = '';
+      if(prices && prices[tx.chain] && tx.amount > 0 && tx.dir !== 'out'){
+        const fiatVal = coins * prices[tx.chain].price;
+        fiatStr = fmtCur(fiatVal, cur);
+      }
+      const heightStr = tx.height > 0 ? 'Block ' + tx.height.toLocaleString() : 'Pending';
+      const shortTx = tx.txid.slice(0,10) + '...' + tx.txid.slice(-6);
+      html += `<div class="dash-tx-row" onclick="window.open('https://blockchair.com/bitcoin-cash/transaction/${tx.txid}','_blank')">
+        <div class="dash-tx-col-info">
+          <div class="dash-tx-icon ${dirClass}"><span>${dirIcon}</span></div>
+          <div>
+            <div class="dash-tx-type">${dirLabel}</div>
+            <div class="dash-tx-id">${shortTx}</div>
+          </div>
+        </div>
+        <div class="dash-tx-col-coin">
+          <div class="dash-tx-coin-icon" style="background:${tx.dir==='stealth'?'#BF5AF2':meta.color}"><span>${meta.icon}</span></div>
+          <span class="dash-tx-coin-name">${tx.dir==='stealth'?'sBCH':meta.ticker}</span>
+        </div>
+        <div class="dash-tx-col-height">${heightStr}</div>
+        <div class="dash-tx-col-amount">
+          <div class="dash-tx-amount ${dirClass}">${amtStr}</div>
+          <div class="dash-tx-fiat">${fiatStr}</div>
+        </div>
+      </div>`;
+    }
+    // Replace only the rows, keep structure
+    const existing = listEl.querySelectorAll('.dash-tx-row');
+    existing.forEach(r => r.remove());
+    listEl.insertAdjacentHTML('beforeend', html);
+  }
+
+  /* ── Chart hover ── */
+  function initChartHover(){
+    const container = document.querySelector('.dash-chart-container');
+    if(!container) return;
+    const svg = document.getElementById('dash-chart');
+    const dot = document.getElementById('chart-dot');
+    const vline = document.getElementById('chart-vline');
+    const tooltip = document.getElementById('dash-tooltip');
+
+    container.addEventListener('mousemove', function(e){
+      const pts = window._dashChartPts;
+      const vals = window._dashChartVals;
+      if(!pts || !vals || !pts.length) return;
+      const rect = svg.getBoundingClientRect();
+      const scaleX = 800 / rect.width;
+      const mx = (e.clientX - rect.left) * scaleX;
+
+      // Find closest point
+      let bestI = 0, bestD = Infinity;
+      for(let i=0; i<pts.length; i++){
+        const d = Math.abs(pts[i][0] - mx);
+        if(d < bestD){ bestD=d; bestI=i; }
+      }
+      const px = pts[bestI][0], py = pts[bestI][1];
+      const v = vals[bestI];
+      dot.setAttribute('cx', px); dot.setAttribute('cy', py); dot.setAttribute('opacity','1');
+      vline.setAttribute('x1', px); vline.setAttribute('x2', px); vline.setAttribute('opacity','1');
+
+      const dateStr = new Date(v.ts).toLocaleDateString('en-US',{month:'short', day:'numeric', year:'numeric'});
+      const valStr = fmtCur(v.val, _dashCurrency);
+      tooltip.textContent = dateStr + '  •  ' + valStr;
+      tooltip.style.opacity = '1';
+      // Position tooltip
+      const pct = (e.clientX - rect.left) / rect.width * 100;
+      tooltip.style.left = pct + '%';
+      tooltip.style.transform = pct > 70 ? 'translateX(-100%)' : pct < 30 ? 'translateX(0)' : 'translateX(-50%)';
+    });
+
+    container.addEventListener('mouseleave', function(){
+      dot.setAttribute('opacity','0');
+      vline.setAttribute('opacity','0');
+      tooltip.style.opacity = '0';
+    });
+  }
+
+  /* ── State management ── */
+  function showDashboardState(){
+    const hasWallet = !!localStorage.getItem('00wallet_vault');
+    const balances = getBalances();
+    const dashEl = document.getElementById('dashboard');
+    const emptyEl = document.getElementById('dash-empty');
+    const chartCard = dashEl.querySelector('.dash-chart-card');
+    const assetsCard = dashEl.querySelector('.dash-assets-card');
+    const txCard = document.getElementById('dash-tx-card');
+    const headerEl = dashEl.querySelector('.dash-header');
+
+    if(!hasWallet){
+      // No wallet → show empty state
+      if(emptyEl) emptyEl.style.display = 'flex';
+      if(chartCard) chartCard.style.display = 'none';
+      if(assetsCard) assetsCard.style.display = 'none';
+      if(txCard) txCard.style.display = 'none';
+      if(headerEl) headerEl.style.display = 'none';
+      return false;
+    }
+    // Has wallet → show dashboard
+    if(emptyEl) emptyEl.style.display = 'none';
+    if(chartCard) chartCard.style.display = '';
+    if(assetsCard) assetsCard.style.display = '';
+    if(txCard) txCard.style.display = '';
+    if(headerEl) headerEl.style.display = '';
+    return true;
+  }
+
+  /* ── Render from cached state (instant load) ── */
+  function dashRenderFromCache(){
+    try {
+      const raw = localStorage.getItem('00_dash_state');
+      if(!raw) return;
+      const state = JSON.parse(raw);
+      if(!state.portfolio || !state.cur) return;
+      renderTotal(state.portfolio, state.cur);
+      renderAssets(state.portfolio, state.cur);
+      if(state.prices) renderTransactions(state.prices, state.cur);
+    } catch(e){}
+  }
+
+  /* ── Full refresh ── */
+  async function dashRefresh(){
+    const active = showDashboardState();
+    if(!active) return;
+    const balances = getBalances();
+    const prices = await fetchPrices(_dashCurrency);
+    _dashPrices = prices;
+    if(prices){
+      const portfolio = computePortfolio(balances, prices);
+      renderTotal(portfolio, _dashCurrency);
+      renderAssets(portfolio, _dashCurrency);
+      renderTransactions(prices, _dashCurrency);
+      // Cache state for instant load next time
+      try { localStorage.setItem('00_dash_state', JSON.stringify({portfolio, prices, cur:_dashCurrency, ts:Date.now()})); } catch(e){}
+    }
+    const balForChart = balances || {bch:0, btc:0, eth:0};
+    const chartData = await fetchChart(_dashDays, _dashCurrency);
+    _dashChartData = chartData;
+    if(chartData) renderChart(chartData, balForChart);
+  }
+
+  /* ── Period change ── */
+  window.dashPeriod = function(days){
+    _dashDays = days;
+    // Update active button
+    document.querySelectorAll('.dash-period').forEach(b => {
+      b.classList.toggle('active', String(b.dataset.days) === String(days));
+    });
+    // Fetch new chart
+    (async()=>{
+      const balances = getBalances() || {bch:0, btc:0, eth:0};
+      const chartData = await fetchChart(days, _dashCurrency);
+      _dashChartData = chartData;
+      if(chartData) renderChart(chartData, balances);
+    })();
+  };
+
+  /* ── Currency change ── */
+  window.dashCurrencyChange = function(cur){
+    _dashCurrency = cur;
+    dashRefresh();
+  };
+
+  /* ── Init ── */
+  function dashInit(){
+    // Only init on desktop
+    const isDesktop = window.matchMedia('(min-width: 900px)').matches;
+    if(!isDesktop) return;
+
+    showDashboardState();
+    dashRenderFromCache();
+    initChartHover();
+    dashRefresh();
+
+    // Refresh every 60s
+    if(_dashRefreshTimer) clearInterval(_dashRefreshTimer);
+    _dashRefreshTimer = setInterval(dashRefresh, 60000);
+  }
+
+  // Listen for desktop changes
+  const dMQ = window.matchMedia('(min-width: 900px)');
+  function onDesktopChange(e){
+    if(e.matches){
+      dashInit();
+    } else {
+      if(_dashRefreshTimer){ clearInterval(_dashRefreshTimer); _dashRefreshTimer=null; }
+    }
+  }
+  dMQ.addEventListener('change', onDesktopChange);
+
+  // Also refresh when page becomes visible (user switched tabs)
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden && dMQ.matches) dashRefresh();
+  });
+
+  // Init on load
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', dashInit);
+  } else {
+    dashInit();
+  }
+})();
 </script>
 </body>
 </html>
