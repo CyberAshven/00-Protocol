@@ -99,6 +99,10 @@
     .utxo-conf.conf { color:rgba(var(--accent-rgb),.5); border:1px solid rgba(var(--accent-rgb),.2); }
     .utxo-conf.stealth { color:#bf5af2; border:1px solid rgba(191,90,242,.35); }
     .utxo-time { font-size:8px; color:rgba(var(--accent-rgb),.25); }
+    .utxo-addr { font-size:7px; color:rgba(var(--accent-rgb),.2); word-break:break-all; margin-top:2px; letter-spacing:.3px; }
+    .utxo-conf.mix-candidate { color:#f0a500; border:1px solid rgba(240,165,0,.3); }
+    .cd-utxo-addr { font-size:8px; color:rgba(var(--accent-rgb),.25); word-break:break-all; margin-top:2px; }
+    .cd-utxo-mix { font-size:7px; color:#f0a500; margin-top:3px; }
 
     /* Send tab */
     .send-form { display:flex; flex-direction:column; gap:14px; padding:20px; flex:1; }
@@ -207,6 +211,12 @@
     /* Stealth tab */
     .stealth-section { padding:16px 20px; }
     .stealth-section-title { font-size:9px; color:rgba(var(--accent-rgb),.4); letter-spacing:2px; margin-bottom:10px; }
+    .as-toggle { background:rgba(var(--accent-rgb),.15); }
+    .as-toggle.on { background:var(--green); }
+    .as-toggle .as-knob { left:2px; }
+    .as-toggle.on .as-knob { left:20px; }
+    .cj-round-btn { width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:10px;font-family:'Orbitron',monospace;cursor:pointer;border:1px solid rgba(var(--accent-rgb),.15);color:rgba(var(--accent-rgb),.35);transition:.15s; }
+    .cj-round-btn.active { border-color:var(--green);color:var(--green);background:rgba(var(--accent-rgb),.08); }
     .stealth-code-box { width:100%; background:rgba(var(--accent-rgb),.03); border:1px solid rgba(var(--accent-rgb),.15); border-radius:8px; padding:10px 12px; font-size:8px; color:rgba(var(--accent-rgb),.6); word-break:break-all; line-height:1.6; cursor:pointer; transition:.15s; }
     .stealth-code-box:hover { border-color:rgba(var(--accent-rgb),.4); }
     .stealth-code-box:active { background:rgba(var(--accent-rgb),.06); }
@@ -234,6 +244,19 @@
 
 <!-- ── Desktop Wallet: Accounts View (hidden on mobile) ── -->
 <div id="wallet-desktop" style="display:none">
+  <!-- Status Chips -->
+  <div class="dt-status-bar" id="dt-wallet-status-bar">
+    <div class="dt-status-chip" id="dt-status-wallet-fulcrum">
+      <div class="dt-status-dot" id="dt-wallet-dot-fulcrum"></div>
+      <span class="dt-status-label">Fulcrum</span>
+      <span class="dt-status-server" id="dt-status-wallet-fulcrum-server">—</span>
+    </div>
+    <div class="dt-status-chip" id="dt-status-wallet-btc">
+      <div class="dt-status-dot" id="dt-wallet-dot-btc"></div>
+      <span class="dt-status-label">BTC</span>
+      <span class="dt-status-server" id="dt-status-wallet-btc-server">—</span>
+    </div>
+  </div>
   <!-- Portfolio Overview Hero -->
   <div class="wd-overview" id="wd-overview">
     <div class="wd-ov-top">
@@ -247,6 +270,7 @@
       <span class="wd-ov-price"><span class="wd-ov-dot" style="background:#0AC18E"></span>BCH <span id="wd-p-bch">$—</span></span>
       <span class="wd-ov-price"><span class="wd-ov-dot" style="background:#F7931A"></span>BTC <span id="wd-p-btc">$—</span></span>
       <span class="wd-ov-price"><span class="wd-ov-dot" style="background:#627EEA"></span>ETH <span id="wd-p-eth">$—</span></span>
+      <span class="wd-ov-price"><span class="wd-ov-dot" style="background:#FF6600"></span>XMR <span id="wd-p-xmr">$—</span></span>
     </div>
   </div>
   <!-- Account Cards -->
@@ -272,9 +296,12 @@
           <div class="wd-acc-name">Stealth Bitcoin Cash</div>
         </div>
       </div>
-      <div class="wd-acc-right">
-        <span class="wd-acc-balance" id="wd-bal-sbch">0 BCH</span>
-        <span class="wd-acc-fiat" id="wd-fiat-sbch">$0.00</span>
+      <div class="wd-acc-right" style="display:flex;align-items:center;gap:12px">
+        <button class="dt-action-btn-outline" style="width:auto;padding:5px 14px;font-size:10px" onclick="stealthScanChain()" id="wd-stealth-scan">Scan Chain</button>
+        <div>
+          <span class="wd-acc-balance" id="wd-bal-sbch">0 BCH</span>
+          <span class="wd-acc-fiat" id="wd-fiat-sbch">$0.00</span>
+        </div>
       </div>
     </div>
     <div class="wd-account" id="wd-btc">
@@ -301,6 +328,19 @@
       <div class="wd-acc-right">
         <span class="wd-acc-balance" id="wd-bal-eth">0 ETH</span>
         <span class="wd-acc-fiat" id="wd-fiat-eth">$0.00</span>
+      </div>
+    </div>
+    <div class="wd-account" id="wd-xmr">
+      <div class="wd-acc-left">
+        <img class="wd-acc-icon" src="icons/xmr.png" alt="XMR">
+        <div>
+          <div class="wd-acc-chain">MONERO</div>
+          <div class="wd-acc-name">Monero</div>
+        </div>
+      </div>
+      <div class="wd-acc-right">
+        <span class="wd-acc-balance" id="wd-bal-xmr">0 XMR</span>
+        <span class="wd-acc-fiat" id="wd-fiat-xmr">$0.00</span>
       </div>
     </div>
     <div class="wd-account" id="wd-usdc">
@@ -403,6 +443,35 @@
       <a class="cd-action-btn" href="swap.html"><span>⇄</span> Swap</a>
       <a class="cd-action-btn cd-primary" onclick="cdOpenSend()"><span>↑</span> Send</a>
       <a class="cd-action-btn" onclick="cdOpenReceive()"><span>↓</span> Receive</a>
+      <a class="cd-action-btn" id="cd-scan-btn" style="display:none" onclick="cdStealthScan()"><span>⟳</span> Scan Chain</a>
+    </div>
+  </div>
+  <!-- Coin Detail Status Bar -->
+  <div class="dt-status-bar" id="cd-status-bar" style="display:none">
+    <div class="dt-status-chip" id="cd-status-fulcrum">
+      <div class="dt-status-dot" id="cd-dot-fulcrum"></div>
+      <span class="dt-status-label">Fulcrum</span>
+      <span class="dt-status-server" id="cd-server-fulcrum">—</span>
+    </div>
+    <div class="dt-status-chip" id="cd-status-btc">
+      <div class="dt-status-dot" id="cd-dot-btc"></div>
+      <span class="dt-status-label">BTC</span>
+      <span class="dt-status-server" id="cd-server-btc">—</span>
+    </div>
+  </div>
+  <!-- AUTO STEALTH (BCH only) -->
+  <div id="cd-auto-stealth" class="cd-auto-stealth-bar">
+    <div class="cd-as-left">
+      <div class="cd-as-toggle as-toggle" id="dt-auto-stealth-toggle" onclick="toggleAutoStealth()">
+        <div class="cd-as-knob as-knob"></div>
+      </div>
+      <span class="cd-as-label">Auto Stealth</span>
+      <span class="cd-as-status" id="dt-as-status">OFF</span>
+    </div>
+    <div class="cd-as-rounds" id="dt-cj-rounds">
+      <button class="cd-as-round-btn cj-round-btn" data-r="5" onclick="setCjRounds(5)">5x</button>
+      <button class="cd-as-round-btn cj-round-btn" data-r="10" onclick="setCjRounds(10)">10x</button>
+      <button class="cd-as-round-btn cj-round-btn" data-r="0" onclick="setCjRounds(0)">∞</button>
     </div>
   </div>
   <div class="cd-balance-card">
@@ -699,9 +768,9 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
     // Prices (reuse dashboard cache)
     var prices={};
     try{var c=JSON.parse(localStorage.getItem('00_dash_prices')||'{}');if(c.ts&&Date.now()-c.ts<300000){prices=c}else{throw 0}}catch(e){
-      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash,bitcoin,ethereum,usd-coin,tether&vs_currencies=usd&include_24hr_change=true')
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash,bitcoin,ethereum,monero,usd-coin,tether&vs_currencies=usd&include_24hr_change=true')
         .then(function(r){return r.json()}).then(function(d){
-          prices={bch:{price:d['bitcoin-cash']&&d['bitcoin-cash'].usd||0},btc:{price:d.bitcoin&&d.bitcoin.usd||0},eth:{price:d.ethereum&&d.ethereum.usd||0},usdc:{price:d['usd-coin']&&d['usd-coin'].usd||1},usdt:{price:d.tether&&d.tether.usd||1},ts:Date.now()};
+          prices={bch:{price:d['bitcoin-cash']&&d['bitcoin-cash'].usd||0},btc:{price:d.bitcoin&&d.bitcoin.usd||0},eth:{price:d.ethereum&&d.ethereum.usd||0},xmr:{price:d.monero&&d.monero.usd||0},usdc:{price:d['usd-coin']&&d['usd-coin'].usd||1},usdt:{price:d.tether&&d.tether.usd||1},ts:Date.now()};
           try{localStorage.setItem('00_dash_prices',JSON.stringify(prices))}catch(e){}
           wdRender(bal,stealthBal,prices);
         }).catch(function(){});
@@ -713,6 +782,7 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
     var pBch=prices.bch&&prices.bch.price||0;
     var pBtc=prices.btc&&prices.btc.price||0;
     var pEth=prices.eth&&prices.eth.price||0;
+    var pXmr=prices.xmr&&prices.xmr.price||0;
     var pUsdc=prices.usdc&&prices.usdc.price||1;
     var pUsdt=prices.usdt&&prices.usdt.price||1;
 
@@ -729,6 +799,11 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
     var ethCoins=ethWei>1e15?ethWei/1e18:ethWei;
     document.getElementById('wd-bal-eth').textContent=ethCoins.toFixed(8)+' ETH';
     document.getElementById('wd-fiat-eth').textContent=fmt(ethCoins*pEth);
+    // XMR (12 decimals, piconeros)
+    var xmrPico=Number(bal.xmr)||0;
+    var xmrCoins=xmrPico>1e9?xmrPico/1e12:xmrPico;
+    document.getElementById('wd-bal-xmr').textContent=xmrCoins.toFixed(8)+' XMR';
+    document.getElementById('wd-fiat-xmr').textContent=fmt(xmrCoins*pXmr);
     // USDC (ERC-20, 6 decimals)
     var usdcRaw=bal.usdc||0;
     var usdcCoins=usdcRaw>1e4?usdcRaw/1e6:usdcRaw;
@@ -741,12 +816,13 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
     document.getElementById('wd-fiat-usdt').textContent=fmt(usdtCoins*pUsdt);
 
     // ── Portfolio overview hero ──
-    var total=(bchCoins+sbchCoins)*pBch + btcCoins*pBtc + ethCoins*pEth + usdcCoins*pUsdc + usdtCoins*pUsdt;
+    var total=(bchCoins+sbchCoins)*pBch + btcCoins*pBtc + ethCoins*pEth + xmrCoins*pXmr + usdcCoins*pUsdc + usdtCoins*pUsdt;
     document.getElementById('wd-total').textContent=fmt(total);
     // Live price tickers
     if(pBch) document.getElementById('wd-p-bch').textContent=fmt(pBch);
     if(pBtc) document.getElementById('wd-p-btc').textContent=fmt(pBtc);
     if(pEth) document.getElementById('wd-p-eth').textContent=fmt(pEth);
+    if(pXmr) document.getElementById('wd-p-xmr').textContent=fmt(pXmr);
   }
 
   window.wdForceRefresh=function(){
@@ -766,12 +842,60 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
     if(e.key==='00_balances'||e.key==='00stealth_utxos'||e.key==='00_session_auth') wdRefresh();
   });
 
+  /* ── Status chip polling ── */
+  setInterval(function(){
+    // Fulcrum (BCH)
+    var fDot=document.getElementById('fulcrum-dot');
+    var fChip=document.getElementById('dt-status-wallet-fulcrum');
+    var fDtDot=document.getElementById('dt-wallet-dot-fulcrum');
+    var fSrv=document.getElementById('dt-status-wallet-fulcrum-server');
+    var cdFChip=document.getElementById('cd-status-fulcrum');
+    var cdFDot=document.getElementById('cd-dot-fulcrum');
+    var cdFSrv=document.getElementById('cd-server-fulcrum');
+    if(fDot){
+      var on=fDot.classList.contains('on');
+      var err=fDot.classList.contains('err');
+      if(fChip){fChip.classList.toggle('on',on);fChip.classList.toggle('err',err&&!on);fChip.classList.toggle('connecting',!on&&!err);}
+      if(fDtDot){fDtDot.classList.toggle('on',on);fDtDot.classList.toggle('err',err&&!on);fDtDot.classList.toggle('connecting',!on&&!err);}
+      if(cdFChip){cdFChip.classList.toggle('on',on);cdFChip.classList.toggle('err',err&&!on);cdFChip.classList.toggle('connecting',!on&&!err);}
+      if(cdFDot){cdFDot.classList.toggle('on',on);cdFDot.classList.toggle('err',err&&!on);cdFDot.classList.toggle('connecting',!on&&!err);}
+      var fl=document.getElementById('fulcrum-server');
+      if(fl){
+        var sv=fl.textContent||'—';
+        if(fSrv) fSrv.textContent=sv;
+        if(cdFSrv) cdFSrv.textContent=sv;
+      }
+    }
+    // BTC Electrum
+    var bDot=document.getElementById('btc-dot');
+    var bChip=document.getElementById('dt-status-wallet-btc');
+    var bDtDot=document.getElementById('dt-wallet-dot-btc');
+    var bSrv=document.getElementById('dt-status-wallet-btc-server');
+    var cdBChip=document.getElementById('cd-status-btc');
+    var cdBDot=document.getElementById('cd-dot-btc');
+    var cdBSrv=document.getElementById('cd-server-btc');
+    if(bDot){
+      var bon=bDot.classList.contains('on');
+      var berr=bDot.classList.contains('err');
+      if(bChip){bChip.classList.toggle('on',bon);bChip.classList.toggle('err',berr&&!bon);bChip.classList.toggle('connecting',!bon&&!berr);}
+      if(bDtDot){bDtDot.classList.toggle('on',bon);bDtDot.classList.toggle('err',berr&&!bon);bDtDot.classList.toggle('connecting',!bon&&!berr);}
+      if(cdBChip){cdBChip.classList.toggle('on',bon);cdBChip.classList.toggle('err',berr&&!bon);cdBChip.classList.toggle('connecting',!bon&&!berr);}
+      if(cdBDot){cdBDot.classList.toggle('on',bon);cdBDot.classList.toggle('err',berr&&!bon);cdBDot.classList.toggle('connecting',!bon&&!berr);}
+      var bl=document.getElementById('btc-label');
+      if(bl){var t=bl.textContent||'';var m=t.match(/:\s*(.+)/);var sv=m?m[1].trim():'—';
+        if(bSrv) bSrv.textContent=sv;
+        if(cdBSrv) cdBSrv.textContent=sv;
+      }
+    }
+  },800);
+
   /* ── Coin Detail View ── */
   var COIN_META = {
     bch:  { chain:'BITCOIN CASH',         name:'Bitcoin Cash',         ticker:'BCH',  coingecko:'bitcoin-cash', icon:'icons/bch.png', color:'#0AC18E', decimals:8 },
     sbch: { chain:'STEALTH BITCOIN CASH',  name:'Stealth Bitcoin Cash', ticker:'BCH',  coingecko:'bitcoin-cash', icon:null, iconBg:'#BF5AF2', iconChar:'₿', color:'#BF5AF2', decimals:8 },
     btc:  { chain:'BITCOIN',               name:'Bitcoin',              ticker:'BTC',  coingecko:'bitcoin',      icon:'icons/btc.png', color:'#F7931A', decimals:8 },
     eth:  { chain:'ETHEREUM',              name:'Ethereum',             ticker:'ETH',  coingecko:'ethereum',     icon:'icons/eth.png', color:'#627EEA', decimals:18 },
+    xmr:  { chain:'MONERO',               name:'Monero',               ticker:'XMR',  coingecko:'monero',       icon:'icons/xmr.png', color:'#FF6600', decimals:12 },
     usdc: { chain:'USD COIN',              name:'USDC',                 ticker:'USDC', coingecko:'usd-coin',     icon:'icons/usdc.png', color:'#2775CA', decimals:6 },
     usdt: { chain:'TETHER',                name:'USDT',                 ticker:'USDT', coingecko:'tether',       icon:'icons/usdt.png', color:'#26A17B', decimals:6 }
   };
@@ -803,10 +927,28 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
     cdFetchChart(coin, meta, _cdDays);
     // Transactions
     cdRenderTx(coin);
+    // Scan Chain btn (stealth only)
+    document.getElementById('cd-scan-btn').style.display = coin==='sbch' ? '' : 'none';
+    // Auto Stealth toggle (BCH only)
+    document.getElementById('cd-auto-stealth').style.display = coin==='bch' ? 'flex' : 'none';
+    // Status bar — show relevant chips
+    var cdBar = document.getElementById('cd-status-bar');
+    var cdFulc = document.getElementById('cd-status-fulcrum');
+    var cdBtc  = document.getElementById('cd-status-btc');
+    if(coin==='bch'||coin==='sbch'){
+      cdBar.style.display=''; cdFulc.style.display=''; cdBtc.style.display='none';
+    } else if(coin==='btc'){
+      cdBar.style.display=''; cdFulc.style.display='none'; cdBtc.style.display='';
+    } else if(coin==='xmr'){
+      cdBar.style.display=''; cdFulc.style.display='none'; cdBtc.style.display='none';
+    } else {
+      cdBar.style.display='none';
+    }
     // Chart hover
     cdInitHover();
   }
 
+  window.cdRefreshBalance = cdRefreshBalance;
   function cdRefreshBalance(coin, meta){
     var bal = {bch:0,btc:0,eth:0,usdc:0,usdt:0};
     try { bal = JSON.parse(localStorage.getItem('00_balances')||'{}'); } catch(e){}
@@ -1036,6 +1178,7 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
     }
   };
 
+  window.cdRenderUtxos = cdRenderUtxos;
   function cdRenderUtxos(){
     var listEl = document.getElementById('cd-utxo-list');
     if(!listEl) return;
@@ -1049,20 +1192,37 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
     }
     var utxos = coin==='bch' ? (window.cdUtxos||[]) : coin==='btc' ? (window.cdBtcUtxos||[]) : [];
     if(!utxos.length){
-      listEl.innerHTML='<div class="cd-utxo-empty">No UTXOs found</div>';
+      var scanning = window._refreshing || !window._balanceLoaded || (coin==='btc' && !window._btcBalanceLoaded);
+      if(scanning){
+        listEl.innerHTML='<div class="cd-utxo-empty" style="display:flex;align-items:center;gap:8px;justify-content:center"><span class="cd-scan-spin" style="display:inline-block;animation:spin .8s linear infinite">⟳</span> Scanning UTXOs...</div>';
+      } else {
+        listEl.innerHTML='<div class="cd-utxo-empty">No UTXOs found</div>';
+      }
       return;
     }
     var meta = COIN_META[coin];
     var explorer = coin==='btc'?'bitcoin':'bitcoin-cash';
     var html = '';
+    var stealthList = window._stealthUtxos || [];
+    var processedSet = window._cjProcessedUtxos || new Set();
+    var autoStealth = window._autoStealth || false;
+    var minSats = window.CJ_MIN_SATS || 3000;
     for(var i=0;i<utxos.length;i++){
       var u = utxos[i];
       var sats = u.value;
       var coins = (sats/1e8).toFixed(8);
       var short = u.txid.slice(0,12)+'...'+u.txid.slice(-6);
+      var addr = (u._addr||'').replace('bitcoincash:','');
+      var utxoKey = u.txid+':'+u.vout;
+      var isStealth = stealthList.some(function(s){ return (s.txid && s.txid===u.txid && s.vout===u.vout) || (s.addr && s.addr===u._addr); });
+      var isMixCandidate = coin==='bch' && autoStealth && !processedSet.has(utxoKey) && !isStealth && sats >= minSats;
+      var mixTag = isMixCandidate ? '<div class="cd-utxo-mix">MIX CANDIDATE</div>' : '';
+      var stealthTag = isStealth ? '<div style="font-size:7px;color:#bf5af2;margin-top:2px">STEALTH</div>' : '';
       html += '<div class="cd-utxo-row" onclick="window.open(\'https://blockchair.com/'+explorer+'/transaction/'+u.txid+'\',\'_blank\')">';
-      html += '<div class="cd-utxo-left"><div class="cd-utxo-txid">'+short+'</div><div class="cd-utxo-vout">Output #'+u.vout+'</div></div>';
-      html += '<div class="cd-utxo-value">'+coins+' '+meta.ticker+'</div>';
+      html += '<div class="cd-utxo-left"><div class="cd-utxo-txid">'+short+'</div><div class="cd-utxo-vout">Output #'+u.vout+'</div>';
+      if(addr) html += '<div class="cd-utxo-addr">'+addr+'</div>';
+      html += '</div>';
+      html += '<div style="text-align:right"><div class="cd-utxo-value">'+coins+' '+meta.ticker+'</div>'+stealthTag+mixTag+'</div>';
       html += '</div>';
     }
     listEl.innerHTML = html;
@@ -1215,6 +1375,7 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
     var addrInput = document.getElementById('cd-send-addr');
     if(_cdCoin==='bch'||_cdCoin==='sbch') addrInput.placeholder='bitcoincash:q...';
     else if(_cdCoin==='btc') addrInput.placeholder='1... or bc1...';
+    else if(_cdCoin==='xmr') addrInput.placeholder='4... or 8...';
     else if(_cdCoin==='eth'||_cdCoin==='usdc'||_cdCoin==='usdt') addrInput.placeholder='0x...';
     // Fee section: BCH/BTC/SBCH only
     document.getElementById('cd-fee-section').style.display = (_cdCoin==='bch'||_cdCoin==='btc'||_cdCoin==='sbch') ? '' : 'none';
@@ -1382,6 +1543,35 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
           errEl.textContent='Broadcast failed: '+(txid||'unknown');
           btn.disabled=false; btn.textContent='⚡ BROADCAST →';
         }
+      } catch(e){
+        errEl.textContent='Error: '+e.message;
+        btn.disabled=false; btn.textContent='⚡ BROADCAST →';
+      }
+      _cdSending=false;
+    } else if(_cdCoin==='xmr'){
+      if(!addr.startsWith('4')&&!addr.startsWith('8')){ errEl.textContent='Invalid XMR address'; return; }
+      var amtPico = BigInt(Math.round(amt*1e12));
+      _cdSending=true;
+      btn.disabled=true; btn.textContent='// LOADING WASM...';
+      try {
+        if(!_xmrWallet){
+          btn.textContent='// LOADING WALLET...';
+          var moneroTs = await import('./lib/monero-ts.js');
+          btn.textContent='// SYNCING...';
+          _xmrWallet = await moneroTs.createWalletFull({
+            password:'x', networkType:0, primaryAddress:_xmrAddr,
+            privateViewKey:window._b2h(_xmrViewPriv), privateSpendKey:window._b2h(_xmrSpendPriv),
+            restoreHeight:Math.max(0,_xmrHeight-1000),
+            server:{uri:location.origin+'/xmr-rpc',proxyToWorker:false}, proxyToWorker:true,
+          });
+          await _xmrWallet.sync({onProgress:function(p){ btn.textContent='// SYNCING '+Math.round(p.percentDone*100)+'%...'; }});
+        }
+        btn.textContent='// BUILDING TX...';
+        var tx = await _xmrWallet.createTx({accountIndex:0, address:addr, amount:amtPico.toString(), relay:false});
+        btn.textContent='// BROADCASTING...';
+        await _xmrWallet.relayTx(tx);
+        btn.textContent='✓ SENT'; setTimeout(function(){ cdCloseSend(); },1500);
+        setTimeout(_refreshXmrBalance, 5000);
       } catch(e){
         errEl.textContent='Error: '+e.message;
         btn.disabled=false; btn.textContent='⚡ BROADCAST →';
@@ -1644,6 +1834,7 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
     if(_cdCoin==='bch'||_cdCoin==='sbch') return window.cdBchAddr||'';
     if(_cdCoin==='btc') return window.cdBtcAddr||'';
     if(_cdCoin==='eth'||_cdCoin==='usdc'||_cdCoin==='usdt') return window.cdEthAddr||'';
+    if(_cdCoin==='xmr') return window.cdXmrAddr||'';
     return '';
   }
 
@@ -1665,6 +1856,7 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
     if(_cdCoin==='bch') pathInfo="// SAME SEED AS 00 CHAT & 00 MESH<br>// m/44'/145'/0'/0/0";
     else if(_cdCoin==='btc') pathInfo="// m/44'/145'/0'/3/0";
     else if(_cdCoin==='eth'||_cdCoin==='usdc'||_cdCoin==='usdt') pathInfo="// m/44'/145'/0'/4/0";
+    else if(_cdCoin==='xmr') pathInfo="// m/44'/145'/0'/5/0";
     document.getElementById('cd-receive-label').textContent = label;
     document.getElementById('cd-receive-addr').textContent = addr||'—';
     document.getElementById('cd-path-info').innerHTML = pathInfo;
@@ -1756,6 +1948,10 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
         <div class="fulcrum-dot" id="eth-dot"></div>
         <span id="eth-label">ETH: connecting...</span>
       </div>
+      <div class="fulcrum-bar" id="xmr-bar" style="display:none">
+        <div class="fulcrum-dot" id="xmr-dot"></div>
+        <span id="xmr-label">XMR: connecting...</span>
+      </div>
       <div class="nostr-bar" id="nostr-bar" style="display:none">
         <div class="nostr-dot" id="nostr-dot"></div>
         <span id="nostr-label">NOSTR: connecting...</span>
@@ -1764,6 +1960,7 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
         <div class="chain-btn active" data-chain="bch" onclick="selectChain('bch')">BCH</div>
         <div class="chain-btn" data-chain="btc" onclick="selectChain('btc')">BTC</div>
         <div class="chain-btn" data-chain="eth" onclick="selectChain('eth')">ETH</div>
+        <div class="chain-btn" data-chain="xmr" onclick="selectChain('xmr')">XMR</div>
       </div>
       <div class="tabs">
         <div class="tab active" id="tab-wallet" onclick="switchTab('wallet')">WALLET</div>
@@ -1836,7 +2033,7 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
 
           <div class="send-summary" id="send-summary" style="display:none"></div>
           <div class="send-error" id="send-error"></div>
-          <button class="broadcast-btn" id="broadcast-btn" onclick="sendBCH()">⚡ BROADCAST →</button>
+          <button class="broadcast-btn" id="broadcast-btn" onclick="_activeChain==='xmr'?sendXMR():sendBCH()">⚡ BROADCAST →</button>
         </div>
       </div>
 
@@ -1873,6 +2070,27 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
 
       <!-- STEALTH TAB -->
       <div class="tab-pane" id="pane-stealth">
+        <!-- AUTO STEALTH MODE -->
+        <div class="stealth-section" style="border-bottom:1px solid rgba(var(--accent-rgb),.1)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div class="stealth-section-title" style="margin:0">AUTO STEALTH MODE</div>
+            <div id="auto-stealth-toggle" onclick="toggleAutoStealth()" style="width:40px;height:22px;border-radius:11px;cursor:pointer;position:relative;transition:background .2s" class="as-toggle">
+              <div style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:2px;transition:left .2s" class="as-knob"></div>
+            </div>
+          </div>
+          <div style="font-size:8px;color:rgba(var(--accent-rgb),.25);letter-spacing:1px;margin-bottom:10px">// ONION + JOINER + STEALTH — UNIFIED PRIVACY PIPELINE</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
+            <span style="font-size:9px;color:rgba(var(--accent-rgb),.4);letter-spacing:1px">ROUNDS:</span>
+            <div id="cj-rounds-sel" style="display:flex;gap:4px">
+              <div class="cj-round-btn" data-r="5" onclick="setCjRounds(5)">5</div>
+              <div class="cj-round-btn" data-r="10" onclick="setCjRounds(10)">10</div>
+              <div class="cj-round-btn" data-r="0" onclick="setCjRounds(0)">∞</div>
+            </div>
+          </div>
+          <div id="as-pipeline-status" style="display:none;font-size:9px;letter-spacing:1px;padding:8px;border-radius:6px;background:rgba(var(--accent-rgb),.04);color:var(--green);margin-top:6px">
+            // IDLE
+          </div>
+        </div>
         <div class="stealth-section">
           <div class="stealth-section-title">MY STEALTH CODE</div>
           <div class="stealth-code-box" id="stealth-code" onclick="copyStealthCode()" title="Click to copy">// UNLOCK WALLET...</div>
@@ -1921,7 +2139,6 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
   </div>
 </div>
 
-<script>if(sessionStorage.getItem('00_gate')!=='1'){window.location.href='/';}</script>
 <script src="ledger.js"></script>
 <script>
 (function() {
@@ -1946,12 +2163,14 @@ if(!window.matchMedia('(min-width:900px)').matches && window.location.search.ind
 
 <script type="module">
 import { secp256k1, schnorr } from 'https://esm.sh/@noble/curves@1.8.1/secp256k1';
+import { ed25519 }    from 'https://esm.sh/@noble/curves@1.8.1/ed25519';
 import { hmac }       from 'https://esm.sh/@noble/hashes@1.7.1/hmac';
 import { sha256 }     from 'https://esm.sh/@noble/hashes@1.7.1/sha256';
 import { sha512 }     from 'https://esm.sh/@noble/hashes@1.7.1/sha512';
 import { ripemd160 }  from 'https://esm.sh/@noble/hashes@1.7.1/ripemd160';
 import { keccak_256 } from 'https://esm.sh/@noble/hashes@1.7.1/sha3';
 import QRCode         from 'https://esm.sh/qrcode@1.5.4';
+import { autoConnect as xmrAutoConnect, getBlockCount as xmrGetBlockCount, scanBlocks as xmrScanBlocks, scanMempool as xmrScanMempool } from './xmr-rpc.js';
 
 // ── Utils ──────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -2407,18 +2626,105 @@ let _utxos = [], _history = [], _balance = 0, _feeRate = 1.0;
 let _activeChain = 'bch'; // 'bch' | 'btc' | 'eth'
 // BTC
 let _btcPriv = null, _btcPub33 = null, _btcAddr = '';
-let _btcBalance = 0, _btcUtxos = [];
+let _btcBalance = 0, _btcUtxos = [], _btcBalanceLoaded = false;
 let _btcWs = null, _btcConnected = false, _btcReqId = 1, _btcCbs = {};
 const _btcIdxRef = { v: 0 };
 // ETH
 let _ethPriv = null, _ethAddr = '';
 let _ethBalance = '0'; // wei string
+// XMR
+let _xmrSpendPriv = null, _xmrViewPriv = null;
+let _xmrSpendPub = null, _xmrViewPub = null;
+let _xmrAddr = '';
+let _xmrBalance = '0'; // piconeros string
+let _xmrWallet = null;  // monero-ts wallet instance (lazy)
+let _xmrConnected = false;
+let _xmrHeight = 0;
 
 // ── Stealth State ─────────────────────────────────
 let _stealthScanPriv = null, _stealthScanPub = null;
 let _stealthSpendPriv = null, _stealthSpendPub = null;
 let _stealthNostrPub = null; // x-only 32-byte hex for Nostr DMs
 let _stealthUtxos = [];      // [{txid, vout, value, priv, pub, addr, from, ts}]
+
+// ── Auto Stealth Mode (CoinJoin pipeline) ────────
+let _autoStealth = localStorage.getItem('00_auto_stealth') !== 'false'; // default ON
+let _cjRounds = parseInt(localStorage.getItem('00_cj_rounds') || '1');
+let _cjSessionPriv = null, _cjSessionPub = null; // ephemeral CoinJoin session keys
+let _cjActiveMix = null;
+let _cjPools = [];
+let _cjBanList = JSON.parse(localStorage.getItem('00_fusion_bans') || '[]');
+let _cjMixHistory = JSON.parse(localStorage.getItem('00_fusion_history') || '[]');
+let _cjPhaseTimer = null, _cjAutoTimer = null, _cjHeartbeat = null;
+let _cjAutoRunning = false;
+let _cjSessionStartTs = 0;
+let _cjMsgBuffer = [];
+let _cjSeenEvents = new Set();
+let _cjRoundsCompleted = 0;
+let _cjPipelineActive = false;
+let _cjPrevUtxoSet = null; // for detecting new incoming funds
+let _cjProcessedUtxos = new Set(JSON.parse(localStorage.getItem('00_cj_processed') || '[]')); // UTXOs already mixed — skip re-trigger
+const CJ_MIN_SATS = 3000;
+const CJ_KIND_POOL  = 22222;
+const CJ_KIND_JOIN  = 22223;
+const CJ_KIND_PROTO = 22224;
+const CJ_PHASE_TIMEOUT = 60000;
+const CJ_HEARTBEAT_MS  = 20000;
+const CJ_PEER_TIMEOUT  = 45000;
+
+// ── XMR Crypto Helpers ───────────────────────────
+const L_ED = 0x1000000000000000000000000000000014DEF9DEA2F79CD65812631A5CF5D3EDn;
+const G_ED = ed25519.ExtendedPoint.BASE;
+function _xmrMod(a, m) { return ((a % m) + m) % m; }
+function _xmrBigIntToBytes32LE(n) {
+  const b = new Uint8Array(32);
+  let v = n;
+  for (let i = 0; i < 32; i++) { b[i] = Number(v & 0xFFn); v >>= 8n; }
+  return b;
+}
+function scReduce32(scalar32) {
+  let n = 0n;
+  for (let i = 31; i >= 0; i--) n = (n << 8n) | BigInt(scalar32[i]);
+  n = _xmrMod(n, L_ED);
+  return _xmrBigIntToBytes32LE(n);
+}
+function xmrPubFromPriv(privLE) {
+  let n = 0n;
+  for (let i = 31; i >= 0; i--) n = (n << 8n) | BigInt(privLE[i]);
+  const point = G_ED.multiply(n);
+  return new Uint8Array(point.toRawBytes());
+}
+function xmrViewKeyFromSpend(spendPriv) {
+  const hash = keccak_256(spendPriv);
+  return scReduce32(hash);
+}
+const XMR_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const XMR_BLOCK_SIZES = [0, 2, 3, 5, 6, 7, 9, 10, 11];
+function _xmrBase58Block(data, padLen) {
+  let n = 0n;
+  for (let i = 0; i < data.length; i++) n = (n << 8n) | BigInt(data[i]);
+  let s = '';
+  while (n > 0n) { s = XMR_ALPHABET[Number(n % 58n)] + s; n /= 58n; }
+  while (s.length < padLen) s = '1' + s;
+  return s;
+}
+function xmrBase58Encode(data) {
+  let result = '';
+  const fullBlocks = Math.floor(data.length / 8);
+  for (let i = 0; i < fullBlocks; i++) result += _xmrBase58Block(data.slice(i * 8, i * 8 + 8), 11);
+  const rem = data.length % 8;
+  if (rem > 0) result += _xmrBase58Block(data.slice(fullBlocks * 8), XMR_BLOCK_SIZES[rem]);
+  return result;
+}
+function xmrAddress(pubSpend, pubView, network = 18) {
+  const prefix = new Uint8Array([network]);
+  const d = new Uint8Array(1 + 32 + 32);
+  d.set(prefix); d.set(pubSpend, 1); d.set(pubView, 33);
+  const checksum = keccak_256(d).slice(0, 4);
+  const full = new Uint8Array(d.length + 4);
+  full.set(d); full.set(checksum, d.length);
+  return xmrBase58Encode(full);
+}
 
 // ── Nostr (stealth notifications) ─────────────────
 const _RELAYS = JSON.parse(localStorage.getItem('00_ep_relays') || 'null') ||
@@ -2443,6 +2749,7 @@ function _connectRelay(url) {
     document.getElementById('nostr-dot').classList.add('on');
     document.getElementById('nostr-label').textContent = 'NOSTR: ' + names.join(', ');
     _subscribeStealthDMs(ws);
+    if (_cjSessionPub) _cjSubscribe(ws);
   };
   ws.onmessage = e => {
     try {
@@ -2452,6 +2759,8 @@ function _connectRelay(url) {
         _seenEvents.add(msg[2].id);
         if (_seenEvents.size > 5000) { const a = [..._seenEvents]; _seenEvents.clear(); a.slice(-2500).forEach(x => _seenEvents.add(x)); }
         handleStealthEvent(msg[2]);
+        // Also route CoinJoin events
+        if ([CJ_KIND_POOL, CJ_KIND_JOIN, CJ_KIND_PROTO].includes(msg[2].kind)) _cjHandleNostrEvent(msg[2]);
       }
     } catch {}
   };
@@ -2563,6 +2872,38 @@ function parseTxInputPubkey(hex) {
     const pubkey = scriptSig.slice(sp, sp + pubLen);
     return { pubkey, outpoint, txidLE, vout };
   } catch { return null; }
+}
+
+// Parse ALL input pubkeys from a TX (needed for Joiner/Fusion with multiple participants)
+function parseTxAllInputPubkeys(hex) {
+  try {
+    const b = h2b(hex); let p = 0;
+    const rB = n => { const s = b.slice(p, p + n); p += n; return s; };
+    const rLE = () => { let r = 0; for (let i = 0; i < 4; i++) r |= b[p + i] << (i * 8); p += 4; return r >>> 0; };
+    const rVI = () => { const f = b[p++]; if (f < 0xfd) return f; if (f === 0xfd) { const v = b[p] | (b[p+1]<<8); p+=2; return v; } return 0; };
+    rLE(); // version
+    const inCount = rVI();
+    const results = [];
+    for (let i = 0; i < inCount; i++) {
+      const txidLE = rB(32);
+      const vout = rLE();
+      const outpoint = concat(txidLE, u32LE(vout));
+      const ssLen = rVI();
+      const scriptSig = rB(ssLen);
+      rLE(); // sequence
+      let sp = 0;
+      if (scriptSig.length < 35) continue; // too short for sig+pubkey
+      const sigLen = scriptSig[sp++];
+      sp += sigLen;
+      if (sp >= scriptSig.length) continue;
+      const pubLen = scriptSig[sp++];
+      if (pubLen !== 33 && pubLen !== 65) continue;
+      if (sp + pubLen > scriptSig.length) continue;
+      const pubkey = scriptSig.slice(sp, sp + pubLen);
+      results.push({ pubkey, outpoint });
+    }
+    return results;
+  } catch { return []; }
 }
 
 // Handle incoming stealth Nostr DM
@@ -2750,24 +3091,45 @@ async function stealthScanChain() {
     const unique = [...new Set(allHist)];
     let found = 0;
     for (const txid of unique) {
-      if (_stealthUtxos.some(u => u.txid === txid)) continue;
       const rawHex = await bcGetTxHex(txid);
       if (!rawHex) continue;
-      const input = parseTxInputPubkey(rawHex);
-      if (!input) continue;
-      const { addr, pub, cBig } = stealthDerive(null, input.pubkey, _stealthScanPub, _stealthSpendPub, input.outpoint);
+      const inputs = parseTxAllInputPubkeys(rawHex);
+      if (!inputs.length) continue;
       const outputs = parseTxHex(rawHex);
       if (!outputs) continue;
-      const expectedScript = b2h(p2pkhScript(ripemd160(sha256(pub))));
-      const matchIdx = outputs.findIndex(o => o.script === expectedScript);
-      if (matchIdx === -1) continue;
-      const priv = stealthSpendingKey(_stealthSpendPriv, cBig);
-      _stealthUtxos.push({
-        txid, vout: matchIdx, value: outputs[matchIdx].value,
-        priv: b2h(priv), pub: b2h(pub), addr,
-        from: 'scan', ts: Math.floor(Date.now() / 1000),
-      });
-      found++;
+      for (const inp of inputs) {
+        // 1) Standard stealth sends: nonce = outpoint only
+        const { addr, pub, cBig } = stealthDerive(null, inp.pubkey, _stealthScanPub, _stealthSpendPub, inp.outpoint);
+        const expectedScript = b2h(p2pkhScript(ripemd160(sha256(pub))));
+        const matchIdx = outputs.findIndex(o => o.script === expectedScript);
+        if (matchIdx !== -1) {
+          if (!_stealthUtxos.some(u => u.txid === txid && u.vout === matchIdx)) {
+            const priv = stealthSpendingKey(_stealthSpendPriv, cBig);
+            _stealthUtxos.push({
+              txid, vout: matchIdx, value: outputs[matchIdx].value,
+              priv: b2h(priv), pub: b2h(pub), addr,
+              from: 'scan', ts: Math.floor(Date.now() / 1000),
+            });
+            found++;
+          }
+        }
+        // 2) Fusion stealth outputs: nonce = concat(outpoint, u32LE(idx)), try idx 0-3
+        for (let _fi = 0; _fi < 4; _fi++) {
+          const fusionOutpoint = concat(inp.outpoint, u32LE(_fi));
+          const fd = stealthDerive(null, inp.pubkey, _stealthScanPub, _stealthSpendPub, fusionOutpoint);
+          const fScript = b2h(p2pkhScript(ripemd160(sha256(fd.pub))));
+          const fIdx = outputs.findIndex(o => o.script === fScript);
+          if (fIdx === -1) continue;
+          if (_stealthUtxos.some(u => u.txid === txid && u.vout === fIdx)) continue;
+          const fPriv = stealthSpendingKey(_stealthSpendPriv, fd.cBig);
+          _stealthUtxos.push({
+            txid, vout: fIdx, value: outputs[fIdx].value,
+            priv: b2h(fPriv), pub: b2h(fd.pub), addr: fd.addr,
+            from: 'scan', ts: Math.floor(Date.now() / 1000),
+          });
+          found++;
+        }
+      }
     }
     if (found > 0) { _saveStealthUtxos(); renderStealth(); }
     btn.textContent = found > 0 ? `// FOUND ${found} STEALTH TXS` : '// NO NEW STEALTH TXS FOUND';
@@ -2776,6 +3138,99 @@ async function stealthScanChain() {
     btn.textContent = '// SCAN ERROR: ' + e.message;
     setTimeout(() => { btn.textContent = 'SCAN CHAIN (FALLBACK)'; btn.disabled = false; }, 4000);
   }
+}
+
+// ── Coin-Detail Stealth Scan ──────────────────────
+async function cdStealthScan(){
+  var btn = document.getElementById('cd-scan-btn');
+  // Check Fulcrum WS connection first
+  if(!_fvWs || _fvWs.readyState !== WebSocket.OPEN){
+    cdScanPopup(-1, 'Fulcrum not connected — wait for green status');
+    return;
+  }
+  btn.style.pointerEvents='none';
+  btn.innerHTML='<span class="cd-scan-spin">⟳</span> Scanning…';
+  try {
+    var allAddrs = _hdAddresses.length > 0 ? _hdAddresses.map(a=>a.addr) : [_bchAddr];
+    var allHist = [];
+    for(var i=0;i<allAddrs.length;i++){
+      var hist = await bcGetHistory(allAddrs[i]);
+      allHist.push(...hist.map(h=>h.tx_hash));
+    }
+    var unique = [...new Set(allHist)];
+    var found = 0;
+    for(var j=0;j<unique.length;j++){
+      var txid = unique[j];
+      var rawHex = await bcGetTxHex(txid);
+      if(!rawHex) continue;
+      var inputs = parseTxAllInputPubkeys(rawHex);
+      if(!inputs.length) continue;
+      var outputs = parseTxHex(rawHex);
+      if(!outputs) continue;
+      for(var k=0;k<inputs.length;k++){
+        var inp = inputs[k];
+        // 1) Standard stealth sends: nonce = outpoint
+        var d = stealthDerive(null, inp.pubkey, _stealthScanPub, _stealthSpendPub, inp.outpoint);
+        var expectedScript = b2h(p2pkhScript(ripemd160(sha256(d.pub))));
+        var matchIdx = outputs.findIndex(o=>o.script===expectedScript);
+        if(matchIdx!==-1 && !_stealthUtxos.some(u=>u.txid===txid&&u.vout===matchIdx)){
+          var priv = stealthSpendingKey(_stealthSpendPriv, d.cBig);
+          _stealthUtxos.push({txid:txid,vout:matchIdx,value:outputs[matchIdx].value,priv:b2h(priv),pub:b2h(d.pub),addr:d.addr,from:'scan',ts:Math.floor(Date.now()/1000)});
+          found++;
+        }
+        // 2) Fusion stealth: nonce = concat(outpoint, u32LE(idx)), try idx 0-3
+        for(var fi=0;fi<4;fi++){
+          var fusionOp = concat(inp.outpoint, u32LE(fi));
+          var fd = stealthDerive(null, inp.pubkey, _stealthScanPub, _stealthSpendPub, fusionOp);
+          var fScript = b2h(p2pkhScript(ripemd160(sha256(fd.pub))));
+          var fIdx = outputs.findIndex(o=>o.script===fScript);
+          if(fIdx===-1) continue;
+          if(_stealthUtxos.some(u=>u.txid===txid&&u.vout===fIdx)) continue;
+          var fPriv = stealthSpendingKey(_stealthSpendPriv, fd.cBig);
+          _stealthUtxos.push({txid:txid,vout:fIdx,value:outputs[fIdx].value,priv:b2h(fPriv),pub:b2h(fd.pub),addr:fd.addr,from:'scan',ts:Math.floor(Date.now()/1000)});
+          found++;
+        }
+      }
+    }
+    if(found>0){
+      _saveStealthUtxos(); renderStealth();
+      // Update coin-detail balance inline (cdRefreshBalance is in a closure)
+      try {
+        var su=JSON.parse(localStorage.getItem('00stealth_utxos')||'[]');
+        var sBal=su.reduce(function(s,u){return s+(u.value||0)},0);
+        var sCoins=sBal/1e8;
+        var pr={}; try{var c=JSON.parse(localStorage.getItem('00_dash_prices')||'{}');if(c.ts&&Date.now()-c.ts<300000)pr=c;}catch(e2){}
+        var sPrice=pr.bch&&pr.bch.price||0;
+        document.getElementById('cd-bal-amount').textContent=sCoins.toFixed(8)+' BCH';
+        document.getElementById('cd-bal-fiat').textContent='$'+(sCoins*sPrice).toFixed(2);
+      } catch(e2){}
+    }
+    cdScanPopup(found);
+  } catch(e){
+    cdScanPopup(-1, e.message);
+  }
+  btn.innerHTML='<span>⟳</span> Scan Chain';
+  btn.style.pointerEvents='';
+}
+
+function cdScanPopup(found, err){
+  var el = document.createElement('div');
+  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--dt-surface);border:1px solid var(--dt-border);border-radius:16px;padding:32px 40px;text-align:center;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.25);min-width:260px';
+  if(err){
+    el.innerHTML='<div style="font-size:28px;margin-bottom:12px">⚠️</div><div style="font-size:15px;font-weight:700;margin-bottom:6px">Scan Error</div><div style="font-size:12px;color:var(--dt-muted)">'+err+'</div>';
+  } else if(found>0){
+    el.innerHTML='<div style="font-size:28px;margin-bottom:12px">✅</div><div style="font-size:15px;font-weight:700;margin-bottom:6px">'+found+' operation'+(found>1?'s':'')+' found</div><div style="font-size:12px;color:var(--dt-muted)">Balance updated</div>';
+  } else {
+    el.innerHTML='<div style="font-size:28px;margin-bottom:12px">🔍</div><div style="font-size:15px;font-weight:700;margin-bottom:6px">No operations found</div><div style="font-size:12px;color:var(--dt-muted)">No new stealth payments detected</div>';
+  }
+  var overlay = document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9998';
+  document.body.appendChild(overlay);
+  document.body.appendChild(el);
+  var close = function(){ overlay.remove(); el.remove(); };
+  overlay.onclick = close;
+  el.onclick = close;
+  setTimeout(close, 4000);
 }
 
 // ── Stealth UI ────────────────────────────────────
@@ -2868,7 +3323,13 @@ async function _refreshBtcBalance() {
     _btcUtxos = utxos.map(u => ({ txid: u.tx_hash, vout: u.tx_pos, value: u.value }));
     _btcBalance = _btcUtxos.reduce((s, u) => s + u.value, 0);
     if (_activeChain === 'btc') renderChainBalance();
-    try { localStorage.setItem('00_balances', JSON.stringify({ bch: _balance, btc: _btcBalance, eth: _ethBalance, ts: Date.now() })); } catch(e){}
+    try { localStorage.setItem('00_balances', JSON.stringify({ bch: _balance, btc: _btcBalance, eth: _ethBalance, xmr: _xmrBalance, ts: Date.now() })); } catch(e){}
+    _btcBalanceLoaded = true;
+    // Update coin-detail if viewing BTC
+    if (_cdCoin === 'btc' && document.getElementById('coin-detail')?.classList.contains('active')) {
+      cdRenderUtxos();
+      cdRefreshBalance('btc', COIN_META.btc);
+    }
   } catch (e) { console.error('[WALLET] BTC balance:', e); }
 }
 
@@ -2922,7 +3383,7 @@ async function _refreshEthBalance() {
     const hex = await _ethCall('eth_getBalance', [_ethAddr, 'latest']);
     _ethBalance = BigInt(hex).toString();
     if (_activeChain === 'eth') renderChainBalance();
-    try { localStorage.setItem('00_balances', JSON.stringify({ bch: _balance, btc: _btcBalance, eth: _ethBalance, ts: Date.now() })); } catch(e){}
+    try { localStorage.setItem('00_balances', JSON.stringify({ bch: _balance, btc: _btcBalance, eth: _ethBalance, xmr: _xmrBalance, ts: Date.now() })); } catch(e){}
     const d = $('eth-dot'); if (d) d.classList.add('on');
     const l = $('eth-label'); if (l) l.textContent = 'ETH: ' + new URL(window._00ep?.eth_rpc || 'https://ethereum-rpc.publicnode.com').hostname;
   } catch (e) {
@@ -2932,8 +3393,782 @@ async function _refreshEthBalance() {
   }
 }
 
+// ══════════════════════════════════════════════════
+//  AUTO STEALTH MODE — CoinJoin Protocol (inline)
+// ══════════════════════════════════════════════════
+
+function _cjStatus(msg) {
+  const el = document.getElementById('as-pipeline-status');
+  if (el) { el.style.display = 'block'; el.textContent = '// ' + msg; }
+  const dt = document.getElementById('dt-as-status');
+  if (dt) dt.textContent = msg;
+  console.log('[AUTOSTEALTH]', msg);
+}
+
+function _cjInitSession() {
+  _cjSessionPriv = rand(32);
+  _cjSessionPub = b2h(secp256k1.getPublicKey(_cjSessionPriv, true).slice(1));
+  _cjSessionStartTs = Math.floor(Date.now() / 1000);
+  _cjPools = [];
+  _cjSeenEvents = new Set();
+  console.log('[CJ] session:', _cjSessionPub.slice(0, 16) + '...');
+}
+
+// ── CoinJoin Nostr subscriptions ──
+function _cjSubscribe(ws) {
+  if (!ws || ws.readyState !== 1 || !_cjSessionPub) return;
+  const now = Math.floor(Date.now() / 1000);
+  ws.send(JSON.stringify(['REQ', 'cj-pools', { kinds: [CJ_KIND_POOL], '#t': ['0penw0rld-fusion'], since: now - 300 }]));
+  ws.send(JSON.stringify(['REQ', 'cj-join', { kinds: [CJ_KIND_JOIN], '#t': ['0penw0rld-fusion'], since: now - 300 }]));
+  ws.send(JSON.stringify(['REQ', 'cj-proto', { kinds: [CJ_KIND_PROTO], '#p': [_cjSessionPub], since: now - 600 }]));
+}
+function _cjResubscribeAll() {
+  for (const s of _nostrSockets) _cjSubscribe(s.ws);
+}
+
+// ── CoinJoin Nostr event handler ──
+function _cjHandleNostrEvent(ev) {
+  if (ev.kind === CJ_KIND_POOL) _cjHandlePool(ev);
+  else if (ev.kind === CJ_KIND_JOIN) _cjHandleJoin(ev);
+  else if (ev.kind === CJ_KIND_PROTO) _cjHandleProto(ev);
+}
+
+function _cjHandlePool(ev) {
+  try {
+    const data = JSON.parse(ev.content);
+    if (!data.min_peers || ev.created_at < _cjSessionStartTs) return;
+    if (_cjPools.find(p => p.id === ev.id)) return;
+    _cjPools.push({ id: ev.id, pubkey: ev.pubkey, min_peers: data.min_peers, peers: [ev.pubkey], created: ev.created_at, peerSeen: { [ev.pubkey]: Date.now() } });
+  } catch {}
+}
+
+function _cjHandleJoin(ev) {
+  try {
+    const data = JSON.parse(ev.content);
+    const pool = _cjPools.find(p => p.id === data.pool_id);
+    if (!pool) return;
+    if (!pool.peerSeen) pool.peerSeen = {};
+    if (data.leave) {
+      pool.peers = pool.peers.filter(p => p !== ev.pubkey);
+      delete pool.peerSeen[ev.pubkey];
+      if (_cjActiveMix && _cjActiveMix.poolId === data.pool_id && _cjActiveMix.phase <= 1) {
+        _cjActiveMix.peers = _cjActiveMix.peers.filter(p => p !== ev.pubkey);
+        _cjCheckPhase1();
+      }
+      return;
+    }
+    pool.peerSeen[ev.pubkey] = Date.now();
+    if (!pool.peers.includes(ev.pubkey)) pool.peers.push(ev.pubkey);
+    if (_cjActiveMix && _cjActiveMix.poolId === data.pool_id) {
+      if (!_cjActiveMix.peers.includes(ev.pubkey)) _cjActiveMix.peers.push(ev.pubkey);
+      _cjCheckPhase1();
+    }
+  } catch {}
+}
+
+async function _cjHandleProto(ev) {
+  if (!_cjActiveMix) return;
+  try {
+    const dec = await nip04Decrypt(_cjSessionPriv, ev.pubkey, ev.content);
+    if (!dec) return;
+    const data = JSON.parse(dec);
+    if (data.pool_id !== _cjActiveMix.poolId) return;
+    _cjDispatchMsg(ev.pubkey, data);
+  } catch (e) { console.warn('[CJ] proto error:', e); }
+}
+
+function _cjDispatchMsg(pubkey, data) {
+  const step = data.step, phase = _cjActiveMix ? _cjActiveMix.phase : 0;
+  const stepPhase = { inputs: 2, onion: 3 };
+  const needed = stepPhase[step] || 0;
+  if (needed > 0 && phase < needed) { _cjMsgBuffer.push({ pubkey, data }); return; }
+  if (step === 'inputs') _cjHandleInputs(pubkey, data);
+  else if (step === 'onion') _cjHandleOnion(pubkey, data);
+  else if (step === 'outputs') _cjHandleOutputs(pubkey, data);
+  else if (step === 'tx') _cjHandleTx(pubkey, data);
+  else if (step === 'sign') _cjHandleSign(pubkey, data);
+  else if (step === 'blame') _cjHandleBlame(pubkey, data);
+}
+
+// ── Onion encryption for blind outputs ──
+async function _cjOnionLayer(data, peelerPubHex) {
+  const eph = rand(32);
+  const ephPub = secp256k1.getPublicKey(eph, true);
+  const shared = secp256k1.getSharedSecret(eph, h2b('02' + peelerPubHex)).slice(1, 33);
+  const aesKey = sha256(shared);
+  const iv = rand(12);
+  const key = await crypto.subtle.importKey('raw', aesKey, { name: 'AES-GCM' }, false, ['encrypt']);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv, tagLength: 128 }, key, data));
+  return concat(ephPub, iv, ct);
+}
+
+async function _cjOnionPeel(blob, myPriv) {
+  const ephPub = blob.slice(0, 33), iv = blob.slice(33, 45), ct = blob.slice(45);
+  const shared = secp256k1.getSharedSecret(myPriv, ephPub).slice(1, 33);
+  const aesKey = sha256(shared);
+  const key = await crypto.subtle.importKey('raw', aesKey, { name: 'AES-GCM' }, false, ['decrypt']);
+  return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv, tagLength: 128 }, key, ct));
+}
+
+async function _cjOnionWrap(payload, peelers) {
+  const raw = utf8(payload);
+  const padded = new Uint8Array(80);
+  padded.set(raw); padded[raw.length] = 0x01;
+  let data = padded;
+  for (let i = peelers.length - 1; i >= 0; i--) data = await _cjOnionLayer(data, peelers[i]);
+  return data;
+}
+
+function _cjOnionUnpad(data) {
+  const idx = data.indexOf(0x01);
+  const str = new TextDecoder().decode(data.slice(0, idx > 0 ? idx : data.length));
+  const sep = str.lastIndexOf('|');
+  return sep > 0 ? { addr: str.slice(0, sep), value: parseInt(str.slice(sep + 1)) || 0 } : { addr: str, value: 0 };
+}
+
+// ── Self-stealth for CoinJoin outputs ──
+function _cjDeriveSelfStealth(inputPriv, inputOutpoint, outputIdx) {
+  const shared = secp256k1.getSharedSecret(inputPriv, _stealthScanPub);
+  const sharedX = shared.slice(1, 33);
+  const nonce = concat(inputOutpoint, u32LE(outputIdx));
+  const c = sha256(concat(sha256(sharedX), nonce));
+  const cBig = BigInt('0x' + b2h(c)) % N_SECP;
+  const spendPoint = secp256k1.ProjectivePoint.fromHex(_stealthSpendPub);
+  const tweakPoint = secp256k1.ProjectivePoint.BASE.multiply(cBig);
+  const stealthPub = spendPoint.add(tweakPoint).toRawBytes(true);
+  const addr = pubHashToCashAddr(Array.from(ripemd160(sha256(stealthPub))));
+  const bBig = BigInt('0x' + b2h(_stealthSpendPriv));
+  const pBig = (bBig + cBig) % N_SECP;
+  const spendKey = h2b(pBig.toString(16).padStart(64, '0'));
+  return { addr, pub: stealthPub, priv: spendKey };
+}
+
+function _cjSaveStealthUtxo(addr, priv, pub) {
+  const existing = JSON.parse(localStorage.getItem('00stealth_utxos') || '[]');
+  existing.push({ addr, priv: b2h(priv), pub: b2h(pub), from: 'fusion', ts: Math.floor(Date.now() / 1000) });
+  localStorage.setItem('00stealth_utxos', JSON.stringify(existing));
+}
+
+function _cjRandomSplit(totalSats, n) {
+  const MIN_OUT = 546;
+  if (totalSats < MIN_OUT * n) return null;
+  if (n === 1) return [totalSats];
+  const pool = totalSats - MIN_OUT * n;
+  const w = []; for (let i = 0; i < n; i++) w.push(Math.random() + 0.1);
+  const wSum = w.reduce((s, v) => s + v, 0);
+  const amounts = w.map(v => MIN_OUT + Math.floor(v / wSum * pool));
+  const used = amounts.reduce((s, v) => s + v, 0);
+  amounts[Math.floor(Math.random() * n)] += totalSats - used;
+  return amounts;
+}
+
+// ── CoinJoin Phase Management ──
+function _cjSetPhase(n) {
+  if (!_cjActiveMix) return;
+  _cjActiveMix.phase = n;
+  const pending = _cjMsgBuffer.splice(0);
+  for (const msg of pending) _cjDispatchMsg(msg.pubkey, msg.data);
+  if ([2, 3, 5].includes(n)) { clearTimeout(_cjPhaseTimer); _cjPhaseTimer = setTimeout(() => _cjPhaseTimeout(n), CJ_PHASE_TIMEOUT); }
+  else { clearTimeout(_cjPhaseTimer); _cjPhaseTimer = null; }
+  _cjCheckPhase1();
+  const labels = { 1: 'WAITING FOR PEERS', 2: 'REGISTERING INPUTS', 3: 'ONION MIXING', 4: 'ASSEMBLING TX', 5: 'VERIFYING & SIGNING', 6: 'BROADCASTING' };
+  _cjStatus('PHASE ' + n + ': ' + (labels[n] || ''));
+}
+
+function _cjCheckPhase1() {
+  if (!_cjActiveMix || _cjActiveMix.phase !== 1) return;
+  if (_cjActiveMix.peers.length >= _cjActiveMix.minPeers) {
+    _cjSetPhase(2);
+    _cjStartInputs();
+  }
+}
+
+// ── Phase 2: Input Registration ──
+async function _cjStartInputs() {
+  const m = _cjActiveMix;
+  m.mixOrder = [...m.peers].sort();
+  const usable = _utxos.filter(u => u.value >= 546 && (!_cjProcessedUtxos.has(u.txid + ':' + u.vout) || u.height > 0));
+  if (!usable.length) { _cjStatus('NO SPENDABLE UTXOS'); _cjResetMix(); return; }
+  const maxIn = Math.min(5, usable.length);
+  const nInputs = 1 + Math.floor(Math.random() * maxIn);
+  const shuffled = [...usable].sort(() => Math.random() - 0.5);
+  const selected = shuffled.slice(0, nInputs);
+  const total = selected.reduce((s, u) => s + u.value, 0);
+  m.myInputs = selected.map(u => ({ tx_hash: u.txid, tx_pos: u.vout, value: u.value, _addr: u._addr }));
+
+  const maxOut = Math.min(4, Math.floor(total / 600));
+  const nOutputs = Math.max(2, 2 + Math.floor(Math.random() * Math.min(3, maxOut - 1)));
+  const myFee = nInputs * 148 + nOutputs * 34 + Math.ceil(10 / m.peers.length);
+  const outputTotal = total - myFee;
+  if (outputTotal < 546 * nOutputs) { _cjStatus('BALANCE TOO LOW'); _cjResetMix(); return; }
+
+  const amounts = _cjRandomSplit(outputTotal, nOutputs);
+  if (!amounts) { _cjStatus('CANNOT SPLIT'); _cjResetMix(); return; }
+
+  const _refInput = selected[0];
+  const _refAddr = _refInput._addr || _bchAddr;
+  const _refPriv = _hdKeyForAddr(_refAddr) || _bchPriv32;
+  const _refOutpoint = concat(h2b(_refInput.txid).reverse(), u32LE(_refInput.vout));
+  m.myOutputs = [];
+  for (let i = 0; i < amounts.length; i++) {
+    if (_stealthSpendPub) {
+      const st = _cjDeriveSelfStealth(_refPriv, _refOutpoint, i);
+      m.myOutputs.push({ addr: st.addr, value: amounts[i], stealth: st });
+    } else {
+      m.myOutputs.push({ addr: _bchAddr, value: amounts[i], stealth: null });
+    }
+  }
+
+  const inputPayload = JSON.stringify({
+    pool_id: m.poolId, step: 'inputs',
+    inputs: m.myInputs.map(u => ({ txid: u.tx_hash, vout: u.tx_pos, value: u.value })),
+    output_count: nOutputs,
+  });
+  for (const peer of m.peers) {
+    if (peer === _cjSessionPub) continue;
+    const enc = await nip04Encrypt(_cjSessionPriv, peer, inputPayload);
+    const ev = await makeNostrEvent(_cjSessionPriv, CJ_KIND_PROTO, enc, [['t', '0penw0rld-fusion'], ['p', peer], ['e', m.poolId]]);
+    nostrPublish(ev);
+  }
+  _cjStatus('INPUTS: ' + nInputs + ' → ' + nOutputs + ' STEALTH OUTPUTS');
+}
+
+function _cjHandleInputs(pubkey, data) {
+  if (!_cjActiveMix || _cjActiveMix.phase !== 2) return;
+  _cjActiveMix.peerInputs[pubkey] = data;
+  const have = Object.keys(_cjActiveMix.peerInputs).length + 1;
+  if (have >= _cjActiveMix.peers.length) {
+    const m = _cjActiveMix;
+    m.expectedOnions = m.myOutputs.length + Object.values(m.peerInputs).reduce((s, d) => s + (d.output_count || 1), 0);
+    _cjSetPhase(3);
+    _cjStartBlindOutput();
+  }
+}
+
+// ── Phase 3: Onion Blind Output ──
+async function _cjStartBlindOutput() {
+  const m = _cjActiveMix;
+  const peelers = m.mixOrder;
+  const myOnions = [];
+  for (const out of m.myOutputs) {
+    const payload = out.addr + '|' + out.value;
+    const onion = await _cjOnionWrap(payload, peelers);
+    myOnions.push(btoa(String.fromCharCode(...onion)));
+  }
+  const firstPeeler = peelers[0];
+  if (firstPeeler === _cjSessionPub) {
+    m.collectedOnions = [...myOnions];
+    _cjCheckOnions();
+  } else {
+    for (const ob64 of myOnions) {
+      const enc = await nip04Encrypt(_cjSessionPriv, firstPeeler, JSON.stringify({ pool_id: m.poolId, step: 'onion', onion: ob64 }));
+      const ev = await makeNostrEvent(_cjSessionPriv, CJ_KIND_PROTO, enc, [['t', '0penw0rld-fusion'], ['p', firstPeeler], ['e', m.poolId]]);
+      nostrPublish(ev);
+    }
+  }
+}
+
+function _cjHandleOnion(pubkey, data) {
+  if (!_cjActiveMix || _cjActiveMix.phase !== 3) return;
+  if (!_cjActiveMix.collectedOnions) _cjActiveMix.collectedOnions = [];
+  _cjActiveMix.collectedOnions.push(data.onion);
+  _cjCheckOnions();
+}
+
+function _cjCheckOnions() {
+  const m = _cjActiveMix;
+  if (!m || !m.collectedOnions || m.collectedOnions.length < m.expectedOnions) return;
+  _cjProcessOnions();
+}
+
+async function _cjProcessOnions() {
+  const m = _cjActiveMix;
+  const myIndex = m.mixOrder.indexOf(_cjSessionPub);
+  const peeled = [];
+  for (const ob64 of m.collectedOnions) {
+    const blob = Uint8Array.from(atob(ob64), c => c.charCodeAt(0));
+    try { peeled.push(await _cjOnionPeel(blob, _cjSessionPriv)); }
+    catch (e) { console.error('[CJ] peel fail:', e); return; }
+  }
+  for (let i = peeled.length - 1; i > 0; i--) {
+    const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1);
+    [peeled[i], peeled[j]] = [peeled[j], peeled[i]];
+  }
+  const nextIndex = myIndex + 1;
+  if (nextIndex >= m.mixOrder.length) {
+    m.blindOutputs = peeled.map(p => _cjOnionUnpad(p));
+    for (const peer of m.peers) {
+      if (peer === _cjSessionPub) continue;
+      const enc = await nip04Encrypt(_cjSessionPriv, peer, JSON.stringify({ pool_id: m.poolId, step: 'outputs', outputs: m.blindOutputs }));
+      const ev = await makeNostrEvent(_cjSessionPriv, CJ_KIND_PROTO, enc, [['t', '0penw0rld-fusion'], ['p', peer], ['e', m.poolId]]);
+      nostrPublish(ev);
+    }
+    _cjSetPhase(4);
+    _cjAssembleTx();
+  } else {
+    const nextPeeler = m.mixOrder[nextIndex];
+    m.collectedOnions = [];
+    for (const inner of peeled) {
+      const ib64 = btoa(String.fromCharCode(...inner));
+      const enc = await nip04Encrypt(_cjSessionPriv, nextPeeler, JSON.stringify({ pool_id: m.poolId, step: 'onion', onion: ib64 }));
+      const ev = await makeNostrEvent(_cjSessionPriv, CJ_KIND_PROTO, enc, [['t', '0penw0rld-fusion'], ['p', nextPeeler], ['e', m.poolId]]);
+      nostrPublish(ev);
+    }
+  }
+}
+
+function _cjHandleOutputs(pubkey, data) {
+  if (!_cjActiveMix) return;
+  _cjActiveMix.blindOutputs = data.outputs;
+  if (_cjActiveMix.phase === 3) { _cjSetPhase(4); _cjAssembleTx(); }
+}
+
+// ── Phase 4: TX Assembly ──
+async function _cjAssembleTx() {
+  const m = _cjActiveMix;
+  const lastPeeler = m.mixOrder[m.mixOrder.length - 1];
+  if (_cjSessionPub !== lastPeeler) return; // only assembler builds
+  try {
+    const allInputs = [];
+    for (const u of m.myInputs) {
+      allInputs.push({ txidLE: h2b(u.tx_hash).reverse(), txid: u.tx_hash, vout: u.tx_pos, value: u.value, sequence: 0xffffffff, owner: _cjSessionPub, _addr: u._addr });
+    }
+    for (const [pub, data] of Object.entries(m.peerInputs)) {
+      for (const inp of data.inputs) {
+        allInputs.push({ txidLE: h2b(inp.txid).reverse(), txid: inp.txid, vout: inp.vout, value: inp.value, sequence: 0xffffffff, owner: pub });
+      }
+    }
+    const allOutputs = m.blindOutputs.filter(o => o.value >= 546).map(o => ({ value: o.value, script: p2pkhScript(cashAddrToHash20(o.addr)) }));
+    const totalIn = allInputs.reduce((s, i) => s + i.value, 0);
+    const totalOut = allOutputs.reduce((s, o) => s + o.value, 0);
+    const fee = totalIn - totalOut;
+    const minFee = Math.max(10 + allInputs.length * 148 + allOutputs.length * 34, 300);
+    if (fee < Math.floor(minFee * 0.3) || fee > minFee * 10) { _cjStatus('FEE ERROR'); return; }
+    m.allInputs = allInputs; m.allOutputs = allOutputs;
+    const unsignedInputs = allInputs.map(i => ({ ...i, scriptSig: new Uint8Array(0) }));
+    m.unsignedTxHex = b2h(serializeTx(1, 0, unsignedInputs, allOutputs));
+    const txPayload = JSON.stringify({
+      pool_id: m.poolId, step: 'tx', tx_hex: m.unsignedTxHex,
+      inputs: allInputs.map(i => ({ txid: i.txid, vout: i.vout, value: i.value, owner: i.owner })),
+      outputs: allOutputs.map(o => ({ value: o.value, script: b2h(o.script) })),
+    });
+    for (const peer of m.peers) {
+      if (peer === _cjSessionPub) continue;
+      const enc = await nip04Encrypt(_cjSessionPriv, peer, txPayload);
+      const ev = await makeNostrEvent(_cjSessionPriv, CJ_KIND_PROTO, enc, [['t', '0penw0rld-fusion'], ['p', peer], ['e', m.poolId]]);
+      nostrPublish(ev);
+    }
+    _cjSetPhase(5);
+    _cjVerifySign();
+  } catch (e) { console.error('[CJ] assembly error:', e); _cjStatus('ASSEMBLY ERROR: ' + e.message); }
+}
+
+function _cjHandleTx(pubkey, data) {
+  if (!_cjActiveMix) return;
+  const m = _cjActiveMix;
+  m.allInputs = data.inputs.map(i => ({ txidLE: h2b(i.txid).reverse(), txid: i.txid, vout: i.vout, value: i.value, sequence: 0xffffffff, owner: i.owner }));
+  m.allOutputs = data.outputs.map(o => ({ value: o.value, script: h2b(o.script) }));
+  m.unsignedTxHex = data.tx_hex;
+  if (m.phase <= 4) { _cjSetPhase(5); _cjVerifySign(); }
+}
+
+// ── Phase 5: Verify & Sign ──
+async function _cjVerifySign() {
+  const m = _cjActiveMix;
+  if (!m.allInputs || !m.allOutputs) return;
+  for (const out of m.myOutputs) {
+    const outScript = b2h(p2pkhScript(cashAddrToHash20(out.addr)));
+    if (!m.allOutputs.some(o => o.value === out.value && b2h(o.script) === outScript)) {
+      const assembler = m.mixOrder[m.mixOrder.length - 1];
+      if (!_cjBanList.includes(assembler)) _cjBanList.push(assembler);
+      localStorage.setItem('00_fusion_bans', JSON.stringify(_cjBanList));
+      _cjPhaseTimeout(5); return;
+    }
+  }
+  const totalIn = m.allInputs.reduce((s, i) => s + i.value, 0);
+  const totalOut = m.allOutputs.reduce((s, o) => s + o.value, 0);
+  if (totalOut > totalIn) { _cjStatus('INFLATION DETECTED'); return; }
+  const fees = totalIn - totalOut;
+  const estBytes = 10 + m.allInputs.length * 148 + m.allOutputs.length * 34;
+  if (fees > estBytes * 5) { _cjStatus('EXCESSIVE FEES'); return; }
+
+  const sigs = [];
+  for (let i = 0; i < m.allInputs.length; i++) {
+    if (m.allInputs[i].owner !== _cjSessionPub) continue;
+    const inp = m.allInputs[i];
+    const inputAddr = inp._addr || m.myInputs.find(u => u.tx_hash === inp.txid && u.tx_pos === inp.vout)?._addr;
+    const priv = (inputAddr && _hdKeyForAddr(inputAddr)) || _bchPriv32;
+    const pub = secp256k1.getPublicKey(priv, true);
+    const script = p2pkhScript(ripemd160(sha256(pub)));
+    const sighash = bchSighash(1, 0, m.allInputs, m.allOutputs, i, script, inp.value);
+    const sig = secp256k1.sign(sighash, priv, { lowS: true });
+    const derSig = concat(sig.toDERRawBytes(), new Uint8Array([0x41]));
+    const scriptSig = concat(new Uint8Array([derSig.length]), derSig, new Uint8Array([pub.length]), pub);
+    sigs.push({ index: i, scriptSig: b2h(scriptSig) });
+  }
+  const sigPayload = JSON.stringify({ pool_id: m.poolId, step: 'sign', signatures: sigs });
+  for (const peer of m.peers) {
+    if (peer === _cjSessionPub) continue;
+    const enc = await nip04Encrypt(_cjSessionPriv, peer, sigPayload);
+    const ev = await makeNostrEvent(_cjSessionPriv, CJ_KIND_PROTO, enc, [['t', '0penw0rld-fusion'], ['p', peer], ['e', m.poolId]]);
+    nostrPublish(ev);
+  }
+  m.signatures[_cjSessionPub] = sigs;
+  _cjCheckSigs();
+}
+
+function _cjHandleSign(pubkey, data) {
+  if (!_cjActiveMix) return;
+  _cjActiveMix.signatures[pubkey] = data.signatures;
+  _cjCheckSigs();
+}
+function _cjCheckSigs() {
+  const m = _cjActiveMix;
+  if (!m || Object.keys(m.signatures).length < m.peers.length) return;
+  _cjSetPhase(6); _cjBroadcast();
+}
+
+// ── Phase 6: Broadcast ──
+async function _cjBroadcast() {
+  const m = _cjActiveMix;
+  const signedInputs = m.allInputs.map((inp, i) => {
+    for (const sigs of Object.values(m.signatures)) {
+      const s = sigs.find(s => s.index === i);
+      if (s) return { ...inp, scriptSig: h2b(s.scriptSig) };
+    }
+    return { ...inp, scriptSig: new Uint8Array(0) };
+  });
+  const txHex = b2h(serializeTx(1, 0, signedInputs, m.allOutputs));
+  clearTimeout(_cjPhaseTimer); _cjPhaseTimer = null;
+  try {
+    const txid = await bcBroadcast(txHex);
+    const myTotal = m.myOutputs.reduce((s, o) => s + o.value, 0);
+    _cjMixHistory.unshift({ txid, amount: (myTotal / 1e8).toFixed(8), peers: m.peers.length, outputs: m.myOutputs.length, time: Date.now(), status: 'ok' });
+    localStorage.setItem('00_fusion_history', JSON.stringify(_cjMixHistory.slice(0, 50)));
+    for (const out of m.myOutputs) {
+      if (out.stealth) {
+        _cjSaveStealthUtxo(out.stealth.addr, out.stealth.priv, out.stealth.pub);
+      }
+    }
+    // Mark CoinJoin outputs as processed to prevent re-triggering
+    for (let i = 0; i < m.allOutputs.length; i++) {
+      const outKey = txid + ':' + i;
+      _cjProcessedUtxos.add(outKey);
+    }
+    // Cap stored set at 500 entries to avoid unbounded growth
+    if (_cjProcessedUtxos.size > 500) {
+      const arr = [..._cjProcessedUtxos];
+      _cjProcessedUtxos = new Set(arr.slice(arr.length - 300));
+    }
+    localStorage.setItem('00_cj_processed', JSON.stringify([..._cjProcessedUtxos]));
+
+    _cjRoundsCompleted++;
+    const roundLabel = _cjRounds === 0 ? ('ROUND ' + _cjRoundsCompleted + '/∞') : ('ROUND ' + _cjRoundsCompleted + '/' + _cjRounds);
+    _cjStatus(roundLabel + ' COMPLETE — TX: ' + txid.slice(0, 12) + '...');
+    _cjResetMix();
+    if (_cjRounds === 0 || _cjRoundsCompleted < _cjRounds) {
+      setTimeout(() => { refreshBalance().then(() => _cjAutoJoinNext()); }, 3000);
+    } else {
+      _cjPipelineActive = false;
+      _cjStatus('PIPELINE COMPLETE — ' + _cjRoundsCompleted + ' ROUND(S) MIXED');
+      _cjRoundsCompleted = 0;
+      _loadStealthUtxos(); _registerStealthAddresses();
+      setTimeout(refreshBalance, 2000);
+    }
+  } catch (e) {
+    _cjStatus('BROADCAST FAILED: ' + (e.message || e));
+    _cjMixHistory.unshift({ txid: 'FAILED', amount: '0', peers: m.peers.length, outputs: 0, time: Date.now(), status: 'fail' });
+    localStorage.setItem('00_fusion_history', JSON.stringify(_cjMixHistory.slice(0, 50)));
+    _cjResetMix();
+    if (_cjAutoRunning) setTimeout(_cjAutoJoinNext, 5000);
+  }
+}
+
+// ── Blame / Timeout ──
+function _cjPhaseTimeout(phase) {
+  if (!_cjActiveMix || _cjActiveMix.phase !== phase) return;
+  const m = _cjActiveMix;
+  let blamed = [];
+  if (phase === 2) { const r = new Set(Object.keys(m.peerInputs)); blamed = m.peers.filter(p => p !== _cjSessionPub && !r.has(p)); }
+  else if (phase === 5) { const s = new Set(Object.keys(m.signatures)); blamed = m.peers.filter(p => !s.has(p)); }
+  for (const p of blamed) { if (!_cjBanList.includes(p)) _cjBanList.push(p); }
+  if (blamed.length) localStorage.setItem('00_fusion_bans', JSON.stringify(_cjBanList));
+  _cjStatus('TIMEOUT PHASE ' + phase + (blamed.length ? ' — BLAMED ' + blamed.length + ' PEER(S)' : ''));
+  _cjResetMix();
+  if (_cjAutoRunning) setTimeout(_cjAutoJoinNext, 5000);
+}
+
+function _cjHandleBlame(pubkey, data) {
+  for (const p of (data.blamed || [])) { if (!_cjBanList.includes(p)) _cjBanList.push(p); }
+  localStorage.setItem('00_fusion_bans', JSON.stringify(_cjBanList));
+}
+
+function _cjResetMix() {
+  clearTimeout(_cjPhaseTimer); _cjPhaseTimer = null;
+  if (_cjHeartbeat) { clearInterval(_cjHeartbeat); _cjHeartbeat = null; }
+  _cjActiveMix = null;
+}
+
+// ── Join Pool ──
+async function _cjJoinPool(poolId) {
+  const pool = _cjPools.find(p => p.id === poolId);
+  if (!pool) return;
+  const peers = pool.peers.filter(p => !_cjBanList.includes(p));
+  if (!peers.includes(_cjSessionPub)) peers.push(_cjSessionPub);
+  _cjActiveMix = {
+    poolId, minPeers: pool.min_peers, peers, phase: 1,
+    myInputs: [], myOutputs: [],
+    peerInputs: {}, expectedOnions: 0, collectedOnions: [],
+    blindOutputs: [], allInputs: null, allOutputs: null,
+    unsignedTxHex: null, signatures: {}, mixOrder: [],
+  };
+  _cjSetPhase(1);
+  const joinEv = await makeNostrEvent(_cjSessionPriv, CJ_KIND_JOIN, JSON.stringify({ pool_id: poolId }), [['t', '0penw0rld-fusion']]);
+  nostrPublish(joinEv);
+  if (pool.peerSeen) pool.peerSeen[_cjSessionPub] = Date.now();
+  if (_cjHeartbeat) clearInterval(_cjHeartbeat);
+  _cjHeartbeat = setInterval(async () => {
+    if (!_cjActiveMix || _cjActiveMix.phase !== 1) { clearInterval(_cjHeartbeat); _cjHeartbeat = null; return; }
+    const hbEv = await makeNostrEvent(_cjSessionPriv, CJ_KIND_JOIN, JSON.stringify({ pool_id: _cjActiveMix.poolId }), [['t', '0penw0rld-fusion']]);
+    nostrPublish(hbEv);
+  }, CJ_HEARTBEAT_MS);
+}
+
+// ── Auto Join Loop ──
+async function _cjAutoJoinNext() {
+  if (!_cjAutoRunning) return;
+  if (_cjActiveMix) { _cjStatus('WAITING FOR CURRENT MIX...'); return; }
+  await refreshBalance();
+  if (_balance < CJ_MIN_SATS) { _cjStatus('BALANCE TOO LOW'); _cjAutoRunning = false; return; }
+  // Prune stale pools
+  const now = Math.floor(Date.now() / 1000);
+  _cjPools = _cjPools.filter(p => now - p.created < 300);
+  _cjResubscribeAll();
+
+  // Listen for pools 5-15s
+  const checks = 2 + Math.floor(Math.random() * 2);
+  for (let i = 0; i < checks; i++) {
+    _cjStatus('SCANNING POOLS... (' + (checks - i) * 5 + 's)');
+    await new Promise(r => { _cjAutoTimer = setTimeout(r, 5000); });
+    _cjAutoTimer = null;
+    if (!_cjAutoRunning) return;
+    const match = _cjPools.filter(p => p.peers.length < p.min_peers && !p.peers.includes(_cjSessionPub) && p.created >= _cjSessionStartTs)
+      .sort((a, b) => b.peers.length - a.peers.length || b.created - a.created)[0];
+    if (match) { _cjStatus('JOINING POOL (' + match.peers.length + '/' + match.min_peers + ')'); _cjJoinPool(match.id); return; }
+  }
+  if (!_cjAutoRunning) return;
+  // Create pool
+  _cjStatus('CREATING POOL...');
+  const content = JSON.stringify({ min_peers: 5, v: 2 });
+  const ev = await makeNostrEvent(_cjSessionPriv, CJ_KIND_POOL, content, [['t', '0penw0rld-fusion']]);
+  _cjPools.push({ id: ev.id, pubkey: ev.pubkey, min_peers: 5, peers: [ev.pubkey], created: ev.created_at, peerSeen: { [ev.pubkey]: Date.now() } });
+  nostrPublish(ev);
+  _cjJoinPool(ev.id);
+  // Check for better pools while waiting
+  let checkCount = 0;
+  const checkInt = setInterval(() => {
+    checkCount++;
+    if (!_cjAutoRunning || !_cjActiveMix || _cjActiveMix.phase !== 1) { clearInterval(checkInt); return; }
+    const better = _cjPools.filter(p => p.peers.length < p.min_peers && !p.peers.includes(_cjSessionPub) && p.peers.length > 0 && p.id !== _cjActiveMix.poolId)
+      .sort((a, b) => b.peers.length - a.peers.length)[0];
+    if (better) { clearInterval(checkInt); _cjResetMix(); _cjJoinPool(better.id); return; }
+    if (checkCount >= 6) { clearInterval(checkInt); _cjResetMix(); setTimeout(_cjAutoJoinNext, 3000 + Math.floor(Math.random() * 5000)); }
+  }, 10000);
+}
+
+// ── HD key lookup helper ──
+function _hdKeyForAddr(addr) {
+  if (!addr) return null;
+  for (const a of _hdAddresses) { if (a.addr === addr) return a.priv; }
+  return null;
+}
+
+// ── Pipeline Trigger (detect new funds → auto-start) ──
+function _cjSnapshotUtxos() {
+  return new Set(_utxos.map(u => u.txid + ':' + u.vout));
+}
+
+function _cjDetectNewFunds() {
+  if (!_autoStealth || !_cjPrevUtxoSet || _cjPipelineActive || _activeChain !== 'bch') return;
+  const current = _cjSnapshotUtxos();
+  let newFunds = false;
+  for (const key of current) {
+    if (!_cjPrevUtxoSet.has(key) && !_cjProcessedUtxos.has(key)) { newFunds = true; break; }
+  }
+  _cjPrevUtxoSet = current;
+  if (newFunds && _balance >= CJ_MIN_SATS) {
+    console.log('[AUTOSTEALTH] new funds detected — starting pipeline');
+    startPrivacyPipeline();
+  }
+}
+
+async function startPrivacyPipeline() {
+  if (_cjPipelineActive) return;
+  if (_balance < CJ_MIN_SATS) { _cjStatus('BALANCE TOO LOW'); return; }
+  _cjPipelineActive = true;
+  _cjRoundsCompleted = 0;
+  _cjAutoRunning = true;
+
+  if (!_cjSessionPriv) _cjInitSession();
+  // Subscribe to CoinJoin events on existing Nostr connections
+  _cjResubscribeAll();
+  _cjStatus('PIPELINE STARTED — ' + (_cjRounds === 0 ? '∞' : _cjRounds) + ' ROUND(S)');
+  _cjAutoJoinNext();
+}
+
+function stopPrivacyPipeline() {
+  _cjAutoRunning = false;
+  _cjPipelineActive = false;
+  if (_cjAutoTimer) { clearTimeout(_cjAutoTimer); _cjAutoTimer = null; }
+  _cjResetMix();
+  _cjStatus('PIPELINE STOPPED');
+}
+
+// ── UI Controls ──
+function toggleAutoStealth() {
+  _autoStealth = !_autoStealth;
+  localStorage.setItem('00_auto_stealth', _autoStealth ? 'true' : 'false');
+  _updateAutoStealthUI();
+  if (_autoStealth) {
+    _cjPrevUtxoSet = _cjSnapshotUtxos();
+    if (!_cjSessionPriv) _cjInitSession();
+  } else {
+    stopPrivacyPipeline();
+  }
+}
+
+function setCjRounds(n) {
+  _cjRounds = n;
+  localStorage.setItem('00_cj_rounds', String(n));
+  document.querySelectorAll('.cj-round-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.r) === n));
+}
+
+function _updateAutoStealthUI() {
+  document.querySelectorAll('.as-toggle').forEach(t => t.classList.toggle('on', _autoStealth));
+  document.querySelectorAll('.cj-round-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.r) === _cjRounds));
+  const dtStatus = document.getElementById('dt-as-status');
+  if (dtStatus) dtStatus.textContent = _autoStealth ? 'ON' : 'OFF';
+}
+
+// ══════════════════════════════════════════════════
+
+// ── XMR Balance ──────────────────────────────────
+async function _refreshXmrBalance() {
+  if (!_xmrAddr || !_xmrViewPriv || !_xmrSpendPub) return;
+  const d = $('xmr-dot'), l = $('xmr-label');
+  try {
+    const conn = await xmrAutoConnect();
+    if (!conn.connected) throw new Error('no node');
+    _xmrConnected = true;
+    _xmrHeight = conn.height || 0;
+    if (d) d.classList.add('on');
+    if (l) l.textContent = 'XMR: h=' + _xmrHeight;
+
+    // Load cached scan height
+    let scanFrom = 0;
+    try {
+      const cached = JSON.parse(localStorage.getItem('00_xmr_scan') || 'null');
+      if (cached && cached.addr === _xmrAddr) {
+        scanFrom = cached.height || 0;
+        _xmrBalance = cached.balance || '0';
+        if (_activeChain === 'xmr') renderChainBalance();
+      }
+    } catch(e){}
+
+    // Scan last 5000 blocks if first time, or from last scanned height
+    if (scanFrom === 0 && _xmrHeight > 5000) scanFrom = _xmrHeight - 5000;
+    if (_xmrHeight > scanFrom) {
+      const found = await xmrScanBlocks(_xmrViewPriv, _xmrSpendPub, scanFrom, _xmrHeight);
+      if (found.length > 0) {
+        let total = BigInt(_xmrBalance || '0');
+        for (const out of found) total += BigInt(out.amount || 0);
+        _xmrBalance = total.toString();
+      }
+      // Also scan mempool
+      try {
+        const poolFound = await xmrScanMempool(_xmrViewPriv, _xmrSpendPub);
+        // mempool outputs shown as unconfirmed (don't add to balance yet)
+      } catch(e){}
+
+      // Cache scan state
+      try { localStorage.setItem('00_xmr_scan', JSON.stringify({ addr: _xmrAddr, height: _xmrHeight, balance: _xmrBalance })); } catch(e){}
+    }
+
+    if (_activeChain === 'xmr') renderChainBalance();
+    try { localStorage.setItem('00_balances', JSON.stringify({ bch: _balance, btc: _btcBalance, eth: _ethBalance, xmr: _xmrBalance, ts: Date.now() })); } catch(e){}
+  } catch (e) {
+    console.error('[WALLET] XMR balance:', e);
+    if (d) { d.classList.remove('on'); d.classList.add('err'); }
+    if (l) l.textContent = 'XMR: error';
+  }
+}
+
+// ── XMR Send (lazy-load monero-ts WASM) ──────────
+let _xmrSending = false;
+async function sendXMR() {
+  if (_xmrSending) return;
+  const addr = document.getElementById('send-addr').value.trim();
+  const amtXMR = parseFloat(document.getElementById('send-amount').value) || 0;
+  const errEl = document.getElementById('send-error');
+  const btn = document.getElementById('broadcast-btn');
+
+  errEl.textContent = '';
+  if (!addr) { errEl.textContent = 'Recipient address required'; return; }
+  if (!addr.startsWith('4') && !addr.startsWith('8')) { errEl.textContent = 'Invalid XMR address'; return; }
+  if (amtXMR <= 0) { errEl.textContent = 'Enter a valid amount'; return; }
+
+  const amtPico = BigInt(Math.round(amtXMR * 1e12));
+  _xmrSending = true;
+  btn.disabled = true; btn.textContent = '// LOADING WASM...';
+
+  try {
+    // Lazy-load monero-ts if not already loaded
+    if (!_xmrWallet) {
+      btn.textContent = '// LOADING WALLET...';
+      const moneroTs = await import('./lib/monero-ts.js');
+      btn.textContent = '// SYNCING...';
+      _xmrWallet = await moneroTs.createWalletFull({
+        password: 'x',
+        networkType: 0, // MAINNET
+        primaryAddress: _xmrAddr,
+        privateViewKey: b2h(_xmrViewPriv),
+        privateSpendKey: b2h(_xmrSpendPriv),
+        restoreHeight: Math.max(0, _xmrHeight - 1000),
+        server: { uri: location.origin + '/xmr-rpc', proxyToWorker: false },
+        proxyToWorker: true,
+      });
+      await _xmrWallet.sync({ onProgress: (p) => { btn.textContent = '// SYNCING ' + Math.round(p.percentDone * 100) + '%...'; } });
+    }
+
+    btn.textContent = '// BUILDING TX...';
+    const tx = await _xmrWallet.createTx({
+      accountIndex: 0,
+      address: addr,
+      amount: amtPico.toString(),
+      relay: false,
+    });
+
+    btn.textContent = '// BROADCASTING...';
+    await _xmrWallet.relayTx(tx);
+
+    const txHash = tx.getHash();
+    console.log('[WALLET] XMR sent:', txHash);
+    btn.textContent = '✓ SENT';
+    document.getElementById('send-addr').value = '';
+    document.getElementById('send-amount').value = '';
+    setTimeout(() => { btn.textContent = '⚡ BROADCAST →'; btn.disabled = false; }, 2000);
+    setTimeout(_refreshXmrBalance, 5000);
+  } catch (e) {
+    console.error('[WALLET] XMR send error:', e);
+    errEl.textContent = 'Error: ' + e.message;
+    btn.disabled = false; btn.textContent = '⚡ BROADCAST →';
+  }
+  _xmrSending = false;
+}
+
 // ── Refresh Balance ────────────────────────────────
 let _refreshing = false;
+let _balanceLoaded = false;
 async function refreshBalance() {
   if (_refreshing) return;
   _refreshing = true;
@@ -2975,11 +4210,18 @@ async function refreshBalance() {
     document.getElementById('utxo-count').textContent = _utxos.length;
     renderUTXOs();
     if (_ccActive) _renderCcList(); // keep coin control list in sync
+    // Update coin-detail view if active
+    if (document.getElementById('coin-detail')?.classList.contains('active')) {
+      cdRenderUtxos();
+      const meta = COIN_META[_cdCoin];
+      if (meta && _cdCoin === 'bch') cdRefreshBalance('bch', meta);
+    }
     await loadHistory();
   } catch(e) {
     _fulcrumStatus('ERROR: ' + e.message, false);
   } finally {
     _refreshing = false;
+    _balanceLoaded = true;
     if (btn) btn.classList.remove('spinning');
     if (icon) icon.style.animation = '';
   }
@@ -2988,7 +4230,9 @@ async function refreshBalance() {
   if (_ethAddr) _refreshEthBalance();
   renderChainBalance();
   // Persist balances for desktop dashboard
-  try { localStorage.setItem('00_balances', JSON.stringify({ bch: _balance, btc: _btcBalance, eth: _ethBalance, ts: Date.now() })); } catch(e){}
+  try { localStorage.setItem('00_balances', JSON.stringify({ bch: _balance, btc: _btcBalance, eth: _ethBalance, xmr: _xmrBalance, ts: Date.now() })); } catch(e){}
+  // Auto Stealth: detect new funds
+  _cjDetectNewFunds();
 }
 
 function _utxoTimeLabel(u, stealthMatch) {
@@ -3004,7 +4248,12 @@ function _utxoTimeLabel(u, stealthMatch) {
 
 function renderUTXOs() {
   const list = document.getElementById('utxo-list');
-  if (!_utxos.length) { list.innerHTML = ''; return; }
+  if (!_utxos.length) {
+    if (_refreshing || !_balanceLoaded) {
+      list.innerHTML = '<div class="utxo-item" style="justify-content:center;gap:8px;color:rgba(var(--accent-rgb),.4)"><span style="display:inline-block;animation:spin .8s linear infinite">⟳</span> Scanning UTXOs...</div>';
+    } else { list.innerHTML = ''; }
+    return;
+  }
   // Sort: unconfirmed first, then by height descending (most recent on top)
   const sorted = [..._utxos].sort((a, b) => {
     if (a.height <= 0 && b.height > 0) return -1;
@@ -3016,21 +4265,28 @@ function renderUTXOs() {
     const stealthMatch = _stealthUtxos.find(s => (s.txid && s.txid === u.txid && s.vout === u.vout) || (s.addr && s.addr === u._addr));
     const isStealth = !!stealthMatch;
     const isFusion = isStealth && stealthMatch.from === 'fusion';
+    const utxoKey = u.txid + ':' + u.vout;
+    const isProcessed = _cjProcessedUtxos.has(utxoKey);
+    const isMixCandidate = _autoStealth && !isProcessed && !isStealth && u.value >= CJ_MIN_SATS;
     const badge = isStealth
       ? `<span class="utxo-conf stealth">STEALTH</span>`
       : u.height > 0
         ? `<span class="utxo-conf conf">CONFIRMED</span>`
         : `<span class="utxo-conf unconf">PENDING</span>`;
+    const mixBadge = isMixCandidate ? '<span class="utxo-conf mix-candidate">MIX CANDIDATE</span>' : '';
     const fusionTag = isFusion ? '<span style="font-size:7px;color:#a855f7;margin-left:2px">FUSION</span>' : '';
     const timeLabel = _utxoTimeLabel(u, stealthMatch);
     const txShort = u.txid.slice(0, 8) + '…' + u.txid.slice(-4);
+    const fullAddr = (u._addr || '').replace('bitcoincash:', '');
     return `<div class="utxo-item">
       <div class="utxo-left">
         <div class="utxo-val">${(u.value/1e8).toFixed(8)} BCH</div>
         <div class="utxo-meta"><span>${txShort}:${u.vout}</span>${fusionTag}</div>
+        ${fullAddr ? `<div class="utxo-addr">${fullAddr}</div>` : ''}
       </div>
       <div class="utxo-right">
         ${badge}
+        ${mixBadge}
         <div class="utxo-time">${timeLabel}</div>
       </div>
     </div>`;
@@ -3455,6 +4711,8 @@ async function renderReceive() {
     addr = _btcAddr; label = 'YOUR BTC ADDRESS'; pathInfo = "// m/44'/145'/0'/3/0";
   } else if (_activeChain === 'eth') {
     addr = _ethAddr; label = 'YOUR ETH ADDRESS'; pathInfo = "// m/44'/145'/0'/4/0";
+  } else if (_activeChain === 'xmr') {
+    addr = _xmrAddr; label = 'YOUR XMR ADDRESS'; pathInfo = "// m/44'/145'/0'/5/0";
   } else {
     addr = _bchAddr; label = 'YOUR BCH ADDRESS'; pathInfo = "// SAME SEED AS 00 CHAT & 00 MESH<br>// m/44'/145'/0'/0/0";
   }
@@ -3472,6 +4730,7 @@ function copyAddr(short) {
   let addr;
   if (_activeChain === 'btc') addr = _btcAddr;
   else if (_activeChain === 'eth') addr = _ethAddr;
+  else if (_activeChain === 'xmr') addr = _xmrAddr;
   else addr = short ? _bchAddr.replace('bitcoincash:','') : _bchAddr;
   navigator.clipboard.writeText(addr).then(() => {
     const btns = document.querySelectorAll('.copy-btn');
@@ -3502,6 +4761,14 @@ function renderChainBalance() {
     unconf.style.display = 'none';
     const ui = document.querySelector('.utxo-info'); if (ui) ui.style.display = 'none';
     const ul = $('utxo-list'); if (ul) ul.style.display = 'none';
+  } else if (_activeChain === 'xmr') {
+    const pico = BigInt(_xmrBalance || '0');
+    bal.textContent = (Number(pico) / 1e12).toFixed(12);
+    unit.textContent = 'XMR';
+    sats.textContent = pico.toString() + ' piconeros';
+    unconf.style.display = 'none';
+    const ui = document.querySelector('.utxo-info'); if (ui) ui.style.display = 'none';
+    const ul = $('utxo-list'); if (ul) ul.style.display = 'none';
   } else {
     const wei = BigInt(_ethBalance || '0');
     bal.textContent = (Number(wei) / 1e18).toFixed(8);
@@ -3517,6 +4784,7 @@ const CHAIN_THEME = {
   bch: { color: '#00ff41', dim: '#00c832', dark: '#003d0f', rgb: '0,255,65' },
   btc: { color: '#f0a500', dim: '#c88600', dark: '#3d2800', rgb: '240,165,0' },
   eth: { color: '#589df6', dim: '#4080d0', dark: '#0d2a56', rgb: '88,157,246' },
+  xmr: { color: '#ff6600', dim: '#cc5200', dark: '#3d1900', rgb: '255,102,0' },
 };
 
 function selectChain(chain) {
@@ -3537,20 +4805,28 @@ function selectChain(chain) {
   const bchBar = $('bch-bar'); if (bchBar) bchBar.style.display = chain === 'bch' ? 'flex' : 'none';
   const btcBar = $('btc-bar'); if (btcBar) btcBar.style.display = chain === 'btc' ? 'flex' : 'none';
   const ethBar = $('eth-bar'); if (ethBar) ethBar.style.display = chain === 'eth' ? 'flex' : 'none';
+  const xmrBar = $('xmr-bar'); if (xmrBar) xmrBar.style.display = chain === 'xmr' ? 'flex' : 'none';
 
   // Header subtitle
   const sub = $('wallet-subtitle');
-  if (sub) sub.textContent = chain === 'bch' ? '// BCH SELF-CUSTODY' : chain === 'btc' ? '// BTC SELF-CUSTODY' : '// ETH SELF-CUSTODY';
+  const subtitles = { bch: '// BCH SELF-CUSTODY', btc: '// BTC SELF-CUSTODY', eth: '// ETH SELF-CUSTODY', xmr: '// XMR SELF-CUSTODY' };
+  if (sub) sub.textContent = subtitles[chain] || '// SELF-CUSTODY';
 
-  // Tabs BCH-only: SEND, TXS, UTXO, STEALTH
-  ['send','txs','addrs','stealth'].forEach(t => {
+  // Tabs: TXS, UTXO, STEALTH are BCH-only; SEND is BCH+XMR
+  ['txs','addrs','stealth'].forEach(t => {
     const el = $('tab-' + t);
     if (el) { el.style.opacity = chain === 'bch' ? '' : '.2'; el.style.pointerEvents = chain === 'bch' ? '' : 'none'; }
   });
+  const sendTab = $('tab-send');
+  if (sendTab) { sendTab.style.opacity = (chain === 'bch' || chain === 'xmr') ? '' : '.2'; sendTab.style.pointerEvents = (chain === 'bch' || chain === 'xmr') ? '' : 'none'; }
 
-  // If on BCH-only tab, switch to wallet
-  const bchOnly = ['pane-send','pane-txs','pane-addrs','pane-stealth'];
+  // If on disabled tab, switch to wallet
+  const bchOnly = ['pane-txs','pane-addrs','pane-stealth'];
+  const sendOnly = ['pane-send'];
   if (chain !== 'bch' && bchOnly.some(id => { const el = $(id); return el && el.classList.contains('active'); })) {
+    switchTab('wallet');
+  }
+  if (chain !== 'bch' && chain !== 'xmr' && sendOnly.some(id => { const el = $(id); return el && el.classList.contains('active'); })) {
     switchTab('wallet');
   }
 
@@ -3568,6 +4844,20 @@ function switchTab(tab) {
   if (tab === 'wallet') renderChainBalance();
   if (tab === 'addrs') renderAddresses();
   if (tab === 'stealth') renderStealth();
+  if (tab === 'send') {
+    // Adapt send pane for active chain
+    const isXmr = _activeChain === 'xmr';
+    const feeSection = document.querySelector('#pane-send .fee-row')?.parentElement;
+    if (feeSection) feeSection.style.display = isXmr ? 'none' : '';
+    const ccSection = document.querySelector('#pane-send .cc-header')?.parentElement;
+    if (ccSection) ccSection.style.display = isXmr ? 'none' : '';
+    const addrInput = document.getElementById('send-addr');
+    if (addrInput) addrInput.placeholder = isXmr ? '4... or 8...' : 'bitcoincash:q...';
+    const amtLabel = document.querySelector('#pane-send .form-lbl');
+    // Update amount label
+    const amtLabels = document.querySelectorAll('#pane-send .form-lbl');
+    if (amtLabels[1]) amtLabels[1].textContent = isXmr ? 'AMOUNT (XMR)' : 'AMOUNT (BCH)';
+  }
 }
 
 // ── Auth ───────────────────────────────────────────
@@ -3737,8 +5027,18 @@ async function bootApp(profile, pass) {
     const ethPub33 = secp256k1.getPublicKey(ethNode.priv, true);
     _ethAddr = ethAddr(ethPub33);
 
+    // Derive XMR key: m/44'/145'/0'/5/0
+    const xmrChain = _bip32Child(h2b(profile.acctPrivHex), h2b(profile.acctChainHex), 5, false);
+    const xmrNode = _bip32Child(xmrChain.priv, xmrChain.chain, 0, false);
+    _xmrSpendPriv = scReduce32(xmrNode.priv);
+    _xmrSpendPub = xmrPubFromPriv(_xmrSpendPriv);
+    _xmrViewPriv = xmrViewKeyFromSpend(_xmrSpendPriv);
+    _xmrViewPub = xmrPubFromPriv(_xmrViewPriv);
+    _xmrAddr = xmrAddress(_xmrSpendPub, _xmrViewPub);
+
     console.log('[WALLET] BTC addr:', _btcAddr);
     console.log('[WALLET] ETH addr:', _ethAddr);
+    console.log('[WALLET] XMR addr:', _xmrAddr);
   }
 
   document.getElementById('auth-import').style.display = 'none';
@@ -3747,7 +5047,7 @@ async function bootApp(profile, pass) {
   main.style.display = 'flex';
 
   // Show chain selector if multi-chain keys available
-  if (_btcAddr || _ethAddr) {
+  if (_btcAddr || _ethAddr || _xmrAddr) {
     const cs = $('chain-selector'); if (cs) cs.style.display = 'flex';
   }
 
@@ -3763,11 +5063,16 @@ async function bootApp(profile, pass) {
   } catch(e) {
     _fulcrumStatus('CONNECT FAILED', false);
   }
-  // Connect BTC Electrum + fetch ETH balance
+  // Connect BTC Electrum + fetch ETH balance + XMR
   if (_btcAddr) _btcConnectWithFallback();
   if (_ethAddr) _refreshEthBalance();
+  if (_xmrAddr) _refreshXmrBalance();
   // Connect Nostr for stealth notifications
   if (_stealthNostrPub) nostrConnect();
+  // Init Auto Stealth Mode
+  _cjInitSession();
+  _updateAutoStealthUI();
+  _cjPrevUtxoSet = _cjSnapshotUtxos();
 }
 
 // ── HD Gap-Limit Address Scanning ──────────────────
@@ -3870,9 +5175,10 @@ Object.assign(window, {
   walletImport, walletUnlock, walletGenKey, showWalletImport, connectLedgerWallet,
   connectWalletConnect, cancelWc, wcDisconnect,
   switchTab, refreshBalance, sendBCH, setFeeRate, setMaxAmount,
+  toggleAutoStealth, setCjRounds, startPrivacyPipeline, stopPrivacyPipeline,
   toggleCoinControl, ccSelectAll, ccClearAll, _ccToggle, _renderCcList,
   updateSendSummary, copyAddr, closeSendSuccess, openExplorer,
-  sendStealth, stealthMax, copyStealthCode, stealthScanChain,
+  sendStealth, stealthMax, copyStealthCode, stealthScanChain, cdStealthScan,
   selectChain, renderChainBalance,
   _QRCode: QRCode,
   _bcBroadcast: bcBroadcast,
@@ -3912,10 +5218,21 @@ Object.defineProperties(window, {
   cdBalance:    { get(){ return _balance; } },
   cdBtcBalance: { get(){ return _btcBalance; } },
   cdEthBalance: { get(){ return _ethBalance; } },
+  cdXmrAddr:    { get(){ return _xmrAddr; } },
+  cdXmrBalance: { get(){ return _xmrBalance; } },
+  cdXmrSpendPriv: { get(){ return _xmrSpendPriv; } },
+  cdXmrViewPriv:  { get(){ return _xmrViewPriv; } },
   cdStealthScanPriv:  { get(){ return _stealthScanPriv; } },
   cdStealthScanPub:   { get(){ return _stealthScanPub; } },
   cdStealthSpendPub:  { get(){ return _stealthSpendPub; } },
   cdStealthUtxos:     { get(){ return _stealthUtxos; } },
+  _autoStealth:       { get(){ return _autoStealth; } },
+  _cjProcessedUtxos:  { get(){ return _cjProcessedUtxos; } },
+  _stealthUtxos:      { get(){ return _stealthUtxos; } },
+  _refreshing:        { get(){ return _refreshing; } },
+  _balanceLoaded:     { get(){ return _balanceLoaded; } },
+  _btcBalanceLoaded:  { get(){ return _btcBalanceLoaded; } },
+  CJ_MIN_SATS:        { get(){ return CJ_MIN_SATS; } },
 });
 
 // ── Matrix Rain ────────────────────────────────────

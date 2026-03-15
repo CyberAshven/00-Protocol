@@ -676,70 +676,70 @@
 
     <!-- Desktop Add Contact overlay -->
     <div class="dt-overlay" id="dt-chat-add-overlay">
-      <div class="dt-card" style="max-width:480px;margin:60px auto">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div style="font-size:16px;font-weight:700;color:var(--dt-text)">Add Contact</div>
-          <button class="dt-action-btn-outline" onclick="dtChatCloseAdd()" style="padding:4px 12px;font-size:13px">×</button>
+      <div class="dt-ac-card">
+        <button class="dt-ac-close" onclick="dtChatCloseAdd()">&times;</button>
+        <div class="dt-ac-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <div>
-            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">Contact Card URL (chatcash:...)</div>
-            <div style="display:flex;gap:8px">
-              <input class="dt-form-input" type="text" id="dt-ac-url" placeholder="chatcash:bitcoincash:q...?pub=...&name=..." style="flex:1;font-size:11px">
-              <button class="dt-action-btn" onclick="dtChatParseCard()" style="flex:0 0 auto;padding:8px 16px;font-size:11px">Parse</button>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">Name</div>
-            <input class="dt-form-input" type="text" id="dt-ac-name" placeholder="Contact name...">
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">X25519 Pub (64 hex)</div>
-            <input class="dt-form-input" type="text" id="dt-ac-pub" placeholder="64 hex chars..." style="font-size:11px">
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">BCH Address</div>
-            <input class="dt-form-input" type="text" id="dt-ac-bch" placeholder="bitcoincash:q..." style="font-size:11px">
-          </div>
-          <div id="dt-ac-error" style="font-size:11px;color:var(--dt-danger);min-height:16px"></div>
-          <div style="display:flex;gap:10px">
-            <button class="dt-action-btn" onclick="dtChatSaveContact()" style="flex:1">+ Add Contact</button>
-            <button class="dt-action-btn-outline" onclick="dtChatCloseAdd()" style="flex:0 0 auto;padding:10px 20px">Cancel</button>
+        <div class="dt-ac-title">Add Contact</div>
+        <div class="dt-ac-subtitle">Paste a contact card URL or fill in manually</div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">Contact Card URL</div>
+          <div class="dt-ac-url-row">
+            <input class="dt-form-input dt-ac-mono" type="text" id="dt-ac-url" placeholder="chatcash:bitcoincash:q...?pub=...&name=...">
+            <button class="dt-ac-parse-btn" onclick="dtChatParseCard()">Parse</button>
           </div>
         </div>
+        <div class="dt-ac-divider"><span>OR FILL MANUALLY</span></div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">Name</div>
+          <input class="dt-form-input" type="text" id="dt-ac-name" placeholder="Contact name...">
+        </div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">X25519 Public Key</div>
+          <input class="dt-form-input dt-ac-mono" type="text" id="dt-ac-pub" placeholder="64 hex characters...">
+        </div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">BCH Address</div>
+          <input class="dt-form-input dt-ac-mono" type="text" id="dt-ac-bch" placeholder="bitcoincash:q...">
+        </div>
+        <div class="dt-ac-error" id="dt-ac-error"></div>
+        <button class="dt-ac-cta" onclick="dtChatSaveContact()">+ Add Contact</button>
+        <button class="dt-ac-cancel" onclick="dtChatCloseAdd()">Cancel</button>
       </div>
     </div>
 
     <!-- Desktop Share Card overlay -->
     <div class="dt-overlay" id="dt-chat-share-overlay">
-      <div class="dt-card" style="max-width:480px;margin:60px auto">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div style="font-size:16px;font-weight:700;color:var(--dt-text)">My Contact Card</div>
-          <button class="dt-action-btn-outline" onclick="dtChatCloseShare()" style="padding:4px 12px;font-size:13px">×</button>
+      <div class="dt-ac-card">
+        <button class="dt-ac-close" onclick="dtChatCloseShare()">&times;</button>
+        <div class="dt-ac-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <div>
-            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">Display Name</div>
-            <input class="dt-form-input" id="dt-sc-name" placeholder="anon" oninput="dtChatUpdateShare()" style="font-size:13px">
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">Share URL</div>
-            <div id="dt-sc-url" style="font-size:10px;color:var(--dt-text-secondary);word-break:break-all;line-height:1.6;padding:10px;background:var(--dt-bg);border:1px solid var(--dt-border);border-radius:8px;font-family:monospace"></div>
-            <div style="display:flex;justify-content:center;margin:12px 0">
-              <canvas id="dt-sc-qr" style="border-radius:8px;image-rendering:pixelated"></canvas>
-            </div>
-            <button class="dt-action-btn-outline" onclick="dtChatCopyUrl()" style="width:100%;font-size:11px">Copy URL</button>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">BCH Address</div>
-            <div id="dt-sc-bch" style="font-size:11px;color:var(--dt-text-secondary);word-break:break-all;font-family:monospace"></div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--dt-text-secondary);margin-bottom:4px;letter-spacing:.5px">X25519 Pub</div>
-            <div id="dt-sc-pub" style="font-size:11px;color:var(--dt-text-secondary);word-break:break-all;font-family:monospace"></div>
-          </div>
-          <button class="dt-action-btn-outline" onclick="dtChatCloseShare()">Close</button>
+        <div class="dt-ac-title">My Contact Card</div>
+        <div class="dt-ac-subtitle">Share this card so others can message you</div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">Display Name</div>
+          <input class="dt-form-input" id="dt-sc-name" placeholder="anon" oninput="dtChatUpdateShare()">
         </div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">Share URL</div>
+          <div class="dt-ac-url-display" id="dt-sc-url"></div>
+          <div style="display:flex;justify-content:center;margin:16px 0 12px">
+            <canvas id="dt-sc-qr" style="border-radius:10px;image-rendering:pixelated"></canvas>
+          </div>
+          <button class="dt-ac-cancel" onclick="dtChatCopyUrl()">📋 Copy URL</button>
+        </div>
+        <div class="dt-ac-divider"><span>DETAILS</span></div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">BCH Address</div>
+          <div class="dt-ac-url-display" id="dt-sc-bch"></div>
+        </div>
+        <div class="dt-form-group">
+          <div class="dt-form-lbl">X25519 Public Key</div>
+          <div class="dt-ac-url-display" id="dt-sc-pub"></div>
+        </div>
+        <button class="dt-ac-cancel" onclick="dtChatCloseShare()">Close</button>
       </div>
     </div>
 
@@ -931,18 +931,17 @@
       if(bchVal){var clean=bal.replace(/\s*BCH\s*/i,'').trim();bchVal.textContent=hasBalance?clean:(isLoading?'loading…':'0');}
     }
 
-    // Mirror Nostr status chip — use mobile .balance-dot as proxy
+    // Mirror Nostr status chip — read from window._nostrStatus()
     var nChip=document.getElementById('dt-status-chat-nostr');
     var nDot=document.getElementById('dt-chat-dot-nostr');
     var nSrv=document.getElementById('dt-status-chat-nostr-server');
     if(nChip){
-      var bDot=document.querySelector('.balance-dot');
-      var anyOn=false;
-      if(bDot){var bg=getComputedStyle(bDot).backgroundColor;anyOn=bg.indexOf('29, 217, 165')>=0||bg.indexOf('0, 255, 65')>=0;}
+      var ns=typeof window._nostrStatus==='function'?window._nostrStatus():{up:0,total:0};
+      var anyOn=ns.up>0;
       nChip.classList.toggle('on',anyOn);
       nChip.classList.toggle('err',!anyOn);
       if(nDot){nDot.classList.toggle('on',anyOn);nDot.classList.toggle('err',!anyOn);}
-      if(nSrv) nSrv.textContent=anyOn?'connected':'—';
+      if(nSrv) nSrv.textContent=ns.up+'/'+ns.total+' relays';
     }
 
     // Mirror contact list
@@ -1320,7 +1319,7 @@
   </div>
 </div>
 
-<script>if(sessionStorage.getItem('00_gate')!=='1'){window.location.href='/';}else if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
+<script>if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
 <script>
 // ── Boot sequence (regular script — runs even if module fails) ────────────
 (function() {
@@ -1638,6 +1637,7 @@ const _NOSTR_RELAYS = JSON.parse(localStorage.getItem('00_ep_relays') || 'null')
   'wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.nostr.band', 'wss://relay.snort.social'
 ];
 let _nostrSockets = [], _nostrConnected = false, _seenNostrEvents = new Set();
+window._nostrStatus = function(){ var up=_nostrSockets.filter(function(s){return s.connected}).length; return {up:up,total:_NOSTR_RELAYS.length}; };
 let _pendingChainParts = new Map(); // msg_id_hex → { chunks, sender_pub, txid, senderBchAddr, ts }
 let _pendingRelayParts = new Map(); // msg_id_hex → { chunks, ts }
 

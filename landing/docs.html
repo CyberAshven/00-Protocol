@@ -444,7 +444,7 @@
         </a>
         <a class="app-card" href="fusion.html">
           <div class="app-card-name">00 Joiner</div>
-          <div class="app-card-desc" data-di18n="app-fusion-desc">Collaborative CoinJoin with stealth outputs. Onion-encrypted shuffling, variable amounts, peer-to-peer via Nostr.</div>
+          <div class="app-card-desc" data-di18n="app-fusion-desc">Collaborative CoinJoin with stealth outputs. Zero OP_RETURN — completely invisible on-chain. Onion-encrypted shuffling, variable amounts, peer-to-peer via Nostr.</div>
         </a>
         <a class="app-card" href="dex.html">
           <div class="app-card-name">00 DEX</div>
@@ -1139,6 +1139,10 @@ utxos.sort((a,b) => b.value - a.value);
 
       <p><strong>What it does</strong> — Collaborative CoinJoin with <strong>stealth outputs</strong>. Multiple peers pool their UTXOs into a single transaction with shuffled outputs. Your coins go in with a traceable history — they come out to <strong>freshly derived stealth addresses</strong> that nobody can link back to you. Variable amounts (not fixed like traditional CoinJoin), onion-encrypted output shuffling, and peer coordination via Nostr relays.</p>
 
+      <div class="callout cyan">
+        <span class="badge cyan">ZERO TRACE</span> Unlike every other CoinJoin / CashFusion implementation, <strong>00 Joiner produces no OP_RETURN outputs</strong>. Traditional mixers embed protocol markers (OP_RETURN tags, version bytes, coordination data) that make mixed transactions trivially identifiable on-chain. 00 Joiner transactions are <strong>indistinguishable from regular multi-party transactions</strong> — no metadata, no fingerprint, no trace. Chain analysis tools cannot flag them as CoinJoin.
+      </div>
+
       <div class="callout">
         <strong>Real-life example:</strong> 5 users join a pool. Each contributes 1-5 UTXOs and receives 2-4 outputs at fresh stealth addresses. The outputs are onion-encrypted — each peer peels one layer and shuffles before passing to the next. The final TX has 15+ inputs and 15+ outputs with no possible input→output mapping. Your BCH arrives at one-time stealth addresses derived via ECDH — even if someone knows your scan key, they can't link the outputs to each other.
       </div>
@@ -1793,7 +1797,7 @@ localStorage.setItem(<span class="val">'00_session_auth'</span>, JSON.stringify(
   </main>
 </div>
 
-<script>if(sessionStorage.getItem('00_gate')!=='1'){window.location.href='/';}</script>
+
 <script>
 // ── Theme ──
 function _getDocTheme() {
@@ -1860,7 +1864,7 @@ const DOC_T = {
     'app-id-desc':'Self-sovereign Nostr identity. Schnorr-signed profiles, deterministic avatars. Your key = your identity.',
     'app-mesh-desc':'Nostr relay network monitor. Relay directory, latency checks, connection status.',
     'app-vault-desc':'Multisig vaults with m-of-n threshold signatures. MuSig2 (schnorr), cosigner management.',
-    'app-fusion-desc':'Collaborative CoinJoin with stealth outputs. Onion-encrypted shuffling, variable amounts, peer-to-peer via Nostr.',
+    'app-fusion-desc':'Collaborative CoinJoin with stealth outputs. Zero OP_RETURN — completely invisible on-chain. Onion-encrypted shuffling, variable amounts, peer-to-peer via Nostr.',
     'app-dex-desc':'CashToken exchange interface. Quotes computed locally, swap execution via Cauldron (external link).',
     'app-loan-desc':'Collateral ratio calculator with health visualization. Lending via Moria (external link).',
     'p-chat-1':'Chat uses the <strong>CCSH (Cash Chat Secure Hub)</strong> protocol with <strong>dual-channel encryption</strong>. Messages are split using a <strong>XOR one-time pad</strong>: half goes on-chain via <strong>BCH OP_RETURN</strong> (max 220 bytes, sent as a dust transaction to the recipient), half is synced via <strong>Nostr relays</strong>. Neither channel alone reveals anything — information-theoretically secure (Shannon 1949).',
@@ -1971,7 +1975,7 @@ const DOC_T = {
     'app-id-desc':"Identité Nostr auto-souveraine. Profils signés Schnorr, avatars déterministes. Votre clé = votre identité.",
     'app-mesh-desc':"Moniteur de réseau Nostr. Répertoire de relais, vérification de latence, état de connexion.",
     'app-vault-desc':"Coffres multisig avec signatures m-sur-n. MuSig2 (schnorr), gestion des cosignataires.",
-    'app-fusion-desc':"Mixage UTXO CashFusion pour la vie privée BCH. Coin-join collaboratif avec suivi des phases.",
+    'app-fusion-desc':"CoinJoin collaboratif avec sorties stealth. Zéro OP_RETURN — totalement invisible on-chain. Shuffling chiffré en onion, montants variables, pair-à-pair via Nostr.",
     'app-dex-desc':"Interface d'échange CashToken. Devis calculés localement, exécution via Cauldron (lien externe).",
     'app-loan-desc':"Calculateur de ratio de collatéral avec visualisation santé. Prêts via Moria (lien externe).",
     'p-chat-1':"Chat utilise le protocole <strong>CCSH (Cash Chat Secure Hub)</strong> avec <strong>chiffrement double canal</strong>. Les messages sont découpés via un <strong>XOR one-time pad</strong> : la moitié on-chain via <strong>BCH OP_RETURN</strong> (max 220 bytes), l'autre moitié synchronisée via <strong>relais Nostr</strong>. Aucun canal seul ne révèle quoi que ce soit — sécurité informationnelle théorique (Shannon 1949).",
@@ -2082,7 +2086,7 @@ const DOC_T = {
     'app-id-desc':'Identidad Nostr auto-soberana. Perfiles firmados con Schnorr, avatares deterministas. Tu clave = tu identidad.',
     'app-mesh-desc':'Monitor de red Nostr. Directorio de relés, verificación de latencia, estado de conexión.',
     'app-vault-desc':'Bóvedas multisig con firmas m-de-n. MuSig2 (schnorr), gestión de cosignatarios.',
-    'app-fusion-desc':'Mezcla UTXO CashFusion para privacidad BCH. Coin-join colaborativo con seguimiento de fases.',
+    'app-fusion-desc':'CoinJoin colaborativo con salidas stealth. Cero OP_RETURN — completamente invisible on-chain. Shuffling cifrado en onion, montos variables, peer-to-peer via Nostr.',
     'app-dex-desc':'Interfaz de intercambio CashToken. Cotizaciones calculadas localmente, ejecución vía Cauldron (enlace externo).',
     'app-loan-desc':'Calculadora de ratio de colateral con visualización de salud. Préstamos vía Moria (enlace externo).',
     'p-chat-1':'Chat usa el protocolo <strong>CCSH (Cash Chat Secure Hub)</strong> con <strong>cifrado de doble canal</strong>. Los mensajes se dividen con un <strong>XOR one-time pad</strong>: la mitad on-chain vía <strong>BCH OP_RETURN</strong> (máx 220 bytes), la otra mitad sincronizada vía <strong>relés Nostr</strong>. Ningún canal solo revela nada — seguridad teórica de la información (Shannon 1949).',
@@ -2193,7 +2197,7 @@ const DOC_T = {
     'app-id-desc':'自主主权 Nostr 身份。Schnorr 签名配置文件，确定性头像。您的密钥=您的身份。',
     'app-mesh-desc':'Nostr 中继网络监控。中继目录，延迟检查，连接状态。',
     'app-vault-desc':'多重签名保险库，m-of-n 阈值签名。MuSig2（schnorr），共签人管理。',
-    'app-fusion-desc':'CashFusion UTXO 混合，BCH 隐私保护。协作 coin-join，带阶段跟踪。',
+    'app-fusion-desc':'协作 CoinJoin，隐身输出。零 OP_RETURN — 链上完全不可见。洋葱加密混洗，可变金额，通过 Nostr 点对点。',
     'app-dex-desc':'CashToken 交换界面。报价本地计算，交换执行通过 Cauldron（外部链接）。',
     'app-loan-desc':'抵押率计算器，带健康可视化。贷款通过 Moria（外部链接）。',
     'p-chat-1':'Chat 使用 <strong>CCSH（Cash Chat Secure Hub）</strong> 协议进行<strong>双通道加密</strong>。消息通过 <strong>XOR 一次性密码本</strong>分割：一半通过 <strong>BCH OP_RETURN</strong> 上链（最大 220 字节），另一半通过 <strong>Nostr 中继</strong>同步。单独任何一个通道都不会泄露信息——信息论安全（Shannon 1949）。',

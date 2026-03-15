@@ -297,17 +297,11 @@
   </div>
 </div>
 
+<script>if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
 <script src="/shell.js"></script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}</script>
 <script>
-// ═══ Gate check ═══
-(function(){
-  const GATE_HASH='4981d5f9f4e5040b4cfd668f6b91753ba7b659ce125224bfa0f943b9899a095a';
-  if(sessionStorage.getItem('00_gate')==='1'){document.getElementById('loading').remove();return;}
-  async function sha256hex(s){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return[...new Uint8Array(d)].map(b=>b.toString(16).padStart(2,'0')).join('');}
-  // redirect to home if no gate
-  window.location.replace('/');
-})();
+document.getElementById('loading').remove();
 
 // ═══ Clock ═══
 function updateClock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}

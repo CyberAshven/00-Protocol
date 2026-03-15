@@ -928,7 +928,7 @@
 </div><!-- /phone-wrap -->
 
 <!-- Boot -->
-<script>if(sessionStorage.getItem('00_gate')!=='1'){window.location.href='/';}else if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
+<script>if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
 <script>
 (function() {
   const statuses = ['BOOT 0penw0rld OS...','SCANNING NOSTR RELAYS...','LOADING CCSH PROTOCOL...','MESH READY'];

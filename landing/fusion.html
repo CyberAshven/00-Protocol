@@ -235,30 +235,32 @@
           <div style="font-size:13px;color:var(--dt-text-secondary);margin-top:4px" id="dt-mix-peers">0/5 PARTICIPANTS</div>
           <div style="font-size:11px;color:var(--dt-text-secondary);margin-top:2px;opacity:.6" id="dt-mix-io-info"></div>
         </div>
-        <div class="dt-phase-list" id="dt-mix-phases">
-          <div class="dt-phase-item" data-phase="1">
-            <div class="dt-phase-num">1</div>
-            <div class="dt-phase-label">Discovery<span style="display:block;font-size:11px;color:var(--dt-text-secondary);font-weight:400;margin-top:2px">Waiting for participants...</span></div>
-          </div>
-          <div class="dt-phase-item" data-phase="2">
-            <div class="dt-phase-num">2</div>
-            <div class="dt-phase-label">Input Registration<span style="display:block;font-size:11px;color:var(--dt-text-secondary);font-weight:400;margin-top:2px">Declare UTXOs</span></div>
-          </div>
-          <div class="dt-phase-item" data-phase="3">
-            <div class="dt-phase-num">3</div>
-            <div class="dt-phase-label">Blind Output<span style="display:block;font-size:11px;color:var(--dt-text-secondary);font-weight:400;margin-top:2px">Onion-encrypted output registration</span></div>
-          </div>
-          <div class="dt-phase-item" data-phase="4">
-            <div class="dt-phase-num">4</div>
-            <div class="dt-phase-label">TX Assembly<span style="display:block;font-size:11px;color:var(--dt-text-secondary);font-weight:400;margin-top:2px">Building CoinJoin transaction</span></div>
-          </div>
-          <div class="dt-phase-item" data-phase="5">
-            <div class="dt-phase-num">5</div>
-            <div class="dt-phase-label">Verify &amp; Sign<span style="display:block;font-size:11px;color:var(--dt-text-secondary);font-weight:400;margin-top:2px">Verify outputs, sign inputs</span></div>
-          </div>
-          <div class="dt-phase-item" data-phase="6">
-            <div class="dt-phase-num">6</div>
-            <div class="dt-phase-label">Broadcast<span style="display:block;font-size:11px;color:var(--dt-text-secondary);font-weight:400;margin-top:2px">Submit to network</span></div>
+        <div class="dt-card dt-phase-card">
+          <div class="dt-phase-list" id="dt-mix-phases">
+            <div class="dt-phase-item" data-phase="1">
+              <div class="dt-phase-num">1</div>
+              <div class="dt-phase-label">Discovery<span style="display:block;font-size:11px;color:var(--dt-text-secondary);font-weight:400;margin-top:2px">Waiting for participants...</span></div>
+            </div>
+            <div class="dt-phase-item" data-phase="2">
+              <div class="dt-phase-num">2</div>
+              <div class="dt-phase-label">Input Registration<span style="display:block;font-size:11px;color:var(--dt-text-secondary);font-weight:400;margin-top:2px">Declare UTXOs</span></div>
+            </div>
+            <div class="dt-phase-item" data-phase="3">
+              <div class="dt-phase-num">3</div>
+              <div class="dt-phase-label">Blind Output<span style="display:block;font-size:11px;color:var(--dt-text-secondary);font-weight:400;margin-top:2px">Onion-encrypted output registration</span></div>
+            </div>
+            <div class="dt-phase-item" data-phase="4">
+              <div class="dt-phase-num">4</div>
+              <div class="dt-phase-label">TX Assembly<span style="display:block;font-size:11px;color:var(--dt-text-secondary);font-weight:400;margin-top:2px">Building CoinJoin transaction</span></div>
+            </div>
+            <div class="dt-phase-item" data-phase="5">
+              <div class="dt-phase-num">5</div>
+              <div class="dt-phase-label">Verify &amp; Sign<span style="display:block;font-size:11px;color:var(--dt-text-secondary);font-weight:400;margin-top:2px">Verify outputs, sign inputs</span></div>
+            </div>
+            <div class="dt-phase-item" data-phase="6">
+              <div class="dt-phase-num">6</div>
+              <div class="dt-phase-label">Broadcast<span style="display:block;font-size:11px;color:var(--dt-text-secondary);font-weight:400;margin-top:2px">Submit to network</span></div>
+            </div>
           </div>
         </div>
         <div id="dt-mix-result" style="display:none;margin-top:16px">
@@ -343,17 +345,26 @@
       } else {
         var html='';
         items.forEach(function(it){
-          var labels=it.querySelectorAll('.pool-label,.pool-info,.pool-peers');
-          var joinBtn=it.querySelector('.pool-join-btn,button');
-          var oc=joinBtn?joinBtn.getAttribute('onclick')||'':'';
-          html+='<div class="dt-row" style="cursor:pointer">'
-            +'<div class="dt-row-left">';
-          labels.forEach(function(l){html+='<div class="dt-row-sub">'+l.textContent+'</div>';});
-          html+='</div>';
-          if(joinBtn){
-            html+='<div class="dt-row-right"><button class="dt-action-btn" style="font-size:11px;padding:6px 14px" onclick="'+oc.replace(/"/g,'&quot;')+'">Join</button></div>';
-          }
-          html+='</div>';
+          var oc=it.getAttribute('onclick')||'';
+          var nameEl=it.querySelector('.pool-amount');
+          var detEl=it.querySelector('.pool-detail');
+          var peersEl=it.querySelector('.pool-peers');
+          var name=nameEl?nameEl.textContent:'Mix Pool';
+          var detail=detEl?detEl.textContent:'';
+          var peers=peersEl?peersEl.textContent:'';
+          html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--dt-surface);border:1px solid var(--dt-border);border-radius:12px;margin-bottom:8px">'
+            +'<div style="display:flex;align-items:center;gap:14px">'
+            +'<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#0AC18E,#0AD18E);display:flex;align-items:center;justify-content:center;font-size:18px">⚗</div>'
+            +'<div>'
+            +'<div style="font-weight:700;font-size:13px;color:var(--dt-text)">'+name+'</div>'
+            +'<div style="font-size:11px;color:var(--dt-text-secondary);margin-top:2px">'+detail+'</div>'
+            +'</div>'
+            +'</div>'
+            +'<div style="display:flex;align-items:center;gap:12px">'
+            +'<span style="font-size:12px;font-weight:600;color:var(--dt-text-secondary)">'+peers+'</span>'
+            +(oc?'<button class="dt-action-btn" style="font-size:11px;padding:8px 20px;border-radius:8px" onclick="event.stopPropagation();'+oc.replace(/"/g,'&quot;')+'">Join</button>':'')
+            +'</div>'
+            +'</div>';
         });
         dl.innerHTML=html;
       }
@@ -607,7 +618,7 @@
   </div><!-- phone -->
 </div>
 
-<script>if(sessionStorage.getItem('00_gate')!=='1'){window.location.href='/';}else if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
+<script>if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
 <script src="shell.js"></script>
 <script type="module">
 'use strict';
@@ -745,15 +756,13 @@ function deriveFreshAddr(acctPriv, acctChain, changeIdx, addrIdx) {
 let _stealthScanPriv = null, _stealthScanPub = null;
 let _stealthSpendPriv = null, _stealthSpendPub = null;
 
-function _deriveSelfStealth() {
-  // Generate ephemeral key for self-payment
-  const ephPriv = rand(32);
-  const ephPub = secp256k1.getPublicKey(ephPriv, true);
-  // ECDH: ephemeral × scan_pub
-  const shared = secp256k1.getSharedSecret(ephPriv, _stealthScanPub);
+function _deriveSelfStealth(inputPriv, inputOutpoint, outputIdx) {
+  // Use the wallet's own input key for ECDH (recoverable via chain scan)
+  // ECDH: inputPriv × scan_pub  ===  scanPriv × inputPub (symmetric)
+  const shared = secp256k1.getSharedSecret(inputPriv, _stealthScanPub);
   const sharedX = shared.slice(1, 33);
-  // Use a random outpoint-like nonce (no real outpoint yet — we're deriving pre-TX)
-  const nonce = rand(36);
+  // Nonce = outpoint + output index (unique per output, deterministic, on-chain)
+  const nonce = concat(inputOutpoint, u32LE(outputIdx));
   const c = sha256(concat(sha256(sharedX), nonce));
   const cBig = BigInt('0x' + b2h(c)) % N_SECP;
   // P = B_spend + c*G
@@ -1616,10 +1625,16 @@ async function startInputRegistration() {
   if (!amounts) { alert('Cannot split balance'); resetMix(); return; }
 
   // Derive stealth address for each output
+  // Use first input's key + outpoint for deterministic, chain-scannable derivation
+  const _refInput = selected[0];
+  const _refAddr = _refInput._addr || _bchAddr;
+  const _refPriv = _hdKeyMap[_refAddr] || _privKey;
+  const _refOutpoint = concat(h2b(_refInput.tx_hash).reverse(), u32LE(_refInput.tx_pos));
   m.myOutputs = [];
-  for (const amt of amounts) {
+  for (let _oi = 0; _oi < amounts.length; _oi++) {
+    const amt = amounts[_oi];
     if (_stealthSpendPub) {
-      const st = _deriveSelfStealth();
+      const st = _deriveSelfStealth(_refPriv, _refOutpoint, _oi);
       m.myOutputs.push({ addr: st.addr, value: amt, stealth: st });
     } else if (_acctPriv && _acctChain) {
       const addr = deriveFreshAddr(_acctPriv, _acctChain, 0, _addrIndex++);

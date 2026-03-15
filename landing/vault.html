@@ -742,7 +742,7 @@
 </div>
 
 <script src="ledger.js"></script>
-<script>if(sessionStorage.getItem('00_gate')!=='1'){window.location.href='/';}</script>
+
 <script>
 (function(){
   setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})},1000);
@@ -1771,6 +1771,7 @@ Object.assign(window,{
 });
 
 </script>
+<script>if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
 <script src="/shell.js"></script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}</script>
 </body>

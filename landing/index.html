@@ -103,31 +103,6 @@
     .dock .app-icon-char{font-size:19px}
     .dock .app-icon-label{font-size:8px}
 
-    /* ── Gate overlay ── */
-    #gate{
-      display:none;position:fixed;inset:0;z-index:9999;
-      background:var(--black);
-      align-items:center;justify-content:center;flex-direction:column
-    }
-    .gate-box{text-align:center;max-width:400px;padding:20px}
-    .gate-title{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:5px;color:var(--green);margin-bottom:6px}
-    .gate-sub{font-size:10px;color:rgba(0,255,65,.35);letter-spacing:3px;margin-bottom:32px;text-transform:uppercase}
-    .gate-logo{font-family:'Orbitron',monospace;font-size:48px;font-weight:900;color:var(--green);text-shadow:0 0 20px var(--green),0 0 60px rgba(0,255,65,.4);margin-bottom:32px;letter-spacing:4px}
-    #gate input{
-      width:100%;background:rgba(0,255,65,.03);border:1px solid rgba(0,255,65,.25);
-      color:var(--green);font-family:'Share Tech Mono',monospace;
-      font-size:13px;letter-spacing:2px;padding:14px 18px;
-      outline:none;caret-color:var(--green)
-    }
-    #gate input:focus{border-color:rgba(0,255,65,.5);box-shadow:0 0 12px rgba(0,255,65,.1)}
-    #gate-err{font-size:10px;color:#ff003c;letter-spacing:2px;min-height:16px;margin:12px 0}
-    #gate button{
-      width:100%;background:var(--green);color:var(--black);
-      font-family:'Orbitron',monospace;font-size:11px;font-weight:700;
-      letter-spacing:3px;padding:12px;border:none;cursor:pointer;
-      text-transform:uppercase;transition:.2s
-    }
-    #gate button:hover{box-shadow:0 0 24px rgba(0,255,65,.5)}
 
     /* ── Responsive: on real mobile, fill screen ── */
     @media(max-width:420px){
@@ -146,19 +121,6 @@
   <link rel="stylesheet" href="desktop.css">
 </head>
 <body>
-
-<!-- ═══ Gate ═══ -->
-<div id="gate">
-  <div class="gate-box">
-    <div class="gate-logo">0penw0rld</div>
-    <div class="gate-title">// ACCESS RESTRICTED //</div>
-    <div class="gate-sub">AUTHORIZED TESTERS ONLY</div>
-    <input id="gate-pass" type="password" autocomplete="off" spellcheck="false"
-      placeholder="ENTER ACCESS CODE" onkeydown="if(event.key==='Enter')gateCheck()">
-    <div id="gate-err"></div>
-    <button onclick="gateCheck()">AUTHENTICATE →</button>
-  </div>
-</div>
 
 <canvas id="rain"></canvas>
 <div class="scanlines"></div>
@@ -276,6 +238,16 @@
           <span class="dash-col-amount" id="dash-amt-eth">0 ETH</span>
           <span class="dash-col-value" id="dash-val-eth">$0.00</span>
         </div>
+        <div class="dash-asset-row" id="dash-row-xmr" onclick="window.location='wallet.html?coin=xmr'">
+          <div class="dash-col-asset">
+            <img class="dash-asset-icon" src="icons/xmr.png" alt="XMR">
+            <div><div class="dash-asset-name">Monero</div><div class="dash-asset-ticker">XMR</div></div>
+          </div>
+          <span class="dash-col-price" id="dash-price-xmr">--</span>
+          <span class="dash-col-alloc"><div class="dash-alloc-bar"><div class="dash-alloc-fill" id="dash-alloc-xmr" style="width:0%;background:#ff6600"></div></div><span id="dash-alloc-pct-xmr">0%</span></span>
+          <span class="dash-col-amount" id="dash-amt-xmr">0 XMR</span>
+          <span class="dash-col-value" id="dash-val-xmr">$0.00</span>
+        </div>
         <div class="dash-asset-row" id="dash-row-usdc" onclick="window.location='wallet.html?coin=usdc'">
           <div class="dash-col-asset">
             <img class="dash-asset-icon" src="icons/usdc.png" alt="USDC">
@@ -351,10 +323,6 @@
         <div class="app-icon-box"><div class="app-icon-char">⊛</div></div>
         <div class="app-icon-label">Mesh</div>
       </a>
-      <a class="app-icon" href="fusion.html">
-        <div class="app-icon-box"><div class="app-icon-char">⊕</div></div>
-        <div class="app-icon-label">Fusion</div>
-      </a>
       <a class="app-icon" href="onion.html">
         <div class="app-icon-box"><div class="app-icon-char">◎</div></div>
         <div class="app-icon-label">Onion</div>
@@ -396,31 +364,10 @@
   </div>
 </div>
 
+<script>if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
 <script src="/shell.js"></script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}</script>
 <script>
-// ═══ Gate ═══
-const GATE_HASH = '4981d5f9f4e5040b4cfd668f6b91753ba7b659ce125224bfa0f943b9899a095a';
-async function sha256hex(s) {
-  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-  return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2,'0')).join('');
-}
-async function gateCheck() {
-  const v = document.getElementById('gate-pass').value;
-  const h = await sha256hex(v);
-  if (h === GATE_HASH) {
-    sessionStorage.setItem('00_gate', '1');
-    document.getElementById('gate').style.display = 'none';
-  } else {
-    document.getElementById('gate-err').textContent = '// ACCESS DENIED';
-    document.getElementById('gate-pass').value = '';
-    document.getElementById('gate-pass').focus();
-  }
-}
-if (sessionStorage.getItem('00_gate') !== '1') {
-  document.getElementById('gate').style.display = 'flex';
-  setTimeout(() => document.getElementById('gate-pass').focus(), 100);
-}
 
 // ═══ Clock ═══
 function updateClock() {
@@ -490,7 +437,7 @@ drawRain();
 
 // ═══ Dashboard Engine ═══
 (function(){
-  const COINS = {bch:'bitcoin-cash', btc:'bitcoin', eth:'ethereum', usdc:'usd-coin', usdt:'tether'};
+  const COINS = {bch:'bitcoin-cash', btc:'bitcoin', eth:'ethereum', xmr:'monero', usdc:'usd-coin', usdt:'tether'};
   const COIN_IDS = Object.values(COINS);
   const SYMBOLS = {usd:'$', eur:'€', gbp:'£'};
   let _dashCurrency = 'usd';
@@ -557,7 +504,7 @@ drawRain();
       const raw = localStorage.getItem('00_balances');
       if(!raw) return null;
       const b = JSON.parse(raw);
-      return { bch: b.bch||0, btc: b.btc||0, eth: b.eth||0, usdc: b.usdc||0, usdt: b.usdt||0 };
+      return { bch: b.bch||0, btc: b.btc||0, eth: b.eth||0, xmr: b.xmr||'0', usdc: b.usdc||0, usdt: b.usdt||0 };
     } catch(e){ return null; }
   }
 
@@ -574,11 +521,13 @@ drawRain();
   /* ── Compute portfolio ── */
   function computePortfolio(balances, prices){
     if(!prices) return null;
-    const b = balances || {bch:0, btc:0, eth:0, usdc:0, usdt:0};
-    // Convert sats to coins for BCH and BTC, wei to ETH
+    const b = balances || {bch:0, btc:0, eth:0, xmr:'0', usdc:0, usdt:0};
+    // Convert sats to coins for BCH and BTC, wei to ETH, piconeros to XMR
     const bchCoins = (b.bch||0) / 1e8;
     const btcCoins = (b.btc||0) / 1e8;
     const ethCoins = (b.eth||0) / 1e18;
+    const xmrPico = Number(b.xmr||0);
+    const xmrCoins = xmrPico > 1e9 ? xmrPico / 1e12 : xmrPico;
     // USDC/USDT (6 decimals ERC-20)
     const usdcRaw = b.usdc||0;
     const usdcCoins = usdcRaw > 1e4 ? usdcRaw / 1e6 : usdcRaw;
@@ -592,6 +541,7 @@ drawRain();
       { sym:'sbch', name:'Stealth Bitcoin Cash',  coins: stealthCoins, price: prices.bch?.price||0, change24h: prices.bch?.change24h||0, color:'#BF5AF2' },
       { sym:'btc',  name:'Bitcoin',               coins: btcCoins,     price: prices.btc?.price||0, change24h: prices.btc?.change24h||0, color:'#F7931A' },
       { sym:'eth',  name:'Ethereum',              coins: ethCoins,     price: prices.eth?.price||0, change24h: prices.eth?.change24h||0, color:'#627EEA' },
+      { sym:'xmr',  name:'Monero',                coins: xmrCoins,     price: prices.xmr?.price||0, change24h: prices.xmr?.change24h||0, color:'#FF6600' },
       { sym:'usdc', name:'USD Coin',              coins: usdcCoins,    price: prices.usdc?.price||1, change24h: prices.usdc?.change24h||0, color:'#2775CA' },
       { sym:'usdt', name:'Tether',                coins: usdtCoins,    price: prices.usdt?.price||1, change24h: prices.usdt?.change24h||0, color:'#26A17B' },
     ];
@@ -656,20 +606,23 @@ drawRain();
     const bchCoins = (balances.bch||0)/1e8;
     const btcCoins = (balances.btc||0)/1e8;
     const ethCoins = (balances.eth||0)/1e18;
+    const xmrP = Number(balances.xmr||0);
+    const xmrCoins = xmrP > 1e9 ? xmrP / 1e12 : xmrP;
     const usdcR = balances.usdc||0; const usdcCoins = usdcR>1e4?usdcR/1e6:usdcR;
     const usdtR = balances.usdt||0; const usdtCoins = usdtR>1e4?usdtR/1e6:usdtR;
     const stealthCoins = getStealthBalance()/1e8;
     const totalBchCoins = bchCoins + stealthCoins;
     const stableCoins = usdcCoins + usdtCoins;
-    const hasHoldings = totalBchCoins > 0 || btcCoins > 0 || ethCoins > 0 || stableCoins > 0;
+    const hasHoldings = totalBchCoins > 0 || btcCoins > 0 || ethCoins > 0 || xmrCoins > 0 || stableCoins > 0;
 
     const base = chartData.bch && chartData.bch.length ? chartData.bch : (chartData.btc||[]);
     if(!base.length) { fillEl.setAttribute('d',''); lineEl.setAttribute('d',''); return; }
 
-    // Build price lookup maps for BTC and ETH
+    // Build price lookup maps
     function buildMap(arr){ const m = new Map(); (arr||[]).forEach(p => m.set(p[0], p[1])); return m; }
     const btcMap = buildMap(chartData.btc);
     const ethMap = buildMap(chartData.eth);
+    const xmrMap = buildMap(chartData.xmr);
 
     // For each base timestamp, find closest price in other coins
     function closest(map, ts){
@@ -694,10 +647,11 @@ drawRain();
       const bchP = p[1];
       const btcP = closest(btcMap, ts);
       const ethP = closest(ethMap, ts);
+      const xmrPr = closest(xmrMap, ts);
       // If no holdings, show combined market index (equal weight)
       const val = hasHoldings
-        ? totalBchCoins*bchP + btcCoins*btcP + ethCoins*ethP + stableCoins
-        : (bchP + btcP + ethP) / 3;
+        ? totalBchCoins*bchP + btcCoins*btcP + ethCoins*ethP + xmrCoins*xmrPr + stableCoins
+        : (bchP + btcP + ethP + xmrPr) / 4;
       return { ts, val };
     });
 

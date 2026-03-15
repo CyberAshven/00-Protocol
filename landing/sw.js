@@ -1,5 +1,5 @@
 // 0penw0rld Service Worker
-const CACHE = '0penw0rld-v162';
+const CACHE = '0penw0rld-v197';
 
 const APP_SHELL = [
   '/',
@@ -19,6 +19,9 @@ const APP_SHELL = [
   '/onion.html',
   '/vault.html',
   '/config.html',
+  '/xmr-swap-crypto.js',
+  '/xmr-rpc.js',
+  '/swap-xmr.html',
   '/ledger.js',
   '/manifest.json',
   '/icons/icon-192.png',
@@ -27,6 +30,7 @@ const APP_SHELL = [
   '/icons/bch.png',
   '/icons/btc.png',
   '/icons/eth.png',
+  '/icons/xmr.png',
   '/icons/usdc.png',
   '/icons/usdt.png',
 ];
@@ -45,6 +49,9 @@ const NETWORK_FIRST = [
   'nos.lol',
   'relay.nostr.band',
   'relay.snort.social',
+  'node.moneroworld.com',
+  'xmr-node.cakewallet.com',
+  'nodes.hashvault.pro',
   'fonts.googleapis.com',
   'fonts.gstatic.com',
 ];
@@ -73,6 +80,20 @@ self.addEventListener('activate', e => {
   );
 });
 
+// Pages that need cross-origin isolation (SharedArrayBuffer for WASM)
+const COI_PAGES = ['/swap-xmr.html'];
+
+function addCoiHeaders(response) {
+  const headers = new Headers(response.headers);
+  headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
+}
+
 // ── Fetch ────────────────────────────────────────
 self.addEventListener('fetch', e => {
   const url = e.request.url;
@@ -82,23 +103,27 @@ self.addEventListener('fetch', e => {
   if (url.startsWith('chrome-extension')) return;
   if (url.startsWith('ws://') || url.startsWith('wss://')) return;
 
+  // Check if this page needs cross-origin isolation
+  const needsCoi = COI_PAGES.some(p => url.endsWith(p));
+
   const isNetworkFirst = NETWORK_FIRST.some(h => url.includes(h));
 
   if (isNetworkFirst) {
     // Network first — live data (prices, pools, relays)
     e.respondWith(
       fetch(e.request)
+        .then(r => needsCoi ? addCoiHeaders(r) : r)
         .catch(() => caches.match(e.request))
     );
   } else {
     // Cache first — app shell (HTML, icons, manifest)
     e.respondWith(
       caches.match(e.request).then(cached => {
-        if (cached) return cached;
+        if (cached) return needsCoi ? addCoiHeaders(cached) : cached;
         return fetch(e.request).then(res => {
           const clone = res.clone();
           if (res.ok) caches.open(CACHE).then(c => c.put(e.request, clone));
-          return res;
+          return needsCoi ? addCoiHeaders(res) : res;
         });
       })
     );

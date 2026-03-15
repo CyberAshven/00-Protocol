@@ -2260,6 +2260,95 @@ img.wd-acc-icon {
 .cd-action-btn.cd-primary:hover {
   opacity: .9;
 }
+.cd-scan-spin {
+  display: inline-block;
+  animation: cdSpin 1s linear infinite;
+}
+@keyframes cdSpin { to { transform: rotate(360deg); } }
+
+/* Auto Stealth bar */
+.cd-auto-stealth-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  margin-bottom: 14px;
+  background: var(--dt-surface);
+  border: 1px solid var(--dt-border);
+  border-radius: 12px;
+}
+.cd-as-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cd-as-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dt-text);
+}
+.cd-as-status {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--dt-muted);
+  letter-spacing: .5px;
+}
+.cd-as-toggle {
+  width: 38px;
+  height: 22px;
+  border-radius: 11px;
+  cursor: pointer;
+  position: relative;
+  background: var(--dt-border);
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.cd-as-toggle.on {
+  background: var(--dt-accent-bg);
+}
+.cd-as-knob {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: left .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.cd-as-toggle.on .cd-as-knob {
+  left: 18px;
+}
+.cd-as-rounds {
+  display: flex;
+  gap: 6px;
+}
+.cd-as-round-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dt-muted);
+  background: transparent;
+  border: 1px solid var(--dt-border);
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all .15s;
+  line-height: 1;
+}
+.cd-as-round-btn:hover {
+  border-color: var(--dt-accent-border);
+  color: var(--dt-accent);
+  background: var(--dt-accent-soft);
+}
+.cd-as-round-btn.active {
+  background: var(--dt-accent-bg);
+  color: var(--dt-accent-text);
+  border-color: var(--dt-accent-bg);
+}
 
 /* Balance card */
 .cd-balance-card {
@@ -3866,11 +3955,15 @@ select.dt-form-input {
 .dt-msg-send:hover { opacity: .85; }
 
 /* ── Phase stepper (Fusion) ────────────────────────────────── */
+.dt-phase-card {
+  margin-bottom: 16px;
+  padding: 28px 32px 20px;
+}
 .dt-phase-list {
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 8px 0;
+  padding: 0;
 }
 .dt-phase-item {
   display: flex;
@@ -4248,4 +4341,178 @@ select.dt-form-input {
   .desktop-sidebar:not(.expanded) ~ #vault-desktop {
     left: 68px !important;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ADD CONTACT / SHARE CARD — Pro Modal
+   ═══════════════════════════════════════════════════════════════ */
+.dt-ac-card {
+  position: relative;
+  background: var(--dt-surface);
+  border: 1px solid var(--dt-border);
+  border-radius: 20px;
+  max-width: 440px;
+  margin: 48px auto;
+  padding: 44px 40px 36px;
+  box-shadow: var(--dt-shadow), 0 8px 32px rgba(0,0,0,.04);
+}
+.dt-ac-close {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  background: none;
+  border: 1px solid var(--dt-border);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--dt-text-secondary);
+  cursor: pointer;
+  transition: all .15s;
+}
+.dt-ac-close:hover {
+  background: var(--dt-hover);
+  color: var(--dt-text);
+}
+.dt-ac-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  border-radius: 16px;
+  background: var(--dt-accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 8px rgba(10,193,142,.06);
+}
+.dt-ac-icon svg {
+  width: 32px;
+  height: 32px;
+  color: var(--dt-accent);
+}
+.dt-ac-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--dt-text);
+  text-align: center;
+  margin-bottom: 6px;
+  letter-spacing: -.3px;
+}
+.dt-ac-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--dt-text-secondary);
+  text-align: center;
+  margin-bottom: 28px;
+}
+.dt-ac-card .dt-form-group {
+  margin-bottom: 14px;
+}
+.dt-ac-url-row {
+  display: flex;
+  gap: 8px;
+}
+.dt-ac-url-row .dt-form-input {
+  flex: 1;
+  min-width: 0;
+}
+.dt-ac-parse-btn {
+  flex-shrink: 0;
+  padding: 12px 22px;
+  background: linear-gradient(135deg, #0AC18E 0%, #0ED9A8 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+}
+.dt-ac-parse-btn:hover {
+  box-shadow: 0 4px 14px rgba(10,193,142,.3);
+  transform: translateY(-1px);
+}
+.dt-ac-mono {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace !important;
+  font-size: 12px !important;
+}
+.dt-ac-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0 16px;
+}
+.dt-ac-divider::before,
+.dt-ac-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--dt-border);
+}
+.dt-ac-divider span {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--dt-text-secondary);
+  opacity: .45;
+  white-space: nowrap;
+}
+.dt-ac-error {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--dt-danger);
+  min-height: 18px;
+  margin-bottom: 6px;
+}
+.dt-ac-cta {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #0AC18E 0%, #0ED9A8 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .3px;
+  margin-bottom: 10px;
+}
+.dt-ac-cta:hover {
+  box-shadow: 0 6px 20px rgba(10,193,142,.3);
+  transform: translateY(-1px);
+}
+.dt-ac-cancel {
+  width: 100%;
+  padding: 13px;
+  background: transparent;
+  color: var(--dt-accent);
+  border: 1px solid var(--dt-accent-border);
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+}
+.dt-ac-cancel:hover {
+  background: var(--dt-accent-soft);
+}
+.dt-ac-url-display {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 11px;
+  color: var(--dt-text-secondary);
+  word-break: break-all;
+  line-height: 1.7;
+  padding: 12px 14px;
+  background: var(--dt-input-bg);
+  border: 1px solid var(--dt-input-border);
+  border-radius: 10px;
 }
