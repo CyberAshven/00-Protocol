@@ -60,11 +60,15 @@ async function daemonRpc(method, params = {}) {
     params
   };
 
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), 10000);
   const resp = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
+    signal: ac.signal
   });
+  clearTimeout(t);
 
   if (!resp.ok) throw new Error(`XMR RPC error: ${resp.status} ${resp.statusText}`);
   const json = await resp.json();
@@ -79,11 +83,15 @@ async function daemonRpc(method, params = {}) {
 async function daemonOther(endpoint, params = {}) {
   const url = _activeNode.url + '/' + endpoint;
 
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), 15000);
   const resp = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params)
+    body: JSON.stringify(params),
+    signal: ac.signal
   });
+  clearTimeout(t);
 
   if (!resp.ok) throw new Error(`XMR RPC error: ${resp.status}`);
   return resp.json();
@@ -133,6 +141,11 @@ async function getTransactions(txHashes, decodeAsJson = true) {
 /** Get transaction pool (mempool) */
 async function getTransactionPool() {
   return daemonOther('get_transaction_pool', {});
+}
+
+/** Check if key images are spent (0=unspent, 1=spent in block, 2=spent in pool) */
+async function isKeyImageSpent(keyImages) {
+  return daemonOther('is_key_image_spent', { key_images: keyImages });
 }
 
 /** Get output distribution for RingCT */
@@ -239,9 +252,14 @@ function deriveOutputPrivKey(sharedSecret, outputIndex, spendPriv) {
  */
 function computeSharedSecret(viewPriv, txPubKey) {
   const R = ed25519.ExtendedPoint.fromHex(txPubKey);
-  // Monero: multiply by 8 (cofactor) for subgroup check
-  // For standard addresses: shared = a * R
-  const shared = R.multiply(viewPriv);
+  // Convert viewPriv to bigint if it's a Uint8Array (LE bytes)
+  let a = viewPriv;
+  if (viewPriv instanceof Uint8Array || Array.isArray(viewPriv)) {
+    a = 0n;
+    for (let i = 31; i >= 0; i--) a = (a << 8n) | BigInt(viewPriv[i]);
+  }
+  // Monero: derivation = 8 * a * R (cofactor multiplication)
+  const shared = R.multiply(a).multiply(8n);
   return new Uint8Array(shared.toRawBytes());
 }
 
@@ -472,57 +490,51 @@ function scanTransaction(txJson, viewPriv, spendPub) {
  */
 async function scanBlocks(viewPriv, spendPub, fromHeight, toHeight, onProgress) {
   const allFound = [];
-  const batchSize = 10; // scan 10 blocks at a time
+  const delay = ms => new Promise(r => setTimeout(r, ms));
 
-  for (let h = fromHeight; h <= toHeight; h += batchSize) {
-    const end = Math.min(h + batchSize - 1, toHeight);
-    const txHashes = [];
-    const txHeights = {};
+  for (let bh = fromHeight; bh <= toHeight; bh++) {
+    let txHashes = [];
 
-    // Collect all TX hashes from this batch of blocks
-    for (let bh = h; bh <= end; bh++) {
+    // Fetch block with retry
+    for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const block = await getBlock(bh);
         const blockJson = JSON.parse(block.json);
-        const hashes = blockJson.tx_hashes || [];
-        for (const txh of hashes) {
-          txHashes.push(txh);
-          txHeights[txh] = bh;
-        }
-      } catch (e) {
-        console.warn('[XMR] error fetching block', bh, e.message);
+        txHashes = blockJson.tx_hashes || [];
+        break;
+      } catch(e) {
+        if (attempt < 2) await delay(1000);
+        else console.warn('[XMR] block', bh, 'failed:', e.message);
       }
     }
 
-    // Fetch all transactions in batch
-    if (txHashes.length > 0) {
-      try {
-        const txData = await getTransactions(txHashes);
-        if (txData.txs) {
-          for (const tx of txData.txs) {
-            if (!tx.as_json) continue;
-            try {
-              const txJson = JSON.parse(tx.as_json);
-              const result = scanTransaction(txJson, viewPriv, spendPub);
-              for (const out of result.outputs) {
-                allFound.push({
-                  ...out,
-                  txHash: tx.tx_hash,
-                  blockHeight: txHeights[tx.tx_hash],
-                  confirmations: toHeight - txHeights[tx.tx_hash]
-                });
-              }
-            } catch (e) {
-              // Skip unparseable TXs
+    // Fetch transactions in chunks of 10
+    for (let ti = 0; ti < txHashes.length; ti += 10) {
+      const chunk = txHashes.slice(ti, ti + 10);
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const txData = await getTransactions(chunk);
+          if (txData.txs) {
+            for (const tx of txData.txs) {
+              if (!tx.as_json) continue;
+              try {
+                const txJson = JSON.parse(tx.as_json);
+                const result = scanTransaction(txJson, viewPriv, spendPub);
+                for (const out of result.outputs) {
+                  allFound.push({ ...out, txHash: tx.tx_hash, blockHeight: bh, confirmations: toHeight - bh });
+                }
+              } catch (e) { /* skip parse error */ }
             }
           }
+          break;
+        } catch (e) {
+          if (attempt < 2) await delay(500);
+          else console.warn('[XMR] TXs block', bh, 'chunk', ti, 'failed:', e.message);
         }
-      } catch (e) {
-        console.warn('[XMR] error fetching TXs for block batch', h, e.message);
       }
     }
 
-    if (onProgress) onProgress(end - fromHeight, toHeight - fromHeight);
+    if (onProgress) onProgress(bh - fromHeight, toHeight - fromHeight);
   }
 
   return allFound;
@@ -786,6 +798,7 @@ export {
   getBlock,
   getTransactions,
   getTransactionPool,
+  isKeyImageSpent,
 
   // Output crypto
   computeSharedSecret,

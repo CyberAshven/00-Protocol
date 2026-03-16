@@ -1629,7 +1629,7 @@ img.dash-asset-icon {
 /* Transaction rows */
 .dash-tx-row {
   display: grid;
-  grid-template-columns: 2.4fr 0.8fr 1fr 1.2fr;
+  grid-template-columns: 2fr 1.2fr 0.8fr 1.2fr;
   align-items: center;
   padding: 14px 24px;
   border-bottom: 1px solid var(--dt-border-subtle);
@@ -1729,12 +1729,13 @@ img.dash-asset-icon {
   color: var(--dt-text-secondary);
 }
 
-/* Height column */
-.dash-tx-col-height {
+/* Date column */
+.dash-tx-col-date {
   font-family: 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--dt-text-secondary);
+  white-space: nowrap;
 }
 
 /* Amount column */
@@ -2223,6 +2224,21 @@ img.wd-acc-icon {
   font-weight: 800;
   color: var(--dt-text);
 }
+.cd-info-btn {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--dt-text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 700; font-style: italic;
+  color: var(--dt-text-secondary);
+  cursor: pointer; transition: all .15s;
+  margin-left: 8px;
+}
+.cd-info-btn:hover {
+  border-color: var(--dt-accent);
+  color: var(--dt-accent);
+}
 
 .cd-actions {
   display: flex;
@@ -2259,6 +2275,11 @@ img.wd-acc-icon {
 }
 .cd-action-btn.cd-primary:hover {
   opacity: .9;
+}
+.cd-action-btn.cd-disabled {
+  opacity: .35;
+  pointer-events: none;
+  cursor: default;
 }
 .cd-scan-spin {
   display: inline-block;
@@ -2709,6 +2730,38 @@ img.wd-acc-icon {
 }
 .cd-modal-close:hover {
   background: var(--dt-accent-soft);
+  color: var(--dt-accent);
+}
+
+/* ── Key Display ─────────────────────────────── */
+.keys-value {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--dt-text);
+  background: var(--dt-bg);
+  border: 1px solid var(--dt-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  word-break: break-all;
+  line-height: 1.6;
+  margin-top: 4px;
+  user-select: all;
+}
+.keys-copy, .keys-reveal {
+  background: transparent;
+  border: 1px solid var(--dt-border);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  color: var(--dt-text-secondary);
+  transition: all .15s;
+}
+.keys-copy:hover, .keys-reveal:hover {
+  border-color: var(--dt-accent);
   color: var(--dt-accent);
 }
 

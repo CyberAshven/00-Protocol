@@ -1,5 +1,5 @@
 // 0penw0rld Service Worker
-const CACHE = '0penw0rld-v197';
+const CACHE = '0penw0rld-v264';
 
 const APP_SHELL = [
   '/',
@@ -104,7 +104,7 @@ self.addEventListener('fetch', e => {
   if (url.startsWith('ws://') || url.startsWith('wss://')) return;
 
   // Check if this page needs cross-origin isolation
-  const needsCoi = COI_PAGES.some(p => url.endsWith(p));
+  const needsCoi = COI_PAGES.some(p => new URL(url).pathname.endsWith(p));
 
   const isNetworkFirst = NETWORK_FIRST.some(h => url.includes(h));
 
@@ -113,12 +113,12 @@ self.addEventListener('fetch', e => {
     e.respondWith(
       fetch(e.request)
         .then(r => needsCoi ? addCoiHeaders(r) : r)
-        .catch(() => caches.match(e.request))
+        .catch(() => caches.match(e.request, { ignoreSearch: true }))
     );
   } else {
     // Cache first — app shell (HTML, icons, manifest)
     e.respondWith(
-      caches.match(e.request).then(cached => {
+      caches.match(e.request, { ignoreSearch: true }).then(cached => {
         if (cached) return needsCoi ? addCoiHeaders(cached) : cached;
         return fetch(e.request).then(res => {
           const clone = res.clone();

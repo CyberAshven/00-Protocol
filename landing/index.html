@@ -118,7 +118,7 @@
       .app-icon-box{width:54px;height:54px}
     }
   </style>
-  <link rel="stylesheet" href="desktop.css">
+  <link rel="stylesheet" href="desktop.css?v=261">
 </head>
 <body>
 
@@ -365,7 +365,7 @@
 </div>
 
 <script>if(!localStorage.getItem('00wallet_vault')){window.location.href='/wallet.html';}</script>
-<script src="/shell.js"></script>
+<script src="/shell.js?v=262"></script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}</script>
 <script>
 
@@ -743,30 +743,43 @@ drawRain();
     }
     const sym = SYMBOLS[cur]||'$';
     const CHAIN_META = {
-      bch: { name:'Bitcoin Cash', ticker:'BCH', color:'#0AC18E', icon:'₿' },
-      btc: { name:'Bitcoin',      ticker:'BTC', color:'#F7931A', icon:'₿' },
-      eth: { name:'Ethereum',     ticker:'ETH', color:'#627EEA', icon:'Ξ' },
+      bch: { name:'Bitcoin Cash', ticker:'BCH', color:'#0AC18E', icon:'₿', decimals:8 },
+      btc: { name:'Bitcoin',      ticker:'BTC', color:'#F7931A', icon:'₿', decimals:8 },
+      eth: { name:'Ethereum',     ticker:'ETH', color:'#627EEA', icon:'Ξ', decimals:18 },
+      xmr: { name:'Monero',       ticker:'XMR', color:'#FF6600', icon:'ɱ', decimals:12 },
+      usdc:{ name:'USD Coin',     ticker:'USDC',color:'#2775CA', icon:'$', decimals:6 },
+      usdt:{ name:'Tether',       ticker:'USDT',color:'#26A17B', icon:'₮', decimals:6 },
     };
-    // Limit to 10
-    const display = txs.slice(0, 10);
+    // Collect sent txids to filter XMR change outputs
+    const sentXmrTxids = new Set();
+    for(const tx of txs){ if(tx.chain==='xmr'&&tx.dir==='out') sentXmrTxids.add(tx.txid); }
+    // Filter out change outputs, sort by timestamp desc, limit to 10
+    const cleaned = txs.filter(tx => !(tx.chain==='xmr' && tx.dir==='in' && sentXmrTxids.has(tx.txid)));
+    cleaned.sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
+    const display = cleaned.slice(0, 10);
     let html = '';
     for(const tx of display){
       const meta = CHAIN_META[tx.chain] || CHAIN_META.bch;
-      const coins = tx.amount / 1e8;
+      const rawAmt = typeof tx.amount === 'string' ? parseFloat(tx.amount) : tx.amount;
+      const coins = rawAmt / Math.pow(10, meta.decimals);
       const dirLabel = tx.dir === 'stealth' ? 'Stealth' : tx.dir === 'in' ? 'Received' : tx.dir === 'fusion' ? 'CashFusion' : 'Sent';
       const dirIcon = tx.dir === 'stealth' ? '↓' : tx.dir === 'in' ? '↓' : tx.dir === 'fusion' ? '⇄' : '↑';
       const dirClass = tx.dir === 'stealth' ? 'stealth' : tx.dir === 'in' ? 'in' : tx.dir === 'fusion' ? 'fusion' : 'out';
       const amtSign = tx.dir === 'out' ? '-' : '+';
-      const amtStr = tx.dir === 'out' ? '' : amtSign + fmtCoins(coins, meta.ticker);
+      const decPlaces = tx.chain==='usdc'||tx.chain==='usdt' ? 2 : tx.chain==='xmr' ? 8 : tx.chain==='eth' ? 6 : 8;
+      const amtStr = amtSign + coins.toFixed(decPlaces) + ' ' + meta.ticker;
       // Fiat value
       let fiatStr = '';
-      if(prices && prices[tx.chain] && tx.amount > 0 && tx.dir !== 'out'){
+      if(prices && prices[tx.chain] && rawAmt > 0){
         const fiatVal = coins * prices[tx.chain].price;
         fiatStr = fmtCur(fiatVal, cur);
       }
-      const heightStr = tx.height > 0 ? 'Block ' + tx.height.toLocaleString() : 'Pending';
+      const dateStr = tx.timestamp ? new Date(tx.timestamp * 1000).toLocaleString('en-US', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
       const shortTx = tx.txid.slice(0,10) + '...' + tx.txid.slice(-6);
-      html += `<div class="dash-tx-row" onclick="window.open('https://blockchair.com/bitcoin-cash/transaction/${tx.txid}','_blank')">
+      let explorerUrl;
+      if(tx.chain==='xmr') explorerUrl = 'https://xmrchain.net/tx/' + tx.txid;
+      else { const exp = tx.chain==='btc'?'bitcoin':tx.chain==='eth'?'ethereum':'bitcoin-cash'; explorerUrl = 'https://blockchair.com/'+exp+'/transaction/'+tx.txid; }
+      html += `<div class="dash-tx-row" onclick="window.open('${explorerUrl}','_blank')">
         <div class="dash-tx-col-info">
           <div class="dash-tx-icon ${dirClass}"><span>${dirIcon}</span></div>
           <div>
@@ -774,11 +787,11 @@ drawRain();
             <div class="dash-tx-id">${shortTx}</div>
           </div>
         </div>
+        <div class="dash-tx-col-date">${dateStr}</div>
         <div class="dash-tx-col-coin">
           <div class="dash-tx-coin-icon" style="background:${tx.dir==='stealth'?'#BF5AF2':meta.color}"><span>${meta.icon}</span></div>
           <span class="dash-tx-coin-name">${tx.dir==='stealth'?'sBCH':meta.ticker}</span>
         </div>
-        <div class="dash-tx-col-height">${heightStr}</div>
         <div class="dash-tx-col-amount">
           <div class="dash-tx-amount ${dirClass}">${amtStr}</div>
           <div class="dash-tx-fiat">${fiatStr}</div>

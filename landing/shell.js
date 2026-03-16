@@ -325,6 +325,21 @@ function buildSettingsModal() {
         <input class="ep-input" id="ep-meta" value="${metaVal()}">
       </div>
 
+      ${localStorage.getItem('00wallet_vault') ? `
+      <div class="ep-group" style="border-top:1px solid rgba(0,255,65,.1);padding-top:14px;margin-top:8px">
+        <div class="ep-label">BACKUP</div>
+        <div style="display:flex;gap:8px">
+          <button class="ep-save" id="ep-btn-export" style="flex:1" type="button">EXPORT BACKUP</button>
+          <button class="ep-close" id="ep-btn-import" style="flex:1" type="button">IMPORT BACKUP</button>
+        </div>
+        <div class="ep-hint">Encrypted .0pw file with all wallet data</div>
+        <input type="file" id="ep-backup-file" accept=".0pw" style="display:none">
+      </div>
+      <div class="ep-group">
+        <button class="ep-save" id="ep-btn-keys" style="width:100%" type="button">EXPORT PRIVATE KEYS</button>
+      </div>
+      ` : ''}
+
       <div class="ep-actions">
         <button class="ep-reset" id="ep-btn-reset">RESET</button>
         <button class="ep-close" id="ep-btn-close">CANCEL</button>
@@ -334,6 +349,18 @@ function buildSettingsModal() {
     </div>`;
 
   overlay.querySelector('#ep-btn-close').onclick = () => overlay.classList.remove('open');
+
+  // Backup buttons (only exist for local wallets)
+  const expBtn = overlay.querySelector('#ep-btn-export');
+  if (expBtn) {
+    expBtn.onclick = () => { if (window.exportBackup) window.exportBackup(); else window.location.href = 'wallet.html?action=exportBackup'; };
+    const impBtn = overlay.querySelector('#ep-btn-import');
+    const fileIn = overlay.querySelector('#ep-backup-file');
+    impBtn.onclick = () => { if (window.importBackup) fileIn.click(); else window.location.href = 'wallet.html?action=importBackup'; };
+    fileIn.onchange = function() { if (this.files[0] && window.importBackup) window.importBackup(this.files[0]); this.value = ''; };
+    const keysBtn = overlay.querySelector('#ep-btn-keys');
+    if (keysBtn) keysBtn.onclick = () => { overlay.classList.remove('open'); if (window.openExportKeys) window.openExportKeys(); else window.location.href = 'wallet.html?action=exportKeys'; };
+  }
 
   overlay.querySelector('#ep-btn-save').onclick = () => {
     const lines = s => s.split('\n').map(l => l.trim()).filter(l => l.startsWith('wss://'));
@@ -545,6 +572,15 @@ function buildDesktopSidebar() {
   setBtn.innerHTML = '<span class="sidebar-bottom-icon">⚙</span><span class="sidebar-label">Settings</span>';
   setBtn.onclick = () => openSettings();
   bot.appendChild(setBtn);
+
+  // Export Keys (local wallets only)
+  if (localStorage.getItem('00wallet_vault')) {
+    const keysBtn = document.createElement('button');
+    keysBtn.className = 'sidebar-bottom-item';
+    keysBtn.innerHTML = '<span class="sidebar-bottom-icon">🔑</span><span class="sidebar-label">Export Keys</span>';
+    keysBtn.onclick = () => { if (window.openExportKeys) window.openExportKeys(); else window.location.href = 'wallet.html?action=exportKeys'; };
+    bot.appendChild(keysBtn);
+  }
 
   // Connect / Disconnect
   const discBtn = document.createElement('button');
