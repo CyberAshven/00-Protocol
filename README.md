@@ -265,14 +265,21 @@ Neither channel alone is sufficient. Permanent on-chain anchoring + fast relay d
 
 ---
 
-## 00 Onion — Multi-Hop Payments
+## 00 Onion
 
-HTLC contracts with onion-routed payment paths. No direct link between sender and recipient.
+Decentralized Fusion/Silent Joiner relay for encrypted routing and coordination through Nostr 
 
-- Payments relayed through intermediary nodes
-- Each hop knows only its predecessor and successor
-- Route coordination via Nostr
-- Same HTLC security model as Lightning
+
+                        Nostr Relays
+                       (public infra)
+                      /       |       \
+        User A  ----+        |        +----  User B
+        User C  ----+        |        +----  User D
+                      \       |       /
+                       Onion Relay
+                      /             \
+            Fulcrum WSS          BCHN RPC
+           (blockchain)         (blockchain)
 
 ---
 
@@ -295,6 +302,10 @@ Trustless atomic swaps using HTLC contracts on-chain.
 - BCH ↔ XMR: adaptor signatures for Monero's non-scripted outputs
 - P2P OTC orderbook published on Nostr
 - No custodian, no escrow, no intermediary
+
+## 00 Multi-Chain Mixer - HTLC Payment
+
+Coming Soon
 
 ---
 
