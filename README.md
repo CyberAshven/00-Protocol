@@ -359,28 +359,30 @@ npx serve landing
 
 ## SDK — `@00-protocol/sdk`
 
-The `sdk/` directory is the **00 Protocol JavaScript SDK** — import it directly or publish as `@00-protocol/sdk`.
+The `sdk/` directory is the 00 Protocol JavaScript SDK.
 
 ```js
-import { CCSHChat, WizardConnect } from '@00-protocol/sdk';
-// Coming soon:
-import { Pay, Vault, Subscription, Dex, Swap } from '@00-protocol/sdk';
+import { StealthKeys, Joiner, OnionRelay, BCHPubkeyIndexer, WizConnect, CCSHChat } from '@00-protocol/sdk';
 ```
 
-| Module | Path | Status | Description |
-|--------|------|--------|-------------|
-| **CCSHChat** | `sdk/src/chat/` | Live | Split-knowledge encrypted messaging (OP_RETURN + Nostr, NIP-44) |
-| **WizardConnect** | `sdk/src/wizconnect/` | Live | BCH dapp/wallet connection protocol (NIP-04) |
-| **Common** | `sdk/src/common/` | Live | Shared crypto primitives |
-| **Pay** | `sdk/src/pay/` | Soon | 00 Pay — payment terminal & QR invoices |
-| **Vault** | `sdk/src/vault/` | Soon | 00 Vault — MuSig2 stealth multisig |
-| **Subscription** | `sdk/src/subscription/` | Soon | Recurring BCH payments |
-| **DEX** | `sdk/src/dex/` | Soon | On-chain CashToken swaps |
-| **Swap** | `sdk/src/swap/` | Soon | Atomic cross-chain swaps (BCH/BTC/XMR) |
+### Shared primitives
 
-> BCH stealth/joiner/onion/indexer primitives live in `@BCHStealthProtocol/sdk` ([BCH-Stealth-Protocol](https://github.com/00-Protocol/BCH-Stealth-Protocol))
+Identical to [`@BCHStealthProtocol/sdk`](https://github.com/00-Protocol/BCH-Stealth-Protocol/tree/main/sdk):
 
-**Tag:** `00-Protocol-SDK` · **Version:** `1.0.0-beta.1`
+| Module | Path | Description |
+|--------|------|-------------|
+| `stealth` | `sdk/src/stealth/` | BIP352-style ECDH stealth addresses |
+| `joiner` | `sdk/src/joiner/` | Silent CoinJoin / Fusion |
+| `onion` | `sdk/src/onion/` | Onion relay client crypto |
+| `indexer` | `sdk/src/indexer/` | BCHPubkeyIndexer HTTP client |
+| `wizconnect` | `sdk/src/wizconnect/` | WizardConnect dapp/wallet bridge |
+| `common` | `sdk/src/common/` | Crypto utility layer — CashAddr, BIP32, secp256k1, Nostr signing. Dependency of all above modules; exported for wallet developers who need those primitives directly. |
+
+### 00 Protocol specific
+
+| Module | Path | Description |
+|--------|------|-------------|
+| `chat` | `sdk/src/chat/` | CCSHChat — split-knowledge encrypted messaging (OP_RETURN + Nostr, NIP-44) |
 
 ## License
 
