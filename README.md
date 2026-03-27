@@ -354,38 +354,6 @@ npx serve landing
 
 ---
 
----
-
-## SDK
-
-The `sdk/` directory contains the **00 Protocol JavaScript SDK** — migrated from the standalone `@00-protocol/sdk` package.
-
-A self-contained, zero-dependency (except `@noble/curves` + `@noble/hashes`) privacy toolkit for Bitcoin Cash.
-
-### Modules
-
-| Module | Import path | Description |
-|--------|------------|-------------|
-| **Stealth** | `sdk/src/stealth/index.js` | BIP352-style stealth addresses — one-time ECDH address derivation |
-| **Joiner** | `sdk/src/joiner/index.js` | Silent CoinJoin coordination (CashFusion-compatible) |
-| **Onion** | `sdk/src/onion/index.js` | Multi-hop HTLC onion routing over Nostr |
-| **Chat** | `sdk/src/chat/index.js` | NIP-44 encrypted messaging (X25519 + AES-GCM) |
-| **WizConnect** | `sdk/src/wizconnect/index.js` | BCH dapp/wallet connection protocol |
-| **Common** | `sdk/src/common/index.js` | Shared crypto primitives (secp256k1, hashing, encoding) |
-
-### Usage
-
-```javascript
-import { StealthKeys } from './sdk/src/stealth/index.js';
-import { joinRound }   from './sdk/src/joiner/index.js';
-import { OnionRouter } from './sdk/src/onion/index.js';
-import { Chat }        from './sdk/src/chat/index.js';
-```
-
-See [`sdk/README.md`](sdk/README.md) for full API documentation.
-
-**Tag:** `00-Protocol-SDK` · **Version:** `1.0.0-beta.1`
-
 
 ## License
 
